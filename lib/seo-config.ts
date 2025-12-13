@@ -120,7 +120,7 @@ export function generateJsonLd({
         url: siteConfig.url,
         potentialAction: {
           "@type": "SearchAction",
-          target: `${siteConfig.url}/search?q={search_term_string}`,
+          target: `${siteConfig.url}/explore?q={search_term_string}`,
           "query-input": "required name=search_term_string",
         },
         ...data,

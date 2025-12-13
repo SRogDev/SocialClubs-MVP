@@ -27,7 +27,7 @@ export function optimizeResourceLoading() {
   if (typeof window !== "undefined") {
     // Precargar recursos críticos
     const preloadResources = () => {
-      const criticalPaths = ["/search", "/clubs", "/profile"]
+      const criticalPaths = ["/explore", "/clubs", "/profile"]
 
       // Precargar rutas críticas
       criticalPaths.forEach((path) => {

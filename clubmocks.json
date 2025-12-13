@@ -1,0 +1,902 @@
+[
+    {
+        "id": "mock-club-1",
+        "name": "Tech Innovators",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=tech1",
+            "alt": "Tech Innovators Logo"
+        },
+        "bio": "Comunidad de desarrolladores y entusiastas de la tecnología",
+        "color": "#3B82F6",
+        "level": 5,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000000",
+        "tags": [
+            "tecnología",
+            "desarrollo",
+            "innovación"
+        ],
+        "total_members": 1250,
+        "created_at": "2025-01-15T10:00:00Z"
+    },
+    {
+        "id": "mock-club-2",
+        "name": "Fotógrafos Unidos",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=photo2",
+            "alt": "Fotógrafos Unidos Logo"
+        },
+        "bio": "Espacio para compartir y aprender sobre fotografía",
+        "color": "#8B5CF6",
+        "level": 3,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000001",
+        "tags": [
+            "fotografía",
+            "arte",
+            "creatividad"
+        ],
+        "total_members": 890,
+        "created_at": "2025-02-10T14:30:00Z"
+    },
+    {
+        "id": "mock-club-3",
+        "name": "Gamers Paradise",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=game3",
+            "alt": "Gamers Paradise Logo"
+        },
+        "bio": "El mejor lugar para gamers de todos los géneros",
+        "color": "#EF4444",
+        "level": 8,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000002",
+        "tags": [
+            "gaming",
+            "videojuegos",
+            "esports"
+        ],
+        "total_members": 3500,
+        "created_at": "2024-11-20T08:15:00Z"
+    },
+    {
+        "id": "mock-club-4",
+        "name": "Fitness & Salud",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=fit4",
+            "alt": "Fitness & Salud Logo"
+        },
+        "bio": "Motivación diaria para alcanzar tus metas fitness",
+        "color": "#10B981",
+        "level": 6,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000003",
+        "tags": [
+            "fitness",
+            "salud",
+            "deporte"
+        ],
+        "total_members": 2100,
+        "created_at": "2024-12-05T11:45:00Z"
+    },
+    {
+        "id": "mock-club-5",
+        "name": "Cocineros Creativos",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=cook5",
+            "alt": "Cocineros Creativos Logo"
+        },
+        "bio": "Recetas, técnicas y pasión por la cocina",
+        "color": "#F59E0B",
+        "level": 4,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000004",
+        "tags": [
+            "cocina",
+            "recetas",
+            "gastronomía"
+        ],
+        "total_members": 1650,
+        "created_at": "2025-01-22T16:20:00Z"
+    },
+    {
+        "id": "mock-club-6",
+        "name": "Músicos en Vivo",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=music6",
+            "alt": "Músicos en Vivo Logo"
+        },
+        "bio": "Compartiendo música y creando juntos",
+        "color": "#EC4899",
+        "level": 7,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000005",
+        "tags": [
+            "música",
+            "arte",
+            "creatividad"
+        ],
+        "total_members": 2800,
+        "created_at": "2024-10-18T09:30:00Z"
+    },
+    {
+        "id": "mock-club-7",
+        "name": "Viajeros del Mundo",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=travel7",
+            "alt": "Viajeros del Mundo Logo"
+        },
+        "bio": "Experiencias y consejos para tus aventuras",
+        "color": "#14B8A6",
+        "level": 5,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000006",
+        "tags": [
+            "viajes",
+            "turismo",
+            "aventura"
+        ],
+        "total_members": 1950,
+        "created_at": "2025-02-28T13:10:00Z"
+    },
+    {
+        "id": "mock-club-8",
+        "name": "Emprendedores Tech",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=startup8",
+            "alt": "Emprendedores Tech Logo"
+        },
+        "bio": "Red de networking para startups y negocios tech",
+        "color": "#6366F1",
+        "level": 6,
+        "privacity": "private",
+        "creator": "00000000-0000-0000-0000-000000000007",
+        "tags": [
+            "startup",
+            "negocios",
+            "tecnología"
+        ],
+        "total_members": 1100,
+        "created_at": "2025-03-05T15:40:00Z"
+    },
+    {
+        "id": "mock-club-9",
+        "name": "Diseño UI/UX",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=design9",
+            "alt": "Diseño UI/UX Logo"
+        },
+        "bio": "Diseñadores compartiendo recursos y feedback",
+        "color": "#A855F7",
+        "level": 4,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000008",
+        "tags": [
+            "diseño",
+            "ui",
+            "ux"
+        ],
+        "total_members": 1420,
+        "created_at": "2025-01-08T10:25:00Z"
+    },
+    {
+        "id": "mock-club-10",
+        "name": "Lectores Apasionados",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=books10",
+            "alt": "Lectores Apasionados Logo"
+        },
+        "bio": "Club de lectura y recomendaciones literarias",
+        "color": "#84CC16",
+        "level": 3,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000009",
+        "tags": [
+            "lectura",
+            "libros",
+            "literatura"
+        ],
+        "total_members": 980,
+        "created_at": "2025-02-14T12:50:00Z"
+    },
+    {
+        "id": "mock-club-11",
+        "name": "Cinéfilos Premium",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=cinema11",
+            "alt": "Cinéfilos Premium Logo"
+        },
+        "bio": "Análisis y discusión sobre cine de todo el mundo",
+        "color": "#DC2626",
+        "level": 5,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000010",
+        "tags": [
+            "cine",
+            "películas",
+            "entretenimiento"
+        ],
+        "total_members": 2240,
+        "created_at": "2024-12-20T17:15:00Z"
+    },
+    {
+        "id": "mock-club-12",
+        "name": "Programadores Python",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=python12",
+            "alt": "Programadores Python Logo"
+        },
+        "bio": "Todo sobre Python: desde básico hasta avanzado",
+        "color": "#3B82F6",
+        "level": 7,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000011",
+        "tags": [
+            "python",
+            "programación",
+            "desarrollo"
+        ],
+        "total_members": 3100,
+        "created_at": "2024-09-12T08:00:00Z"
+    },
+    {
+        "id": "mock-club-13",
+        "name": "Arte Digital",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=art13",
+            "alt": "Arte Digital Logo"
+        },
+        "bio": "Ilustradores digitales compartiendo su trabajo",
+        "color": "#F97316",
+        "level": 4,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000012",
+        "tags": [
+            "arte",
+            "digital",
+            "ilustración"
+        ],
+        "total_members": 1560,
+        "created_at": "2025-01-30T14:35:00Z"
+    },
+    {
+        "id": "mock-club-14",
+        "name": "Marketing Digital",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=marketing14",
+            "alt": "Marketing Digital Logo"
+        },
+        "bio": "Estrategias y tendencias en marketing online",
+        "color": "#06B6D4",
+        "level": 6,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000013",
+        "tags": [
+            "marketing",
+            "digital",
+            "negocios"
+        ],
+        "total_members": 1890,
+        "created_at": "2024-11-08T11:20:00Z"
+    },
+    {
+        "id": "mock-club-15",
+        "name": "Yoga y Meditación",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=yoga15",
+            "alt": "Yoga y Meditación Logo"
+        },
+        "bio": "Bienestar mental y físico a través del yoga",
+        "color": "#10B981",
+        "level": 3,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000014",
+        "tags": [
+            "yoga",
+            "meditación",
+            "bienestar"
+        ],
+        "total_members": 1320,
+        "created_at": "2025-02-18T09:45:00Z"
+    },
+    {
+        "id": "mock-club-16",
+        "name": "Arquitectura Moderna",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=arch16",
+            "alt": "Arquitectura Moderna Logo"
+        },
+        "bio": "Discusión sobre diseño arquitectónico contemporáneo",
+        "color": "#64748B",
+        "level": 5,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000015",
+        "tags": [
+            "arquitectura",
+            "diseño",
+            "construcción"
+        ],
+        "total_members": 870,
+        "created_at": "2025-03-01T16:10:00Z"
+    },
+    {
+        "id": "mock-club-17",
+        "name": "Runners Club",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=run17",
+            "alt": "Runners Club Logo"
+        },
+        "bio": "Comunidad de corredores amateur y profesionales",
+        "color": "#EAB308",
+        "level": 4,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000016",
+        "tags": [
+            "running",
+            "deporte",
+            "fitness"
+        ],
+        "total_members": 2450,
+        "created_at": "2024-10-25T07:30:00Z"
+    },
+    {
+        "id": "mock-club-18",
+        "name": "Podcasters Latino",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=podcast18",
+            "alt": "Podcasters Latino Logo"
+        },
+        "bio": "Red de creadores de podcast en español",
+        "color": "#8B5CF6",
+        "level": 5,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000017",
+        "tags": [
+            "podcast",
+            "audio",
+            "contenido"
+        ],
+        "total_members": 1180,
+        "created_at": "2025-01-12T13:55:00Z"
+    },
+    {
+        "id": "mock-club-19",
+        "name": "Jardinería Urbana",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=garden19",
+            "alt": "Jardinería Urbana Logo"
+        },
+        "bio": "Cultiva tu propio jardín en espacios pequeños",
+        "color": "#22C55E",
+        "level": 2,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000018",
+        "tags": [
+            "jardinería",
+            "plantas",
+            "naturaleza"
+        ],
+        "total_members": 760,
+        "created_at": "2025-02-22T10:40:00Z"
+    },
+    {
+        "id": "mock-club-20",
+        "name": "Criptomonedas",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=crypto20",
+            "alt": "Criptomonedas Logo"
+        },
+        "bio": "Inversión y análisis del mercado crypto",
+        "color": "#F59E0B",
+        "level": 8,
+        "privacity": "private",
+        "creator": "00000000-0000-0000-0000-000000000019",
+        "tags": [
+            "crypto",
+            "blockchain",
+            "inversión"
+        ],
+        "total_members": 2850,
+        "created_at": "2024-08-15T15:20:00Z"
+    },
+    {
+        "id": "mock-club-21",
+        "name": "Astronomía Amateur",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=astro21",
+            "alt": "Astronomía Amateur Logo"
+        },
+        "bio": "Observación del cielo y fenómenos astronómicos",
+        "color": "#1E293B",
+        "level": 4,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000020",
+        "tags": [
+            "astronomía",
+            "ciencia",
+            "espacio"
+        ],
+        "total_members": 1090,
+        "created_at": "2025-01-18T19:30:00Z"
+    },
+    {
+        "id": "mock-club-22",
+        "name": "Idiomas Fácil",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=lang22",
+            "alt": "Idiomas Fácil Logo"
+        },
+        "bio": "Aprende nuevos idiomas con la comunidad",
+        "color": "#0EA5E9",
+        "level": 5,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000021",
+        "tags": [
+            "idiomas",
+            "aprendizaje",
+            "educación"
+        ],
+        "total_members": 1740,
+        "created_at": "2024-12-10T11:15:00Z"
+    },
+    {
+        "id": "mock-club-23",
+        "name": "Escritores Novatos",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=write23",
+            "alt": "Escritores Novatos Logo"
+        },
+        "bio": "Taller de escritura creativa y feedback",
+        "color": "#7C3AED",
+        "level": 3,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000022",
+        "tags": [
+            "escritura",
+            "literatura",
+            "creatividad"
+        ],
+        "total_members": 920,
+        "created_at": "2025-02-05T14:25:00Z"
+    },
+    {
+        "id": "mock-club-24",
+        "name": "Mascotas Felices",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=pets24",
+            "alt": "Mascotas Felices Logo"
+        },
+        "bio": "Consejos y amor por nuestras mascotas",
+        "color": "#F472B6",
+        "level": 4,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000023",
+        "tags": [
+            "mascotas",
+            "animales",
+            "cuidado"
+        ],
+        "total_members": 3280,
+        "created_at": "2024-11-30T08:50:00Z"
+    },
+    {
+        "id": "mock-club-25",
+        "name": "Animación 3D",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=3d25",
+            "alt": "Animación 3D Logo"
+        },
+        "bio": "Recursos y tutoriales de modelado 3D",
+        "color": "#EC4899",
+        "level": 6,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000024",
+        "tags": [
+            "3d",
+            "animación",
+            "diseño"
+        ],
+        "total_members": 1530,
+        "created_at": "2025-01-25T17:05:00Z"
+    },
+    {
+        "id": "mock-club-26",
+        "name": "Ciclismo Urbano",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=bike26",
+            "alt": "Ciclismo Urbano Logo"
+        },
+        "bio": "Rutas y tips para ciclistas de ciudad",
+        "color": "#059669",
+        "level": 3,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000025",
+        "tags": [
+            "ciclismo",
+            "deporte",
+            "movilidad"
+        ],
+        "total_members": 1650,
+        "created_at": "2024-09-20T09:20:00Z"
+    },
+    {
+        "id": "mock-club-27",
+        "name": "Moda Sostenible",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=fashion27",
+            "alt": "Moda Sostenible Logo"
+        },
+        "bio": "Tendencias eco-friendly y estilo consciente",
+        "color": "#10B981",
+        "level": 4,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000026",
+        "tags": [
+            "moda",
+            "sostenibilidad",
+            "estilo"
+        ],
+        "total_members": 1120,
+        "created_at": "2025-02-12T12:35:00Z"
+    },
+    {
+        "id": "mock-club-28",
+        "name": "JavaScript Devs",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=js28",
+            "alt": "JavaScript Devs Logo"
+        },
+        "bio": "Comunidad de desarrolladores JavaScript",
+        "color": "#FACC15",
+        "level": 7,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000027",
+        "tags": [
+            "javascript",
+            "programación",
+            "webdev"
+        ],
+        "total_members": 4120,
+        "created_at": "2024-07-10T10:10:00Z"
+    },
+    {
+        "id": "mock-club-29",
+        "name": "Fotografía Móvil",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=mobile29",
+            "alt": "Fotografía Móvil Logo"
+        },
+        "bio": "Arte fotográfico desde tu smartphone",
+        "color": "#06B6D4",
+        "level": 3,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000028",
+        "tags": [
+            "fotografía",
+            "móvil",
+            "arte"
+        ],
+        "total_members": 1890,
+        "created_at": "2025-01-05T15:45:00Z"
+    },
+    {
+        "id": "mock-club-30",
+        "name": "Inversiones Smart",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=invest30",
+            "alt": "Inversiones Smart Logo"
+        },
+        "bio": "Educación financiera e inversión inteligente",
+        "color": "#16A34A",
+        "level": 6,
+        "privacity": "private",
+        "creator": "00000000-0000-0000-0000-000000000029",
+        "tags": [
+            "inversión",
+            "finanzas",
+            "ahorro"
+        ],
+        "total_members": 2340,
+        "created_at": "2024-10-05T13:00:00Z"
+    },
+    {
+        "id": "mock-club-31",
+        "name": "Teatro y Drama",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=theater31",
+            "alt": "Teatro y Drama Logo"
+        },
+        "bio": "Apasionados por las artes escénicas",
+        "color": "#DC2626",
+        "level": 4,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000030",
+        "tags": [
+            "teatro",
+            "arte",
+            "actuación"
+        ],
+        "total_members": 680,
+        "created_at": "2025-02-20T11:50:00Z"
+    },
+    {
+        "id": "mock-club-32",
+        "name": "E-Sports Arena",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=esports32",
+            "alt": "E-Sports Arena Logo"
+        },
+        "bio": "Competencias y torneos de videojuegos",
+        "color": "#7C3AED",
+        "level": 9,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000031",
+        "tags": [
+            "esports",
+            "gaming",
+            "competitivo"
+        ],
+        "total_members": 5200,
+        "created_at": "2024-06-22T18:30:00Z"
+    },
+    {
+        "id": "mock-club-33",
+        "name": "Repostería Casera",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=bake33",
+            "alt": "Repostería Casera Logo"
+        },
+        "bio": "Recetas dulces y técnicas de repostería",
+        "color": "#F59E0B",
+        "level": 3,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000032",
+        "tags": [
+            "repostería",
+            "cocina",
+            "postres"
+        ],
+        "total_members": 1450,
+        "created_at": "2025-01-28T14:15:00Z"
+    },
+    {
+        "id": "mock-club-34",
+        "name": "AI & Machine Learning",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=ai34",
+            "alt": "AI & Machine Learning Logo"
+        },
+        "bio": "Inteligencia artificial y aprendizaje automático",
+        "color": "#8B5CF6",
+        "level": 8,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000033",
+        "tags": [
+            "ai",
+            "ml",
+            "tecnología"
+        ],
+        "total_members": 2980,
+        "created_at": "2024-09-08T10:40:00Z"
+    },
+    {
+        "id": "mock-club-35",
+        "name": "Música Electrónica",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=edm35",
+            "alt": "Música Electrónica Logo"
+        },
+        "bio": "DJ's y productores de música electrónica",
+        "color": "#EC4899",
+        "level": 6,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000034",
+        "tags": [
+            "edm",
+            "música",
+            "producción"
+        ],
+        "total_members": 2150,
+        "created_at": "2024-11-15T20:00:00Z"
+    },
+    {
+        "id": "mock-club-36",
+        "name": "Ecología y Medio Ambiente",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=eco36",
+            "alt": "Ecología Logo"
+        },
+        "bio": "Compromiso con el planeta y vida sostenible",
+        "color": "#059669",
+        "level": 5,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000035",
+        "tags": [
+            "ecología",
+            "medio ambiente",
+            "sostenibilidad"
+        ],
+        "total_members": 1730,
+        "created_at": "2025-02-08T09:25:00Z"
+    },
+    {
+        "id": "mock-club-37",
+        "name": "Series y TV",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=tv37",
+            "alt": "Series y TV Logo"
+        },
+        "bio": "Reseñas y discusiones sobre series de TV",
+        "color": "#EF4444",
+        "level": 4,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000036",
+        "tags": [
+            "series",
+            "tv",
+            "entretenimiento"
+        ],
+        "total_members": 2890,
+        "created_at": "2024-12-18T16:40:00Z"
+    },
+    {
+        "id": "mock-club-38",
+        "name": "Emprendedores",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=biz38",
+            "alt": "Emprendedores Logo"
+        },
+        "bio": "Networking y recursos para emprendedores",
+        "color": "#0EA5E9",
+        "level": 7,
+        "privacity": "private",
+        "creator": "00000000-0000-0000-0000-000000000037",
+        "tags": [
+            "negocios",
+            "startup",
+            "emprendimiento"
+        ],
+        "total_members": 1560,
+        "created_at": "2025-03-02T11:30:00Z"
+    },
+    {
+        "id": "mock-club-39",
+        "name": "Crossfit Training",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=cross39",
+            "alt": "Crossfit Training Logo"
+        },
+        "bio": "Entrenamientos funcionales de alta intensidad",
+        "color": "#DC2626",
+        "level": 5,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000038",
+        "tags": [
+            "crossfit",
+            "fitness",
+            "deporte"
+        ],
+        "total_members": 1920,
+        "created_at": "2024-10-30T07:15:00Z"
+    },
+    {
+        "id": "mock-club-40",
+        "name": "Minimalismo",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=minimal40",
+            "alt": "Minimalismo Logo"
+        },
+        "bio": "Vivir con menos, disfrutar más",
+        "color": "#64748B",
+        "level": 2,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000039",
+        "tags": [
+            "minimalismo",
+            "estilo de vida",
+            "bienestar"
+        ],
+        "total_members": 840,
+        "created_at": "2025-01-15T13:20:00Z"
+    },
+    {
+        "id": "mock-club-41",
+        "name": "Ajedrez Club",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=chess41",
+            "alt": "Ajedrez Club Logo"
+        },
+        "bio": "Estrategia y táctica en el tablero",
+        "color": "#475569",
+        "level": 6,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000040",
+        "tags": [
+            "ajedrez",
+            "estrategia",
+            "juegos"
+        ],
+        "total_members": 1270,
+        "created_at": "2024-11-05T10:30:00Z"
+    },
+    {
+        "id": "mock-club-42",
+        "name": "Stand-Up Comedy",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=comedy42",
+            "alt": "Stand-Up Comedy Logo"
+        },
+        "bio": "Comediantes compartiendo material y consejos",
+        "color": "#F59E0B",
+        "level": 4,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000041",
+        "tags": [
+            "comedia",
+            "humor",
+            "entretenimiento"
+        ],
+        "total_members": 1080,
+        "created_at": "2025-02-25T19:15:00Z"
+    },
+    {
+        "id": "mock-club-43",
+        "name": "Web3 Builders",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=web343",
+            "alt": "Web3 Builders Logo"
+        },
+        "bio": "Construyendo el futuro descentralizado",
+        "color": "#8B5CF6",
+        "level": 7,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000042",
+        "tags": [
+            "web3",
+            "blockchain",
+            "desarrollo"
+        ],
+        "total_members": 1890,
+        "created_at": "2024-08-28T14:50:00Z"
+    },
+    {
+        "id": "mock-club-44",
+        "name": "Videografía",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=video44",
+            "alt": "Videografía Logo"
+        },
+        "bio": "Producción y edición de video profesional",
+        "color": "#EF4444",
+        "level": 5,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000043",
+        "tags": [
+            "video",
+            "producción",
+            "edición"
+        ],
+        "total_members": 1640,
+        "created_at": "2025-01-20T12:05:00Z"
+    },
+    {
+        "id": "mock-club-45",
+        "name": "Meditación Mindfulness",
+        "logo": {
+            "url": "https://api.dicebear.com/7.x/shapes/svg?seed=mind45",
+            "alt": "Meditación Mindfulness Logo"
+        },
+        "bio": "Paz interior y consciencia plena",
+        "color": "#06B6D4",
+        "level": 3,
+        "privacity": "public",
+        "creator": "00000000-0000-0000-0000-000000000044",
+        "tags": [
+            "meditación",
+            "mindfulness",
+            "bienestar"
+        ],
+        "total_members": 2120,
+        "created_at": "2024-12-01T08:30:00Z"
+    }
+]
