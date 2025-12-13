@@ -1,0 +1,55 @@
+{
+    "name": "SocialClubs",
+    "short_name": "SocialClubs",
+    "description": "Plataforma para gestión de clubes sociales",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#000000",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/placeholder-logo.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/placeholder-logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "social",
+        "lifestyle"
+    ],
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "Explorar Clubes",
+            "short_name": "Explorar",
+            "description": "Ver todos los clubes disponibles",
+            "url": "/explore",
+            "icons": [
+                {
+                    "src": "/placeholder-logo.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Mis Clubes",
+            "short_name": "Clubes",
+            "description": "Ver mis clubes",
+            "url": "/clubs",
+            "icons": [
+                {
+                    "src": "/placeholder-logo.png",
+                    "sizes": "96x96"
+                }
+            ]
+        }
+    ]
+}

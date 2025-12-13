@@ -4,57 +4,135 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    /* Colores Primary - Dark Orange (modo claro) */
+    --primary: 28 80% 52%;
+    /* Dark Orange #FF8C00 */
+    --primary-foreground: 0 0% 100%;
+    /* Blanco sobre primary */
+
+    /* Fondos y textos - Neutros cálidos */
+    --background: 36 39% 96%;
+    /* Warm White - Fondo principal cálido */
+    --foreground: 24 10% 10%;
+    /* Dark Brown - Texto principal */
+
+    /* Cards y superficies elevadas */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    /* Blanco puro para cards */
+    --card-foreground: 24 10% 10%;
+
+    /* Popovers y tooltips */
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
+    --popover-foreground: 24 10% 10%;
+
+    /* Colores secundarios */
+    --secondary: 30 25% 90%;
+    /* Gris cálido claro */
+    --secondary-foreground: 24 10% 10%;
+
+    /* Fondos apagados (muted) */
+    --muted: 30 20% 92%;
+    /* Light Warm Gray */
+    --muted-foreground: 24 10% 45%;
+    /* Texto sobre muted */
+
+    /* Accent (para highlights sutiles) */
+    --accent: 28 80% 95%;
+    /* Naranja muy claro */
+    --accent-foreground: 28 80% 35%;
+    /* Naranja oscuro */
+
+    /* Estados */
+    --destructive: 0 84% 60%;
+    /* Rojo para errores */
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+
+    /* Bordes e inputs */
+    --border: 30 20% 85%;
+    /* Bordes sutiles cálidos */
+    --input: 30 20% 85%;
+    --ring: 28 80% 52%;
+    /* Focus ring en primary */
+
+    /* Charts */
+    --chart-1: 28 80% 52%;
+    /* Primary naranja */
+    --chart-2: 142 71% 45%;
+    /* Verde */
+    --chart-3: 199 89% 48%;
+    /* Azul */
+    --chart-4: 38 92% 50%;
+    /* Amarillo */
+    --chart-5: 280 65% 60%;
+    /* Púrpura */
+
+    /* Border radius consistente */
+    --radius: 0.75rem;
+    /* 12px - Más suave */
   }
+
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    /* Colores Primary - Deep Saffron (modo oscuro) */
+    --primary: 30 100% 60%;
+    /* Deep Saffron #FF9933 */
+    --primary-foreground: 24 10% 10%;
+    /* Texto oscuro sobre primary */
+
+    /* Fondos y textos - Neutros cálidos oscuros */
+    --background: 24 10% 10%;
+    /* Dark Warm Brown - Fondo principal */
+    --foreground: 36 39% 96%;
+    /* Warm White - Texto principal */
+
+    /* Cards y superficies elevadas */
+    --card: 24 10% 12%;
+    /* Ligeramente más claro que fondo */
+    --card-foreground: 36 39% 96%;
+
+    /* Popovers y tooltips */
+    --popover: 24 10% 12%;
+    --popover-foreground: 36 39% 96%;
+
+    /* Colores secundarios */
+    --secondary: 24 10% 18%;
+    /* Gris cálido medio */
+    --secondary-foreground: 36 39% 96%;
+
+    /* Fondos apagados (muted) */
+    --muted: 24 10% 15%;
+    /* Medium Warm Gray */
+    --muted-foreground: 30 10% 65%;
+    /* Texto apagado */
+
+    /* Accent (para highlights sutiles) */
+    --accent: 30 100% 20%;
+    /* Naranja oscuro profundo */
+    --accent-foreground: 30 100% 75%;
+    /* Naranja claro */
+
+    /* Estados */
+    --destructive: 0 84% 60%;
+    /* Rojo para errores */
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+
+    /* Bordes e inputs */
+    --border: 24 10% 20%;
+    /* Bordes sutiles */
+    --input: 24 10% 20%;
+    --ring: 30 100% 60%;
+    /* Focus ring en primary */
+
+    /* Charts */
+    --chart-1: 30 100% 60%;
+    /* Primary saffron */
+    --chart-2: 142 71% 45%;
+    /* Verde */
+    --chart-3: 199 89% 48%;
+    /* Azul */
+    --chart-4: 38 92% 50%;
+    /* Amarillo */
+    --chart-5: 280 65% 60%;
+    /* Púrpura */
   }
 }
 
@@ -62,7 +140,11 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
