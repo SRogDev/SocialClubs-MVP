@@ -6,7 +6,6 @@ import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { createClubSchema, updateClubSchema, type CreateClubInput, type UpdateClubInput } from '@/schemas/clubSchema'
 import type { Club, ClubStats } from '@/types/club'
-import posthog from 'posthog-js'
 
 /**
  * Get all clubs
@@ -109,15 +108,6 @@ export async function createClub(input: CreateClubInput, userId: string): Promis
         console.error('Error creating club:', error)
         throw new Error('Failed to create club')
     }
-
-    // Capture PostHog event
-    posthog.capture('club_created', {
-        club_id: data.id,
-        club_name: data.name,
-        creator_id: userId,
-        category: data.category,
-        privacy: data.privacy
-    })
 
     return data
 }

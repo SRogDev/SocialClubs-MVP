@@ -28,7 +28,7 @@ interface ClubEditSidebarProps {
 }
 
 export default function ClubEditSidebar({ club }: ClubEditSidebarProps) {
-  const [activeTab, setActiveTab] = useState("estructura")
+  const [activeTab, setActiveTab] = useState("general")
   const [clubName, setClubName] = useState(club.name)
   const [clubDescription, setClubDescription] = useState(club.description)
   const [clubImage, setClubImage] = useState(club.imageUrl)
@@ -115,9 +115,9 @@ export default function ClubEditSidebar({ club }: ClubEditSidebarProps) {
         <TabsList className="grid grid-cols-3 mx-6 mt-2">
           {" "}
           {/* Changed to grid-cols-3 */}
-          <TabsTrigger value="estructura" className="flex flex-col items-center py-2 px-1">
+          <TabsTrigger value="general" className="flex flex-col items-center py-2 px-1">
             <Settings size={16} className="mb-1" />
-            <span className="text-xs">Estructura</span>
+            <span className="text-xs">General</span>
           </TabsTrigger>
           <TabsTrigger value="automatizar" className="flex flex-col items-center py-2 px-1">
             <Clock size={16} className="mb-1" />
@@ -142,7 +142,7 @@ export default function ClubEditSidebar({ club }: ClubEditSidebarProps) {
         </TabsList>
 
         <ScrollArea className="flex-1">
-          <TabsContent value="estructura" className="p-6 mt-0">
+          <TabsContent value="general" className="p-6 mt-0">
             <div className="space-y-6">
               <div className="flex flex-col items-center">
                 <Avatar className="h-24 w-24 mb-2">

@@ -7,12 +7,12 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { AlertTriangle, Edit, Coins, Flame } from "lucide-react"
 import { useTheme } from "next-themes"
-import SubscriptionSection from "@/components/subscription-section"
-import SocialCoinModal from "@/components/social-coin-modal"
+import SubscriptionSection from "@/components/club/subscription-section"
+import SocialCoinModal from "@/components/Zphase/social-coin-modal"
 import GlassCard from "@/components/ui/glass-card"
 import CreateClubLink from "@/components/create-club-link"
-import SuperlikeModal from "@/components/superlike-modal"
-import EditProfileModal from "@/components/edit-profile-modal"
+import SuperlikeModal from "@/components/post/superlike-modal"
+import EditProfileModal from "@/components/profile/edit-profile-modal"
 import { signOut } from "@/lib/supabase"
 import { redirect } from "next/navigation"
 import { useRouter } from "next/router"
@@ -96,16 +96,16 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     console.log("Cerrar sesión")
-    const {error} = await signOut();
+    const { error } = await signOut();
 
     if (error) {
       alert(`Ha ocurrido un error: ${error}`)
       return
     } else {
-       window.location.href = '/login' 
-      
+      window.location.href = '/login'
+
     }
-  // Aquí iría la lógica para cerrar sesión
+    // Aquí iría la lógica para cerrar sesión
   }
 
   const handleDeleteAccount = () => {

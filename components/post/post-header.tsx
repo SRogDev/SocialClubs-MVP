@@ -18,10 +18,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import PreviewImage from "@/components/preview-image";
+import PreviewImage from "@/components/post/preview-image";
 import useOptions from "@/hooks/use-options";
 import { usePosts } from "@/context/PostsContext";
-import PollFormModal from "@/components/poll-form-modal";
+import PollFormModal from "@/components/post/poll-form-modal";
 
 interface PostHeaderProps {
   user: {

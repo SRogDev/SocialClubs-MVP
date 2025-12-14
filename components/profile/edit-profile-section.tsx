@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Edit } from "lucide-react"
-import EditProfileModal from "@/components/edit-profile-modal"
+import EditProfileModal from "@/components/profile/edit-profile-modal"
 
 interface EditProfileSectionProps {
     userId: string

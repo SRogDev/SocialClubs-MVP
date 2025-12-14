@@ -23,10 +23,10 @@ import {
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import ColorPicker from "@/components/color-picker"
-import { useCreateClub, supabase, uploadLogo } from "@/lib/supabase"
-import { channel } from "diagnostics_channel"
+import { createClient } from "@/lib/supabase/client"
 import { compressImage } from "@/app/utils/compressImage"
 import { Snackbar } from "@/components/ui/snackbar"
+import { useClubCreate } from "@/hooks/use-club-actions"
 
 
 interface Channel {
@@ -55,7 +55,7 @@ export default function CreateClubPage() {
   const [newClubId, setNewClubId] = useState("1")
   const [clubPrivacy, setClubPrivacy] = useState<Privacy>("Privado");
   const [file, setFile] = useState<File | undefined>(undefined);
-  const { callCreateClub, loading, error, data } = useCreateClub();
+  const { createClub, loading, error } = useClubCreate();
 
 
   //SnackBar
@@ -66,7 +66,7 @@ export default function CreateClubPage() {
     setSnackBarOpen(false);
     setSnackBarErrorMsg("");
   };
-  
+
 
   useEffect(() => {
     if (error) {
@@ -74,24 +74,26 @@ export default function CreateClubPage() {
     }
   }, [error]);
 
-  function useCurrentUser() {
-    const [user, setUser] = useState<any>(null)
+  // Upload logo helper
+  async function uploadLogo(file: File, path: string): Promise<{ url: string | null, error: Error | null }> {
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase.storage
+        .from('clubs')
+        .upload(path, file, { upsert: true })
 
-    useEffect(() => {
-      // Obtener la sesión actual
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        setUser(session?.user ?? null)
-      })
+      if (error) {
+        return { url: null, error }
+      }
 
-      // Escuchar cambios en la autenticación
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user ?? null)
-      })
+      const { data: { publicUrl } } = supabase.storage
+        .from('clubs')
+        .getPublicUrl(path)
 
-      return () => subscription.unsubscribe()
-    }, [])
-
-    return user
+      return { url: publicUrl, error: null }
+    } catch (err) {
+      return { url: null, error: err instanceof Error ? err : new Error('Upload failed') }
+    }
   }
 
 
@@ -120,64 +122,46 @@ export default function CreateClubPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-
-
     try {
       setIsLoading(true);
 
-      const compressedFile = await compressImage(file as File, 0.7, 800)  as File;
-      
-      const {url, error} = await uploadLogo(compressedFile, `clubs/${clubName.replace(/\s+/g, '-').toLowerCase()}`)
+      let logoUrl = clubImage;
 
-      if(error){
-        throw new Error(`Error al subir la imagen: ${error instanceof Error ? error.message : error} `);
+      // Upload logo if file is provided
+      if (file) {
+        const compressedFile = await compressImage(file as File, 0.7, 800) as File;
+        const { url, error } = await uploadLogo(compressedFile, `${clubName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.jpg`)
+
+        if (error) {
+          throw new Error(`Error al subir la imagen: ${error.message}`);
+        }
+
+        logoUrl = url || clubImage;
+        setClubImage(logoUrl);
       }
 
-      setClubImage(url || "hola.png");
-     
-
-
-      const result = await callCreateClub({
-        club: {
-          name: clubName,
-          logo: clubImage,
-          creator: (await supabase.auth.getUser()).data.user?.id || null,
-          tags: null,
-          size: null,
-          color: clubColor,
-          level: null,
-          bio: clubDescription,
-          privacidad: clubPrivacy.toLowerCase(),
-        },
-        memberships: [],
-        channels: [],
-        createAnalytics: false,
-        createBadge: false,
+      // Create club using API route with PostHog tracking
+      const club = await createClub({
+        name: clubName,
+        logo: { url: logoUrl },
+        bio: clubDescription,
+        color: clubColor,
+        privacity: clubPrivacy.toLowerCase() as 'public' | 'private',
+        tags: null,
+        level: null,
       });
-      console.log('Operación exitosa:', result);
-      if (result.success) {
-        setNewClubId(result.data.clubId);
-        setShowSuccess(true);
-        setIsLoading(false);
-      } else {
-        throw new Error("Error al crear el club: " + result.message);
-        
 
-      }
+      console.log('Club created successfully:', club);
+      setNewClubId(club.id);
+      setShowSuccess(true);
 
     } catch (error) {
-
-      console.error('Error en la operación:', error)
-      setIsLoading(false);
+      console.error('Error creating club:', error)
       setSnackBarErrorMsg(error instanceof Error ? error.message : "Ocurrió un error al crear el club");
       setSnackBarOpen(true);
+    } finally {
+      setIsLoading(false);
     }
-
-
-
-    setNewClubId("1")
-
-
   }
 
 
@@ -399,13 +383,13 @@ export default function CreateClubPage() {
         </div>
       </form>
 
-       <Snackbar
-                message={snackBarErrorMsg}
-                type="error"
-                open={snackBarOpen}
-                onClose={handleCloseSnackBar}
-                duration={5000}
-            />
+      <Snackbar
+        message={snackBarErrorMsg}
+        type="error"
+        open={snackBarOpen}
+        onClose={handleCloseSnackBar}
+        duration={5000}
+      />
 
       <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
         <DialogContent className="sm:max-w-md">

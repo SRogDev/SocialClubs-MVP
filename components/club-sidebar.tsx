@@ -22,7 +22,7 @@ type SidebarProps = {
  */
 export default function ClubSidebar({ activeTab, onTabChange, clubName }: SidebarProps) {
   const items: { value: string; label: string; icon: React.ElementType }[] = [
-    { value: "estructura", label: "Estructura", icon: Layout },
+    { value: "general", label: "General", icon: Layout },
     { value: "miembros", label: "Miembros", icon: Users },
     { value: "automatizar", label: "Automatizar", icon: Zap },
     { value: "agenda", label: "Agenda", icon: Calendar },

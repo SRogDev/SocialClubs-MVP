@@ -8,7 +8,7 @@ type ClubEditButtonProps = {
 
 export default function ClubEditButton({ clubId }: ClubEditButtonProps) {
     return (
-        <Link href={`/clubs/${clubId}/panel/estructura`}>
+        <Link href={`/clubs/${clubId}/panel/general`}>
             <Button
                 variant="ghost"
                 size="icon"

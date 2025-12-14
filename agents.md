@@ -27,29 +27,46 @@ Este archivo documenta las convenciones y guías para agentes de IA trabajando e
 - `/hooks` - Custom React hooks
 - `/components` - UI components (feature-based folders + `/shared` + `/ui`)
 - `/utils` - Utility functions (including PWA utilities)
+- `/app/api` - Backend API routes (Next.js Route Handlers)
 
-### 2. Presentational Pattern
+### 2. Backend & API Routes
+
+- **CRITICAL**: Backend goes in `/app/api` using Next.js Route Handlers
+- API routes ONLY orchestrate: authentication, rate limiting, validation, service calls
+- Business logic ALWAYS goes in `/services`
+- Apply rate limiting to ALL API routes using `lib/rate-limit.ts`
+- **DO NOT use Supabase MCP** unless explicitly instructed
+- Use `createClient()` from `lib/supabase/server` in API routes
+
+### 3. Presentational Pattern
 
 - UI components receive props and render
 - Business logic in `/services`
 - Reusable logic in custom hooks
 - NO mixing concerns
 
-### 3. Data Fetching Strategy
+### 4. Data Fetching Strategy
 
 - **Client**: Use SWR for all fetching
 - **Server**: Use Cache Components (React 19)
 - **Real-time**: SWR Subscription for SSE
 - Server Components by default, Client Components only when needed
 
-### 4. Validation & Forms
+### 5. Validation & Forms
 
 - ALL forms use React Hook Form
 - ALL data validation uses Zod schemas
 - Share schemas between client and server
 - Validate before ANY operation
 
-### 5. User Experience
+### 6. Analytics (PostHog)
+
+- **CRITICAL**: Capture events ONLY on client-side
+- Capture events AFTER receiving 200 status from API routes
+- DO NOT capture events server-side (services or API routes)
+- Key events: `club_created`, `club_deleted`, etc.
+
+### 7. User Experience
 
 - Implement Optimistic UI for all user interactions
 - Use vibration feedback (PWA) on key actions
@@ -153,11 +170,15 @@ export const createUser = async (data: UserInput) => { ... };
 - **ALWAYS** use React Hook Form for forms
 - **ALWAYS** implement Optimistic UI for mutations
 - **ALWAYS** write tests using Given-When-Then pattern
+- **ALWAYS** create API routes in `/app/api` for backend operations
+- **ALWAYS** apply rate limiting to API routes
 - **PREFER** Server Components over Client Components
 - **PREFER** SWR for client-side data fetching
 - **AVOID** creating new component folders without explicit instruction
 - **AVOID** mixing business logic with UI components
 - **AVOID** testing implementation details
+- **AVOID** using Supabase MCP unless explicitly requested
+- **AVOID** capturing PostHog events on server-side
 - **CHECK** existing patterns before implementing new ones
 
 ## Performance Best Practices

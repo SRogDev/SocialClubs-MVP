@@ -1,6 +1,6 @@
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import ClubPanelSidebarWrapper from "@/components/panel/club-panel-sidebar-wrapper"
+import ClubPanelSidebarWrapper from "@/components/club-panel/club-panel-sidebar-wrapper"
 
 // Mock data — replace with real fetch later
 const mockClub = {

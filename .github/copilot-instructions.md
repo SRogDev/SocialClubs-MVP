@@ -2,12 +2,22 @@
 
 ## Arquitectura y Estructura
 
+- **Patrón Presentational Layer**: Services contienen CRUDs de Supabase; componentes llaman a services o API routes (cuando se requiere backend)
 - **Arquitectura de capas modulares**: Separación estricta de responsabilidades
 - **Carpeta components**: Una subcarpeta por página/feature, `/shared` para componentes comunes, `/ui` para shadcn
 - **Carpeta schemas**: Todos los esquemas Zod centralizados
 - **Carpeta services**: Lógica de negocio y funciones CRUD (patrón presentacional)
 - **Carpeta hooks**: Hooks personalizados separados por funcionalidad
+- **Carpeta app/api**: Backend API routes (Next.js Route Handlers) - orquestan llamadas a services
 - NO crear nuevas carpetas en components sin instrucción explícita
+
+### Backend y API Routes
+- **IMPORTANTE**: El backend va en `/app/api` usando Next.js Route Handlers
+- Las API routes SOLO orquestan: autenticación, rate limiting, validación, y llamadas a services
+- La lógica de negocio SIEMPRE va en `/services`
+- Aplicar rate limiting a TODAS las API routes usando `lib/rate-limit.ts`
+- **NO usar Supabase MCP** a menos que se indique expresamente
+- Usar `createClient()` de `lib/supabase/server` en API routes
 
 ## Stack Tecnológico
 
@@ -44,6 +54,12 @@
 - Funciones CRUD van en `/services`
 - Componentes solo reciben props y renderizan
 - Hooks personalizados para lógica reutilizable
+
+### Analytics (PostHog)
+- **IMPORTANTE**: Captura de eventos SOLO del lado del cliente
+- Capturar eventos después de recibir status 200 de API routes
+- NO capturar eventos en server-side (services o API routes)
+- Eventos importantes: `club_created`, `club_deleted`, etc.
 
 ## PWA
 - Service Worker configurado en `/public/sw.js`

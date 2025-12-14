@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Flame } from "lucide-react"
-import SuperlikeModal from "@/components/superlike-modal"
+import SuperlikeModal from "@/components/post/superlike-modal"
 
 interface SuperlikesSectionProps {
     superlikes: number

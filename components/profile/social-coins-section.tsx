@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Coins } from "lucide-react"
-import SocialCoinModal from "@/components/social-coin-modal"
+import SocialCoinModal from "@/components/Zphase/social-coin-modal"
 
 interface SocialCoinsSectionProps {
     coins: number

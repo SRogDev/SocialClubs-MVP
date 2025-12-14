@@ -1,6 +1,6 @@
 "use client"
 import { motion } from "framer-motion"
-import ClubCard from "@/components/club-card"
+import ClubCard from "@/components/home-clubs/club-card"
 import CreateClubLink from "@/components/create-club-link"
 
 const mockClubs = [
