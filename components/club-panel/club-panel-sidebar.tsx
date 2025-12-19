@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { Layout, Users, Zap, Calendar, Joystick, BarChart2, Megaphone } from "lucide-react"
+import { Layout, Users, Zap, Calendar, Joystick, BarChart2, Megaphone, HeadphonesIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 type SidebarProps = {
@@ -25,6 +25,7 @@ export default function ClubPanelSidebar({ clubId, activeSection, clubName }: Si
         { value: "gamificacion", label: "Gamificación", icon: Joystick },
         { value: "analiticas", label: "Analíticas", icon: BarChart2 },
         { value: "marketing", label: "Marketing", icon: Megaphone },
+        { value: "support", label: "Soporte", icon: HeadphonesIcon },
     ]
 
     return (
