@@ -1,5 +1,5 @@
-"use client"
-
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -73,7 +73,12 @@ const mockSubscriptions = [
   },
 ]
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getClaims();
+  if (error || !data?.claims) {
+    redirect("/auth/login");
+  }
   const { theme, setTheme } = useTheme()
   const [isDarkMode, setIsDarkMode] = useState(true) // Dark mode enabled by default
   const [autoPlay, setAutoPlay] = useState(true) // Auto play enabled by default

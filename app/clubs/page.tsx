@@ -1,4 +1,5 @@
-"use client"
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
 import { motion } from "framer-motion"
 import ClubCard from "@/components/home-clubs/club-card"
 import CreateClubLink from "@/components/create-club-link"
@@ -58,7 +59,12 @@ const mockClubs = [
   },
 ]
 
-export default function ClubsPage() {
+export default async function ClubsPage() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getClaims();
+  if (error || !data?.claims) {
+    redirect("/auth/login");
+  }
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="container max-w-2xl mx-auto py-6">

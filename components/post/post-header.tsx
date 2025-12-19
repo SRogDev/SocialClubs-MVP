@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import PreviewImage from "@/components/post/preview-image";
 import useOptions from "@/hooks/use-options";
-import { usePosts } from "@/context/PostsContext";
+import { usePostStore } from "@/stores/post";
 import PollFormModal from "@/components/post/poll-form-modal";
 
 interface PostHeaderProps {
@@ -42,12 +42,13 @@ export default function PostHeader({
 }: PostHeaderProps) {
   const { DeletePost } = useActions();
   const options = useOptions();
-  const { posts, getPost } = usePosts();
+  const posts = usePostStore((s) => s.posts);
+  const getPost = usePostStore((s) => s.getPost);
   const [post, setPost] = useState(getPost(id));
 
   useEffect(() => {
     setPost(getPost(id));
-  }, [posts]);
+  }, [posts, getPost, id]);
   return (
     <div className="flex items-center justify-between p-4">
       <div className="flex items-center gap-3">

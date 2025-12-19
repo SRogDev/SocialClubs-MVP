@@ -20,37 +20,50 @@ Este archivo documenta las convenciones y guías para agentes de IA trabajando e
 
 ## Architecture Principles
 
-### 1. Layered Architecture
+### 1. Layered Architecture (Repository Pattern)
 
 - `/schemas` - Zod schemas (validation)
-- `/services` - Business logic, CRUD operations
+- `/services` - **Repositories**: Business logic, ALL CRUD operations (data access layer)
 - `/hooks` - Custom React hooks
+  - `/hooks/swr` - SWR hooks for FETCH only (GET requests)
+- `/app/actions` - Server Actions for mutations (POST/PUT/DELETE) - call services
 - `/components` - UI components (feature-based folders + `/shared` + `/ui`)
 - `/utils` - Utility functions (including PWA utilities)
 - `/app/api` - Backend API routes (Next.js Route Handlers)
 
-### 2. Backend & API Routes
+### 2. Backend & API Routes (Repository Pattern)
 
 - **CRITICAL**: Backend goes in `/app/api` using Next.js Route Handlers
+- **Repository Pattern**: Services contain ALL CRUD, API routes/Actions call them
 - API routes ONLY orchestrate: authentication, rate limiting, validation, service calls
-- Business logic ALWAYS goes in `/services`
+- Business logic and CRUD ALWAYS go in `/services` (repositories)
+- **Server Actions** (`/app/actions`): For mutations from client components - call services
+- **SWR Hooks** (`/hooks/swr`): ONLY for FETCH (GET) - call API routes
 - Apply rate limiting to ALL API routes using `lib/rate-limit.ts`
 - **DO NOT use Supabase MCP** unless explicitly instructed
-- Use `createClient()` from `lib/supabase/server` in API routes
+- Use `createClient()` from `lib/supabase/server` in API routes and services
 
-### 3. Presentational Pattern
+### 3. Presentational Pattern & Repository Pattern
 
-- UI components receive props and render
-- Business logic in `/services`
-- Reusable logic in custom hooks
+- **Repository Pattern**: Services encapsulate data access (CRUD operations)
+- **Presentational Layer**: UI components separated from business logic
+- **Service Layer**: Services contain business logic and database operations
+- UI components receive props and render only
+- SWR hooks for fetching, Server Actions for mutations
+- Flow: Component → Hook/Action → Service → Database
 - NO mixing concerns
 
-### 4. Data Fetching Strategy
+### 4. Data Fetching Strategy (Repository Pattern)
 
-- **Client**: Use SWR for all fetching
-- **Server**: Use Cache Components (React 19)
+- **Client Fetching**: SWR hooks (`/hooks/swr`) ONLY for GET requests
+  - Hooks call API routes via `fetch('/api/...')`, NOT Supabase directly
+- **Client Mutations**: Server Actions (`/app/actions`) for POST/PUT/DELETE
+  - Actions call services (repositories), NOT CRUD directly
+- **Server**: Use Cache Components (React 19) with services directly
 - **Real-time**: SWR Subscription for SSE
 - Server Components by default, Client Components only when needed
+- **GET Flow**: Client Component → SWR Hook → fetch() → API Route → Service → Supabase
+- **Mutation Flow**: Client Component → Server Action → Service → Supabase
 
 ### 5. Validation & Forms
 
@@ -136,15 +149,24 @@ This project follows **strict TDD practices**. All new features and bug fixes MU
 
 ## Common Patterns
 
+### Repository Pattern Flow
+
+1. **Services** (`/services`): Contain ALL CRUD operations (repositories)
+2. **Server Actions** (`/app/actions`): Handle mutations, call services
+3. **SWR Hooks** (`/hooks/swr`): Handle fetching (GET only), call API routes
+4. **API Routes** (`/app/api`): Orchestrate auth, validation, call services
+5. **Client Components**: Use hooks for data, actions for mutations
+
 ### Creating a New Feature (TDD Approach)
 
 1. **Write test first** in appropriate test folder
 2. Define Zod schema in `/schemas`
-3. Create service functions in `/services` (test-driven)
-4. Create custom hooks if needed in `/hooks` (test-driven)
-5. Build UI components in `/components/[feature]` (test-driven)
-6. Implement Optimistic UI
-7. Add vibration feedback
+3. Create service functions (repository) in `/services` (test-driven)
+4. Create Server Actions in `/app/actions` for mutations (test-driven)
+5. Create SWR hooks in `/hooks/swr` for fetching (test-driven)
+6. Build UI components in `/components/[feature]` (test-driven)
+7. Implement Optimistic UI
+8. Add vibration feedback
 
 ### Form Implementation
 

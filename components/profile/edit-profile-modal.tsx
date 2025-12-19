@@ -10,6 +10,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Camera } from "lucide-react"
+import { updateProfileAction, uploadProfileImageAction } from "@/app/actions"
+import { useRouter } from "next/navigation"
+import { vibratePattern } from "@/utils/pwa"
 
 interface Profile {
   name: string
@@ -25,24 +28,54 @@ interface EditProfileModalProps {
 }
 
 export default function EditProfileModal({ open, onOpenChange, profile }: EditProfileModalProps) {
+  const router = useRouter()
   const [name, setName] = useState(profile.name)
   const [username, setUsername] = useState(profile.username)
   const [description, setDescription] = useState(profile.description)
   const [imageUrl, setImageUrl] = useState(profile.imageUrl)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsSubmitting(true)
+    setError(null)
+
+    const result = await uploadProfileImageAction(file)
+
+    if (result.success && result.url) {
+      setImageUrl(result.url)
+      vibratePattern([50])
+    } else {
+      setError(result.error || 'Error al subir imagen')
+    }
+
+    setIsSubmitting(false)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setError(null)
 
-    // Simular una petición a la API
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    const result = await updateProfileAction({
+      name,
+      username,
+      bio: description,
+      image_url: imageUrl,
+    })
 
-    // Aquí iría la lógica para actualizar el perfil
-    console.log("Perfil actualizado:", { name, username, description, imageUrl })
+    if (result.success) {
+      vibratePattern([50, 100, 50])
+      onOpenChange(false)
+      router.refresh()
+    } else {
+      setError(result.error || 'Error al actualizar perfil')
+    }
 
     setIsSubmitting(false)
-    onOpenChange(false)
   }
 
   return (
@@ -53,21 +86,40 @@ export default function EditProfileModal({ open, onOpenChange, profile }: EditPr
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
+          {error && (
+            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4">
+              {error}
+            </div>
+          )}
+
           <div className="flex justify-center mb-6">
             <div className="relative">
               <Avatar className="h-24 w-24 border-2 border-amber-200 dark:border-amber-800">
                 <AvatarImage src={imageUrl || "/placeholder.svg"} alt={name} className="object-cover" />
                 <AvatarFallback>{name.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                className="absolute bottom-0 right-0 rounded-full h-8 w-8 bg-background"
-              >
-                <Camera size={16} />
-                <span className="sr-only">Cambiar foto</span>
-              </Button>
+              <label htmlFor="image-upload">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  className="absolute bottom-0 right-0 rounded-full h-8 w-8 bg-background cursor-pointer"
+                  asChild
+                >
+                  <span>
+                    <Camera size={16} />
+                    <span className="sr-only">Cambiar foto</span>
+                  </span>
+                </Button>
+              </label>
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+                disabled={isSubmitting}
+              />
             </div>
           </div>
 

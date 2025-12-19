@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useOptimistic } from "react"
 import { Button } from "@/components/ui/button"
 import { Heart, MessageCircle, Eye, Flame } from "lucide-react"
 import { motion } from "framer-motion"
+import { likePostAction, unlikePostAction, superlikePostAction } from "@/app/actions"
+import { vibratePattern } from "@/utils/pwa"
 
 interface PostActionsProps {
   postId: string
@@ -35,19 +37,64 @@ export default function PostActions({
   const [liked, setLiked] = useState(isLiked)
   const [superliked, setSuperliked] = useState(isSuperliked)
   const [showSuperlikeAnimation, setShowSuperlikeAnimation] = useState(false)
+  const [currentLikes, setCurrentLikes] = useState(likesCount)
+  const [currentSuperlikes, setCurrentSuperlikes] = useState(superlikesCount)
 
-  const handleLike = () => {
-    setLiked(!liked)
+  const handleLike = async () => {
+    // Optimistic UI update
+    const newLikedState = !liked
+    setLiked(newLikedState)
+    setCurrentLikes(prev => newLikedState ? prev + 1 : prev - 1)
+    vibratePattern([50])
+
+    try {
+      if (newLikedState) {
+        await likePostAction(postId)
+      } else {
+        await unlikePostAction(postId)
+      }
+    } catch (error) {
+      // Revert on error
+      setLiked(!newLikedState)
+      setCurrentLikes(likesCount)
+      console.error('Error toggling like:', error)
+    }
   }
 
-  const handleSuperlike = () => {
-    if (availableSuperlikes > 0) {
-      setSuperliked(!superliked)
-      setShowSuperlikeAnimation(true)
-      setTimeout(() => setShowSuperlikeAnimation(false), 1000)
-      onSuperlike?.()
-    } else {
+  const handleSuperlike = async () => {
+    if (superliked) return
+
+    if (availableSuperlikes <= 0) {
       onSuperlikePurchase()
+      return
+    }
+
+    // Optimistic UI update
+    setSuperliked(true)
+    setCurrentSuperlikes(prev => prev + 1)
+    setShowSuperlikeAnimation(true)
+    vibratePattern([50, 100, 50])
+    setTimeout(() => setShowSuperlikeAnimation(false), 1000)
+
+    try {
+      const result = await superlikePostAction(postId)
+
+      if (result.success) {
+        onSuperlike?.()
+      } else {
+        // Revert on error
+        setSuperliked(false)
+        setCurrentSuperlikes(superlikesCount)
+
+        if (result.error?.includes('superlikes disponibles')) {
+          onSuperlikePurchase()
+        }
+      }
+    } catch (error) {
+      // Revert on error
+      setSuperliked(false)
+      setCurrentSuperlikes(superlikesCount)
+      console.error('Error superliking post:', error)
     }
   }
 
@@ -73,7 +120,7 @@ export default function PostActions({
             onClick={handleLike}
           >
             <Heart size={20} className={liked ? "fill-current" : ""} />
-            <span className="text-sm">{likesCount + (liked && !isLiked ? 1 : 0)}</span>
+            <span className="text-sm">{currentLikes}</span>
           </Button>
 
           <Button variant="ghost" size="sm" className="gap-1 p-0 h-auto" onClick={onComment}>
@@ -88,7 +135,7 @@ export default function PostActions({
             onClick={handleSuperlike}
           >
             <Flame size={20} className={superliked ? "fill-current" : ""} />
-            <span className="text-sm">{superlikesCount + (superliked && !isSuperliked ? 1 : 0)}</span>
+            <span className="text-sm">{currentSuperlikes}</span>
           </Button>
         </div>
 

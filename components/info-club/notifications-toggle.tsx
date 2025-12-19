@@ -1,5 +1,10 @@
 "use client"
 
+/**
+ * NOTA: Este componente está temporalmente deshabilitado
+ * Las notificaciones se trabajarán en el futuro
+ */
+
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 

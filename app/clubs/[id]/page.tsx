@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
+const WelcomeClubMessage = dynamic(() => import("@/components/club/welcome-club-message"), { ssr: false });
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -15,7 +17,7 @@ import ContentCreationBar from "@/components/club/content-creation-bar";
 import { motion, AnimatePresence } from "framer-motion";
 import PostPoll from "@/features/post/components/post-poll";
 import ChatContentCreationBar from "@/components/chats/chat-content-creation-bar";
-import { usePosts } from "@/context/PostsContext";
+import { usePostStore } from "@/stores/post";
 import PostImage from "@/features/post/components/post-image";
 import PostVideo from "@/features/post/components/post-video";
 import PostAudio from "@/features/post/components/post-audio";
@@ -90,102 +92,109 @@ const sortedChannels = [...mockClub.channels].sort((a, b) => {
   return 1;
 });
 
-export default function ClubPage({ params }: { params: { id: string } }) {
-  const { posts } = usePosts();
-  const [activeTab, setActiveTab] = useState("general");
-  const [message, setMessage] = useState("");
-  const [showWidgetModal, setShowWidgetModal] = useState(false);
-  const [showMediaModal, setShowMediaModal] = useState(false);
-  const [currentMediaType, setCurrentMediaType] = useState<MediaType>("image");
-  const [pollOptions, setPollOptions] = useState(["", "", ""]);
-  const [availableSuperlikes, setAvailableSuperlikes] = useState(10);
-  const [showJoinAnimation, setShowJoinAnimation] = useState(false);
-  const [hasJoined, setHasJoined] = useState(false);
-  const [showUI, setShowUI] = useState(true);
-  const [showBottomNavbar, setShowBottomNavbar] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+const posts = usePostStore((s) => s.posts);
+const [activeTab, setActiveTab] = useState("general");
+const [message, setMessage] = useState("");
+const [showWidgetModal, setShowWidgetModal] = useState(false);
+const [showMediaModal, setShowMediaModal] = useState(false);
+const [currentMediaType, setCurrentMediaType] = useState<MediaType>("image");
+const [pollOptions, setPollOptions] = useState(["", "", ""]);
+const [availableSuperlikes, setAvailableSuperlikes] = useState(10);
+const [showJoinAnimation, setShowJoinAnimation] = useState(false);
+const [hasJoined, setHasJoined] = useState(false);
+const [showUI, setShowUI] = useState(true);
+const [showBottomNavbar, setShowBottomNavbar] = useState(true);
+const [lastScrollY, setLastScrollY] = useState(0);
 
-  const widgetButtonRef = useRef<HTMLButtonElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+const widgetButtonRef = useRef<HTMLButtonElement>(null);
+const contentRef = useRef<HTMLDivElement>(null);
 
-  // Ocultar la barra de navegación inferior cuando estamos dentro de un club
-  useEffect(() => {
-    // Ocultar la barra inferior al entrar al club
-    const bottomNavbar = document.querySelector(
-      '[class*="fixed bottom-0"]'
-    ) as HTMLElement;
+// Ocultar la barra de navegación inferior cuando estamos dentro de un club
+useEffect(() => {
+  // Ocultar la barra inferior al entrar al club
+  const bottomNavbar = document.querySelector(
+    '[class*="fixed bottom-0"]'
+  ) as HTMLElement;
+  if (bottomNavbar) {
+    bottomNavbar.style.display = "none";
+  }
+
+  // Restaurar la barra inferior al salir del club
+  return () => {
     if (bottomNavbar) {
-      bottomNavbar.style.display = "none";
+      bottomNavbar.style.display = "block";
     }
+  };
+}, []);
 
-    // Restaurar la barra inferior al salir del club
-    return () => {
-      if (bottomNavbar) {
-        bottomNavbar.style.display = "block";
+// Controlar el scroll para mostrar/ocultar UI dentro del club
+useEffect(() => {
+  const handleScroll = () => {
+    if (contentRef.current) {
+      const currentScrollY = contentRef.current.scrollTop;
+      if (currentScrollY > lastScrollY + 10) {
+        setShowUI(false);
+      } else if (currentScrollY < lastScrollY - 10) {
+        setShowUI(true);
       }
-    };
-  }, []);
+      setLastScrollY(currentScrollY);
+    }
+  };
 
-  // Controlar el scroll para mostrar/ocultar UI dentro del club
-  useEffect(() => {
-    const handleScroll = () => {
-      if (contentRef.current) {
-        const currentScrollY = contentRef.current.scrollTop;
-        if (currentScrollY > lastScrollY + 10) {
-          setShowUI(false);
-        } else if (currentScrollY < lastScrollY - 10) {
-          setShowUI(true);
-        }
-        setLastScrollY(currentScrollY);
-      }
-    };
+  const currentContentRef = contentRef.current;
+  if (currentContentRef) {
+    currentContentRef.addEventListener("scroll", handleScroll);
+  }
 
-    const currentContentRef = contentRef.current;
+  return () => {
     if (currentContentRef) {
-      currentContentRef.addEventListener("scroll", handleScroll);
+      currentContentRef.removeEventListener("scroll", handleScroll);
     }
-
-    return () => {
-      if (currentContentRef) {
-        currentContentRef.removeEventListener("scroll", handleScroll);
-      }
-    };
-  }, [lastScrollY]);
-
-  const handleAddPollOption = () => {
-    setPollOptions([...pollOptions, ""]);
   };
+}, [lastScrollY]);
 
-  const handleMediaSelect = (source: string, file?: File) => {
-    console.log(`Media selected from ${source}:`, file);
-    // Aquí iría la lógica para procesar el archivo seleccionado
-  };
+const handleAddPollOption = () => {
+  setPollOptions([...pollOptions, ""]);
+};
 
-  const handleJoinClub = () => {
-    setShowJoinAnimation(true);
-    setTimeout(() => {
-      setHasJoined(true);
-      setShowJoinAnimation(false);
-    }, 1500);
-  };
+const handleMediaSelect = (source: string, file?: File) => {
+  console.log(`Media selected from ${source}:`, file);
+  // Aquí iría la lógica para procesar el archivo seleccionado
+};
 
-  const activeChannel = mockClub.channels.find(
-    (channel) => channel.id === activeTab
-  );
-  // Simular que solo tenemos suscripción al canal general (precio 0)
-  const hasSubscription = activeChannel?.price === 0;
+const handleJoinClub = () => {
+  setShowJoinAnimation(true);
+  setTimeout(() => {
+    setHasJoined(true);
+    setShowJoinAnimation(false);
+  }, 1500);
+};
 
-  const handleSuperlakesPurchase = () => {
-    console.log("Comprando 30 superlikes por $4.99");
-    // Aquí iría la lógica para integrar con el sistema de pagos
-    // Una vez completada la compra, actualizamos el contador
-    setAvailableSuperlikes(30);
-  };
+const activeChannel = mockClub.channels.find(
+  (channel) => channel.id === activeTab
+);
+// Simular que solo tenemos suscripción al canal general (precio 0)
+const hasSubscription = activeChannel?.price === 0;
 
-  // Mostrar el icono de mejora solo si hay 10+ caracteres
-  const showImproveIcon = message.length >= 10;
+const handleSuperlakesPurchase = () => {
+  console.log("Comprando 30 superlikes por $4.99");
+  // Aquí iría la lógica para integrar con el sistema de pagos
+  // Una vez completada la compra, actualizamos el contador
+  setAvailableSuperlikes(30);
+};
 
-  return (
+// Mostrar el icono de mejora solo si hay 10+ caracteres
+const showImproveIcon = message.length >= 10;
+
+return (
+  <>
+    <WelcomeClubMessage
+      clubId={mockClub.id}
+      clubName={mockClub.name}
+      clubColor={mockClub.color}
+      clubIconUrl={mockClub.imageUrl}
+      welcomeMessage={mockClub.welcome || "¡Bienvenido a la comunidad!"}
+    />
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header fijo del club - Solo el nombre siempre visible */}
       <div className="border-b bg-background z-50 sticky top-0">
@@ -477,5 +486,6 @@ export default function ClubPage({ params }: { params: { id: string } }) {
         onSelect={handleMediaSelect}
       />
     </div>
-  );
+  </div >
+  </>
 }

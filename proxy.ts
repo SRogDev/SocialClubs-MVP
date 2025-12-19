@@ -1,5 +1,6 @@
 import { updateSession } from "@/lib/supabase/proxy";
 import { type NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 /**
  * Content Security Policy (CSP) y seguridad
@@ -48,7 +49,101 @@ function setSecurityHeaders(response: NextResponse): NextResponse {
 }
 
 export async function proxy(request: NextRequest) {
-  const response = await updateSession(request);
+  let response = await updateSession(request);
+
+  // Verificaciones de admin y acceso a clubs
+  const pathname = request.nextUrl.pathname;
+
+  // Si es ruta de admin, verificar permisos
+  if (pathname.startsWith('/admin')) {
+    const { createServerClient } = await import('@supabase/ssr');
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options),
+            );
+          },
+        },
+      },
+    );
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/auth/login';
+      return NextResponse.redirect(url);
+    }
+
+    // Verificar si es admin
+    const { data: userData } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (userData?.role !== 'admin') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/home-clubs';
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // Si es ruta de club específico, verificar si está banned
+  const clubMatch = pathname.match(/^\/clubs\/([^\/]+)$/);
+  if (clubMatch && clubMatch[1] !== '[id]') {
+    const clubId = clubMatch[1];
+
+    const { createServerClient } = await import('@supabase/ssr');
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options),
+            );
+          },
+        },
+      },
+    );
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+      // Obtener información del club y del usuario
+      const { data: club } = await supabase
+        .from('clubs')
+        .select('status, creator')
+        .eq('id', clubId)
+        .single();
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      // Si el club está banned y el usuario es el creator (no admin), redirect a banned page
+      if (club?.status === 'banned' && club.creator === user.id && userData?.role !== 'admin') {
+        const url = request.nextUrl.clone();
+        url.pathname = `/clubs/${clubId}/banned`;
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
   return setSecurityHeaders(response);
 }
 

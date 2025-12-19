@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { HelpCircle, Plus, Trash2, BarChart2, Clock, Settings, Award, Calendar, Share2 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import ColorPicker from "@/components/color-picker"
+import ColorPicker from "@/components/shared/color-picker"
 import AgendaSection from "@/components/club-edit-sections/agenda-section"
 import MarketingSection from "@/components/club-edit-sections/marketing-section"
 import AnaliticasSection from "@/components/club-edit-sections/analiticas-section" // Importar AnaliticasSection

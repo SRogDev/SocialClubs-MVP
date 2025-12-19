@@ -2,22 +2,29 @@
 
 ## Arquitectura y Estructura
 
-- **Patrón Presentational Layer**: Services contienen CRUDs de Supabase; componentes llaman a services o API routes (cuando se requiere backend)
+- **Patrón Repository**: Services (repositories) contienen TODAS las operaciones CRUD de Supabase
+- **Patrón Presentational Layer**: Componentes UI separados de lógica de negocio
+- **Service Layer**: Services encapsulan lógica de negocio y acceso a datos
 - **Arquitectura de capas modulares**: Separación estricta de responsabilidades
 - **Carpeta components**: Una subcarpeta por página/feature, `/shared` para componentes comunes, `/ui` para shadcn
 - **Carpeta schemas**: Todos los esquemas Zod centralizados
-- **Carpeta services**: Lógica de negocio y funciones CRUD (patrón presentacional)
+- **Carpeta services**: Repositories con funciones CRUD (acceso a datos)
 - **Carpeta hooks**: Hooks personalizados separados por funcionalidad
+  - `/hooks/swr`: Hooks SWR SOLO para FETCH (GET) - llaman a API routes
+- **Carpeta app/actions**: Server Actions para mutaciones (POST/PUT/DELETE) - llaman a services
 - **Carpeta app/api**: Backend API routes (Next.js Route Handlers) - orquestan llamadas a services
 - NO crear nuevas carpetas en components sin instrucción explícita
 
 ### Backend y API Routes
 - **IMPORTANTE**: El backend va en `/app/api` usando Next.js Route Handlers
+- **Patrón Repository**: Services contienen CRUD, API routes/Actions los llaman
 - Las API routes SOLO orquestan: autenticación, rate limiting, validación, y llamadas a services
-- La lógica de negocio SIEMPRE va en `/services`
+- La lógica de negocio y CRUD SIEMPRE va en `/services`
+- **Server Actions** (`/app/actions`): Para mutaciones desde client components - llaman a services
+- **SWR Hooks** (`/hooks/swr`): SOLO para FETCH (GET) - llaman a API routes (NO a Supabase directamente)
 - Aplicar rate limiting a TODAS las API routes usando `lib/rate-limit.ts`
 - **NO usar Supabase MCP** a menos que se indique expresamente
-- Usar `createClient()` de `lib/supabase/server` en API routes
+- Usar `createClient()` de `lib/supabase/server` en API routes y services
 
 ## Stack Tecnológico
 
@@ -38,10 +45,15 @@
 - Validación exhaustiva antes de cualquier operación
 
 ### Data Fetching
-- Usar SWR para todas las peticiones desde el cliente
+- **SWR Hooks** (`/hooks/swr`): SOLO para FETCH (GET) desde client components
+  - Hooks hacen `fetch('/api/...')` a API routes, NO a Supabase directamente
 - SWR Subscription para Server-Sent Events (SSE)
+- **Server Actions** (`/app/actions`): Para mutaciones (POST/PUT/DELETE) desde client components
+  - Actions llaman a services, NO hacen CRUD directamente
 - Priorizar Cache Components de React 19
 - Server Components por defecto, Client Components solo cuando necesario
+- **Flujo GET**: Client Component → SWR Hook → API Route → Service → Supabase
+- **Flujo Mutación**: Client Component → Server Action → Service → Supabase
 
 ### UI/UX
 - Implementar Optimistic UI en todas las interacciones del usuario
@@ -49,11 +61,13 @@
 - Usar utilidades de vibración (`utils/pwa.ts`) en interacciones clave
 - Componentes presentacionales separados de lógica de negocio
 
-### Patrón Presentacional
-- Separar componentes de UI de lógica de negocio
-- Funciones CRUD van en `/services`
+### Patrón Presentacional y Repository
+- **Repository Pattern**: Services encapsulan acceso a datos (CRUD Supabase)
+- **Presentational Layer**: Componentes UI separados de lógica
+- **Service Layer**: Services contienen lógica de negocio y CRUD
 - Componentes solo reciben props y renderizan
-- Hooks personalizados para lógica reutilizable
+- Hooks SWR para fetching, Server Actions para mutaciones
+- Flujo: Component → Hook/Action → Service → Database
 
 ### Analytics (PostHog)
 - **IMPORTANTE**: Captura de eventos SOLO del lado del cliente

@@ -1,0 +1,146 @@
+'use server'
+
+/**
+ * Profile Actions - Server Actions para mutaciones de perfiles de usuario
+ * Patrón Repository: Actions llaman a services, services contienen CRUD
+ */
+
+import { revalidatePath } from 'next/cache'
+import { createClient } from '@/lib/supabase/server'
+import { updateUserProfile } from '@/services/userService'
+import { updateProfileSchema, type UpdateProfileInput } from '@/schemas/profileSchema'
+import type { User } from '@/types/user'
+
+/**
+ * Update user profile
+ */
+export async function updateProfileAction(
+    input: UpdateProfileInput
+): Promise<{ success: boolean; data?: User; error?: string }> {
+    try {
+        // Validate input
+        const validated = updateProfileSchema.parse(input)
+
+        // Get authenticated user
+        const supabase = await createClient()
+        const {
+            data: { user },
+            error: authError,
+        } = await supabase.auth.getUser()
+
+        if (authError || !user) {
+            return { success: false, error: 'Usuario no autenticado' }
+        }
+
+        // Check if username is being changed and if it's available
+        if (validated.username) {
+            const { data: existingUser } = await supabase
+                .from('users')
+                .select('id')
+                .eq('username', validated.username)
+                .neq('id', user.id)
+                .single()
+
+            if (existingUser) {
+                return {
+                    success: false,
+                    error: 'El nombre de usuario ya está en uso',
+                }
+            }
+        }
+
+        // Update profile
+        const updatedProfile = await updateUserProfile(user.id, validated)
+
+        // Revalidate paths
+        revalidatePath('/profile')
+        if (validated.username) {
+            revalidatePath(`/profile/${validated.username}`)
+        }
+
+        return { success: true, data: updatedProfile }
+    } catch (error) {
+        console.error('Error updating profile:', error)
+        return {
+            success: false,
+            error:
+                error instanceof Error
+                    ? error.message
+                    : 'Error al actualizar el perfil',
+        }
+    }
+}
+
+/**
+ * Upload profile image
+ */
+export async function uploadProfileImageAction(
+    file: File
+): Promise<{ success: boolean; url?: string; error?: string }> {
+    try {
+        // Get authenticated user
+        const supabase = await createClient()
+        const {
+            data: { user },
+            error: authError,
+        } = await supabase.auth.getUser()
+
+        if (authError || !user) {
+            return { success: false, error: 'Usuario no autenticado' }
+        }
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            return { success: false, error: 'El archivo debe ser una imagen' }
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            return {
+                success: false,
+                error: 'La imagen no debe superar los 5MB',
+            }
+        }
+
+        // Generate unique filename
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${user.id}-${Date.now()}.${fileExt}`
+        const filePath = `avatars/${fileName}`
+
+        // Upload to Supabase Storage
+        const { error: uploadError } = await supabase.storage
+            .from('profiles')
+            .upload(filePath, file, {
+                upsert: true,
+                contentType: file.type,
+            })
+
+        if (uploadError) {
+            throw new Error('Error al subir la imagen')
+        }
+
+        // Get public URL
+        const {
+            data: { publicUrl },
+        } = supabase.storage.from('profiles').getPublicUrl(filePath)
+
+        // Update user profile with new image URL
+        await updateUserProfile(user.id, { image_url: publicUrl })
+
+        // Revalidate paths
+        revalidatePath('/profile')
+
+        return { success: true, url: publicUrl }
+    } catch (error) {
+        console.error('Error uploading profile image:', error)
+        return {
+            success: false,
+            error:
+                error instanceof Error
+                    ? error.message
+                    : 'Error al subir la imagen',
+        }
+    }
+}
+
+

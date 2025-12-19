@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
-import ColorPicker from "@/components/color-picker"
+import ColorPicker from "@/components/shared/color-picker"
 import { createClient } from "@/lib/supabase/client"
 import { compressImage } from "@/app/utils/compressImage"
 import { Snackbar } from "@/components/ui/snackbar"

@@ -1,5 +1,6 @@
 /**
  * Notification types based on database.sql schema
+ * NOTA: Las notificaciones se trabajarán en el futuro
  */
 
 export interface Notification {

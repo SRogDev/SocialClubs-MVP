@@ -1,9 +1,8 @@
 "use client"
-import { PostsProvider } from "@/context/PostsContext";
 import React from "react";
 
 function ClubLayout({ children }: { children: React.ReactNode }) {
-  return <PostsProvider>{children}</PostsProvider>;
+  return <>{children}</>;
 }
 
 export default ClubLayout;
