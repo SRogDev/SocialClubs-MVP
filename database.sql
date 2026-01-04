@@ -46,9 +46,11 @@ CREATE TABLE users_clubs (
   club_id uuid REFERENCES clubs(id),
   role text,
   points smallint,
+  invite_code text,
   created_at timestamptz DEFAULT now()
 );
 COMMENT ON TABLE users_clubs IS 'Relacion entre usuarios y clubes';
+COMMENT ON COLUMN users_clubs.points IS 'Club-specific gamification points for user';
 
 -- ====================================
 -- CONTENT & POSTS
@@ -276,6 +278,38 @@ CREATE TABLE referrals (
 COMMENT ON TABLE referrals IS 'Table for the referrals system for clubs';
 
 -- ====================================
+-- GAMIFICATION SYSTEM
+-- ====================================
+
+-- Club Gamification Actions (Point Rules)
+CREATE TABLE club_gamification_actions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  club_id uuid REFERENCES clubs(id),
+  type text NOT NULL,
+  value integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE club_gamification_actions IS 'Defines point values for different actions within clubs';
+COMMENT ON COLUMN club_gamification_actions.type IS 'Action type (e.g., post_created, comment_added, like_given)';
+COMMENT ON COLUMN club_gamification_actions.value IS 'Points awarded for this action';
+
+-- Club Gamification Rewards
+CREATE TABLE club_gamification_rewards (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  club_id uuid REFERENCES clubs(id),
+  responsibility text NOT NULL CHECK (responsibility IN ('promise', 'virtual')),
+  bounty jsonb NOT NULL DEFAULT '{}'::jsonb,
+  points_required integer NOT NULL CHECK (points_required >= 0),
+  status text NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'paused')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE club_gamification_rewards IS 'Rewards that users can claim with their club points';
+COMMENT ON COLUMN club_gamification_rewards.responsibility IS 'Type of reward: promise (real-world) or virtual';
+COMMENT ON COLUMN club_gamification_rewards.bounty IS 'Reward details (title, description, etc.)';
+COMMENT ON COLUMN club_gamification_rewards.points_required IS 'Points needed to claim this reward';
+
+-- ====================================
 -- NOTIFICATIONS & FEEDBACK
 -- ====================================
 
@@ -432,7 +466,7 @@ ALTER TABLE post_stats ENABLE ROW LEVEL SECURITY;
 -- NOTES
 -- ====================================
 
--- Total Tables: 31
+-- Total Tables: 33
 -- Tables with RLS enabled: 15
 -- Main features:
 --   - Social clubs management
@@ -440,8 +474,160 @@ ALTER TABLE post_stats ENABLE ROW LEVEL SECURITY;
 --   - Membership tiers and subscriptions
 --   - Video call appointments and rooms
 --   - Chat channels and messaging
---   - Gamification (points, badges, referrals)
+--   - Gamification system (points, rewards, actions)
+--   - Badges and referrals
 --   - Payments and financials (Stripe integration)
 --   - AI agents for clubs
 --   - Customizable widgets system
 --   - Analytics and metrics tracking
+
+-- ====================================
+-- DATABASE FUNCTIONS (RPCs)
+-- ====================================
+
+-- Increment/Decrement Superlikes (Global Points)
+CREATE OR REPLACE FUNCTION increment_superlikes(user_id_input uuid, amount_input integer)
+RETURNS void AS $$
+BEGIN
+  UPDATE "usersPoints"
+  SET superlikes = superlikes + amount_input
+  WHERE "user" = user_id_input;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION decrement_superlikes(user_id_input uuid, amount_input integer)
+RETURNS void AS $$
+BEGIN
+  UPDATE "usersPoints"
+  SET superlikes = GREATEST(superlikes - amount_input, 0)
+  WHERE "user" = user_id_input;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Post Stats Functions
+CREATE OR REPLACE FUNCTION increment_like_count(post_id_input uuid)
+RETURNS void AS $$
+BEGIN
+  UPDATE post_stats
+  SET likes = likes + 1
+  WHERE post_id = post_id_input;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION decrement_like_count(post_id_input uuid)
+RETURNS void AS $$
+BEGIN
+  UPDATE post_stats
+  SET likes = GREATEST(likes - 1, 0)
+  WHERE post_id = post_id_input;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION increment_superlike_count(post_id_input uuid)
+RETURNS void AS $$
+BEGIN
+  UPDATE post_stats
+  SET superlikes = superlikes + 1
+  WHERE post_id = post_id_input;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION decrement_superlike_count(post_id_input uuid)
+RETURNS void AS $$
+BEGIN
+  UPDATE post_stats
+  SET superlikes = GREATEST(superlikes - 1, 0)
+  WHERE post_id = post_id_input;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION increment_comment_count(post_id_input uuid)
+RETURNS void AS $$
+BEGIN
+  UPDATE post_stats
+  SET comments = comments + 1
+  WHERE post_id = post_id_input;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Gamification: Increment User Points in Club
+CREATE OR REPLACE FUNCTION increment_user_points(
+  p_user_id uuid,
+  p_club_id uuid,
+  p_points integer
+)
+RETURNS void AS $$
+BEGIN
+  UPDATE users_clubs
+  SET points = COALESCE(points, 0) + p_points
+  WHERE user_id = p_user_id AND club_id = p_club_id;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION increment_user_points IS 'Atomically increments user points in a club for gamification';
+
+-- Search Clubs Function
+CREATE OR REPLACE FUNCTION search_clubs_json(search_term text)
+RETURNS jsonb AS $$
+DECLARE
+  result jsonb;
+BEGIN
+  SELECT jsonb_agg(club)
+  INTO result
+  FROM (
+    SELECT 
+      id, 
+      name
+    FROM 
+      public.clubs
+    WHERE 
+      name ILIKE '%' || search_term || '%'
+    LIMIT 50
+  ) AS club;
+
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ====================================
+-- TRIGGERS
+-- ====================================
+
+-- Trigger: Handle New User (auth.users -> public.users)
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.users (
+    id, 
+    name, 
+    username, 
+    avatar_url, 
+    created_at
+  )
+  VALUES (
+    new.id,
+    COALESCE(new.raw_user_meta_data->>'name', ''),
+    COALESCE(new.raw_user_meta_data->>'username', ''),
+    NULL,
+    NOW()
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- Trigger: Update club_reports.updated_at
+CREATE OR REPLACE FUNCTION update_club_reports_updated_at()
+RETURNS trigger AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_club_reports_timestamp
+  BEFORE UPDATE ON club_reports
+  FOR EACH ROW EXECUTE FUNCTION update_club_reports_updated_at();

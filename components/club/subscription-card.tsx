@@ -2,8 +2,9 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { X } from "lucide-react"
+import { X, ExternalLink, Loader2 } from "lucide-react"
 import { useState } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 interface SubscriptionCardProps {
   id: string
@@ -25,6 +26,38 @@ export default function SubscriptionCard({
   onCancel,
 }: SubscriptionCardProps) {
   const [isHovered, setIsHovered] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const { toast } = useToast()
+
+  const handleManage = async () => {
+    setLoading(true)
+    try {
+      // Abrir Customer Portal de Stripe
+      const response = await fetch('/api/stripe/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          return_url: window.location.href,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al abrir portal')
+      }
+
+      // Redirigir al portal de Stripe
+      window.location.href = data.url
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'No se pudo abrir el portal de gestión',
+        variant: 'destructive',
+      })
+      setLoading(false)
+    }
+  }
 
   return (
     <div
@@ -41,15 +74,33 @@ export default function SubscriptionCard({
       <p className="text-sm font-semibold mb-2 text-amber-600 dark:text-amber-400">
         ${price}/{billingPeriod === "monthly" ? "mes" : "año"}
       </p>
-      <Button
-        variant="outline"
-        size="sm"
-        className={`text-xs text-destructive border-destructive hover:bg-destructive/10 rounded-full transition-all ${isHovered ? "opacity-100" : "opacity-70"}`}
-        onClick={() => onCancel(id)}
-      >
-        <X size={14} className="mr-1" />
-        Cancelar
-      </Button>
+
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-xs rounded-full transition-all"
+          onClick={handleManage}
+          disabled={loading}
+        >
+          {loading ? (
+            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+          ) : (
+            <ExternalLink size={14} className="mr-1" />
+          )}
+          Gestionar
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className={`text-xs text-destructive border-destructive hover:bg-destructive/10 rounded-full transition-all ${isHovered ? "opacity-100" : "opacity-70"}`}
+          onClick={() => onCancel(id)}
+        >
+          <X size={14} className="mr-1" />
+          Cancelar
+        </Button>
+      </div>
     </div>
   )
 }

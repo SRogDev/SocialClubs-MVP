@@ -10,6 +10,26 @@ export interface Post {
     created_at: string
 }
 
+// Enriched Post type with computed properties for UI components
+export interface EnrichedPost extends Post {
+    user: {
+        name: string
+        username: string
+        avatar: string
+    }
+    createdAt: string // Formatted date string
+    imageUrl?: string
+    videoUrl?: string
+    audioUrl?: string
+    audioName?: string
+    likesCount: number
+    commentsCount: number
+    viewsCount: number
+    superlikesCount: number
+    isLiked: boolean
+    isSuperliked: boolean
+}
+
 export interface PostStats {
     id: number
     post_id: string

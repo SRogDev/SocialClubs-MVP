@@ -34,3 +34,8 @@ export {
     exportMetricsAction,
     sendMarketingEmailAction,
 } from './adminActions'
+
+// Agent Actions
+export {
+    saveAgentConfigAction,
+} from './agentActions'

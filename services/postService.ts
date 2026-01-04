@@ -183,6 +183,20 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Po
 export async function deletePost(id: string): Promise<void> {
     const supabase = await createClient()
 
+    // Get post to check if it has video
+    const { data: post } = await supabase
+        .from('posts')
+        .select('type, content')
+        .eq('id', id)
+        .single()
+
+    // If video post, delete Mux asset
+    if (post?.type === 'video' && post.content?.video?.mux_asset_id) {
+        const { deleteMuxAsset } = await import('@/services/videoService')
+        await deleteMuxAsset(post.content.video.mux_asset_id)
+    }
+
+    // Delete post from database
     const { error } = await supabase
         .from('posts')
         .delete()

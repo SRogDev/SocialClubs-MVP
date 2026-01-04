@@ -1,15 +1,19 @@
-import { Card } from "@/components/ui/card";
-import { Play } from "lucide-react";
-import PostHeader from "./post-header";
-import PostActions from "./post-actions";
-import type { Post } from "@/types/post";
+'use client'
+
+import { Card } from "@/components/ui/card"
+import { Loader2, AlertCircle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import MuxPlayer from '@mux/mux-player-react'
+import PostHeader from "./post-header"
+import PostActions from "./post-actions"
+import type { EnrichedPost } from "@/types/post"
 
 interface PostVideoProps {
-  post: Post;
-  availableSuperlikes: number;
-  onSuperlikePurchase: () => void;
-  onComment: () => void;
-  clubColor?: string;
+  post: EnrichedPost
+  availableSuperlikes: number
+  onSuperlikePurchase: () => void
+  onComment: () => void
+  clubColor?: string
 }
 
 export default function PostVideo({
@@ -19,6 +23,14 @@ export default function PostVideo({
   onComment,
   clubColor,
 }: PostVideoProps) {
+  // Extract video metadata from post.content
+  const videoData = post.content?.video
+  const caption = post.content?.caption || post.content
+  const status = videoData?.status || 'uploading'
+  const playbackId = videoData?.mux_playback_id
+  const thumbnailUrl = videoData?.thumbnail_url
+  const errorMessage = videoData?.error_message
+
   return (
     <Card className="mb-4 overflow-hidden">
       <PostHeader
@@ -28,18 +40,64 @@ export default function PostVideo({
         clubColor={clubColor}
       />
 
-      <div className="px-4 pb-3">
-        <p className="text-sm">{post.content}</p>
-      </div>
-
-      <div className="relative bg-black aspect-video flex items-center justify-center">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-gray-700" />
-        <div className="relative z-10 flex flex-col items-center text-white">
-          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-3">
-            <Play size={24} className="ml-1" />
-          </div>
-          <p className="text-sm opacity-80">Video Tutorial</p>
+      {/* Caption */}
+      {caption && typeof caption === 'string' && (
+        <div className="px-4 pb-3">
+          <p className="text-sm">{caption}</p>
         </div>
+      )}
+
+      {/* Video Player / Status */}
+      <div className="relative bg-black aspect-video">
+        {/* Uploading State */}
+        {status === 'uploading' && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+            <Loader2 className="w-12 h-12 animate-spin mb-3" />
+            <p className="text-sm font-medium">Subiendo video...</p>
+            <p className="text-xs opacity-70 mt-1">Esto puede tomar unos minutos</p>
+          </div>
+        )}
+
+        {/* Processing State */}
+        {status === 'processing' && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+            {thumbnailUrl && (
+              <img
+                src={thumbnailUrl}
+                alt="Video thumbnail"
+                className="absolute inset-0 w-full h-full object-cover opacity-30"
+              />
+            )}
+            <div className="relative z-10 flex flex-col items-center">
+              <Loader2 className="w-12 h-12 animate-spin mb-3" />
+              <p className="text-sm font-medium">Procesando video...</p>
+              <p className="text-xs opacity-70 mt-1">Casi listo para reproducir</p>
+            </div>
+          </div>
+        )}
+
+        {/* Ready State - Mux Player */}
+        {status === 'ready' && playbackId && (
+          <MuxPlayer
+            playbackId={playbackId}
+            poster={thumbnailUrl}
+            streamType="on-demand"
+            accentColor={clubColor || '#f97316'}
+            className="w-full h-full"
+            style={{ aspectRatio: '16/9' }}
+          />
+        )}
+
+        {/* Error State */}
+        {status === 'errored' && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4">
+            <AlertCircle className="w-12 h-12 mb-3 text-red-500" />
+            <p className="text-sm font-medium mb-1">Error al procesar video</p>
+            {errorMessage && (
+              <p className="text-xs opacity-70 text-center">{errorMessage}</p>
+            )}
+          </div>
+        )}
       </div>
 
       <PostActions
@@ -55,5 +113,5 @@ export default function PostVideo({
         onComment={onComment}
       />
     </Card>
-  );
+  )
 }

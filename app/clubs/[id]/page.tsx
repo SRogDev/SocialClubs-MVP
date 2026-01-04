@@ -484,6 +484,7 @@ return (
         onOpenChange={setShowMediaModal}
         type={currentMediaType}
         onSelect={handleMediaSelect}
+        clubId={mockClub.id}
       />
     </div>
   </div >

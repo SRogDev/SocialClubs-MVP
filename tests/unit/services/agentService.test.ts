@@ -50,7 +50,7 @@ const mockSupabase = {
 
 beforeEach(() => {
   jest.clearAllMocks()
-  ;(createClient as jest.Mock).mockReturnValue(mockSupabase)
+    ; (createClient as jest.Mock).mockReturnValue(mockSupabase)
 })
 
 describe('getAgentByClubId', () => {
