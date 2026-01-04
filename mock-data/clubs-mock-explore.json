@@ -1,0 +1,587 @@
+[
+    {
+        "id": "1",
+        "name": "Club de Ajedrez",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#1f2937",
+        "members": 450,
+        "level": 7,
+        "lastContent": {
+            "type": "text",
+            "preview": "Estrategias para principiantes en ajedrez",
+            "time": "5m"
+        }
+    },
+    {
+        "id": "2",
+        "name": "Fotografía Urbana",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#374151",
+        "members": 1200,
+        "level": 9,
+        "lastContent": {
+            "type": "image",
+            "preview": "Foto de la ciudad al atardecer",
+            "time": "10m"
+        }
+    },
+    {
+        "id": "3",
+        "name": "Yoga y Meditación",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#059669",
+        "members": 800,
+        "level": 5,
+        "lastContent": {
+            "type": "video",
+            "preview": "Sesión de yoga matutina",
+            "time": "20m"
+        }
+    },
+    {
+        "id": "4",
+        "name": "Desarrollo Web",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#2563eb",
+        "members": 2500,
+        "level": 10,
+        "lastContent": {
+            "type": "text",
+            "preview": "Tutorial de React avanzado",
+            "time": "1h"
+        }
+    },
+    {
+        "id": "5",
+        "name": "Ciclismo de Montaña",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#dc2626",
+        "members": 600,
+        "level": 4,
+        "lastContent": {
+            "type": "image",
+            "preview": "Ruta por las montañas",
+            "time": "30m"
+        }
+    },
+    {
+        "id": "6",
+        "name": "Arte Digital",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#7c3aed",
+        "members": 950,
+        "level": 8,
+        "lastContent": {
+            "type": "video",
+            "preview": "Cómo crear arte con IA",
+            "time": "45m"
+        }
+    },
+    {
+        "id": "7",
+        "name": "Lectura de Ciencia Ficción",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#ea580c",
+        "members": 300,
+        "level": 2,
+        "lastContent": {
+            "type": "text",
+            "preview": "Recomendaciones de libros",
+            "time": "2h"
+        }
+    },
+    {
+        "id": "8",
+        "name": "Jardinería Urbana",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#16a34a",
+        "members": 700,
+        "level": 6,
+        "lastContent": {
+            "type": "image",
+            "preview": "Mi huerto en el balcón",
+            "time": "1h"
+        }
+    },
+    {
+        "id": "9",
+        "name": "Música Electrónica",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#c2410c",
+        "members": 1400,
+        "level": 9,
+        "lastContent": {
+            "type": "video",
+            "preview": "Mix de EDM nuevo",
+            "time": "15m"
+        }
+    },
+    {
+        "id": "10",
+        "name": "Viajes de Aventura",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#0891b2",
+        "members": 1100,
+        "level": 7,
+        "lastContent": {
+            "type": "text",
+            "preview": "Experiencias en la selva amazónica",
+            "time": "3h"
+        }
+    },
+    {
+        "id": "11",
+        "name": "Programación en Python",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#1d4ed8",
+        "members": 1800,
+        "level": 10,
+        "lastContent": {
+            "type": "text",
+            "preview": "Scripts útiles para automatización",
+            "time": "5m"
+        }
+    },
+    {
+        "id": "12",
+        "name": "Fotografía de Naturaleza",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#166534",
+        "members": 650,
+        "level": 5,
+        "lastContent": {
+            "type": "image",
+            "preview": "Atardecer en el bosque",
+            "time": "25m"
+        }
+    },
+    {
+        "id": "13",
+        "name": "Entrenamiento Funcional",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#dc2626",
+        "members": 2200,
+        "level": 8,
+        "lastContent": {
+            "type": "video",
+            "preview": "Rutina HIIT completa",
+            "time": "40m"
+        }
+    },
+    {
+        "id": "14",
+        "name": "Cocina Vegana",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#16a34a",
+        "members": 900,
+        "level": 6,
+        "lastContent": {
+            "type": "text",
+            "preview": "Recetas sin carne deliciosas",
+            "time": "1h"
+        }
+    },
+    {
+        "id": "15",
+        "name": "Desarrollo de Videojuegos",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#7c2d12",
+        "members": 1300,
+        "level": 9,
+        "lastContent": {
+            "type": "video",
+            "preview": "Tutorial de Unity",
+            "time": "50m"
+        }
+    },
+    {
+        "id": "16",
+        "name": "Pintura Acrílica",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#b91c1c",
+        "members": 400,
+        "level": 3,
+        "lastContent": {
+            "type": "image",
+            "preview": "Mi última obra abstracta",
+            "time": "2h"
+        }
+    },
+    {
+        "id": "17",
+        "name": "Escalada en Roca",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#374151",
+        "members": 550,
+        "level": 4,
+        "lastContent": {
+            "type": "text",
+            "preview": "Consejos para principiantes",
+            "time": "30m"
+        }
+    },
+    {
+        "id": "18",
+        "name": "Música Clásica",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#92400e",
+        "members": 750,
+        "level": 7,
+        "lastContent": {
+            "type": "video",
+            "preview": "Concierto de piano en vivo",
+            "time": "1h"
+        }
+    },
+    {
+        "id": "19",
+        "name": "Astronomía Amateur",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#1e40af",
+        "members": 320,
+        "level": 2,
+        "lastContent": {
+            "type": "text",
+            "preview": "Observación de constelaciones",
+            "time": "4h"
+        }
+    },
+    {
+        "id": "20",
+        "name": "Diseño Gráfico",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#7c3aed",
+        "members": 1600,
+        "level": 10,
+        "lastContent": {
+            "type": "text",
+            "preview": "Tendencias en diseño 2025",
+            "time": "10m"
+        }
+    },
+    {
+        "id": "21",
+        "name": "Surf",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#0284c7",
+        "members": 680,
+        "level": 5,
+        "lastContent": {
+            "type": "video",
+            "preview": "Olas perfectas en la playa",
+            "time": "35m"
+        }
+    },
+    {
+        "id": "22",
+        "name": "Escritura Creativa",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#dc2626",
+        "members": 500,
+        "level": 3,
+        "lastContent": {
+            "type": "text",
+            "preview": "Historia corta semanal",
+            "time": "2h"
+        }
+    },
+    {
+        "id": "23",
+        "name": "Fotografía Macro",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#166534",
+        "members": 420,
+        "level": 4,
+        "lastContent": {
+            "type": "image",
+            "preview": "Detalle de una gota de rocío",
+            "time": "45m"
+        }
+    },
+    {
+        "id": "24",
+        "name": "Bailes Latinos",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#ea580c",
+        "members": 1100,
+        "level": 8,
+        "lastContent": {
+            "type": "video",
+            "preview": "Clase de salsa",
+            "time": "20m"
+        }
+    },
+    {
+        "id": "25",
+        "name": "Inteligencia Artificial",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#1d4ed8",
+        "members": 2800,
+        "level": 10,
+        "lastContent": {
+            "type": "text",
+            "preview": "Avances en machine learning",
+            "time": "5m"
+        }
+    },
+    {
+        "id": "26",
+        "name": "Jardinería Orgánica",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#16a34a",
+        "members": 580,
+        "level": 5,
+        "lastContent": {
+            "type": "image",
+            "preview": "Mis tomates ecológicos",
+            "time": "1h"
+        }
+    },
+    {
+        "id": "27",
+        "name": "Fotografía Nocturna",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#1f2937",
+        "members": 370,
+        "level": 3,
+        "lastContent": {
+            "type": "image",
+            "preview": "Ciudad de noche con estrellas",
+            "time": "3h"
+        }
+    },
+    {
+        "id": "28",
+        "name": "Running Urbano",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#dc2626",
+        "members": 1500,
+        "level": 7,
+        "lastContent": {
+            "type": "text",
+            "preview": "Rutas por el parque",
+            "time": "15m"
+        }
+    },
+    {
+        "id": "29",
+        "name": "Arte callejero",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#7c2d12",
+        "members": 620,
+        "level": 6,
+        "lastContent": {
+            "type": "video",
+            "preview": "Proceso de creación de graffiti",
+            "time": "40m"
+        }
+    },
+    {
+        "id": "30",
+        "name": "Cocina Asiática",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#ea580c",
+        "members": 950,
+        "level": 8,
+        "lastContent": {
+            "type": "text",
+            "preview": "Receta de ramen casero",
+            "time": "50m"
+        }
+    },
+    {
+        "id": "31",
+        "name": "Desarrollo Móvil",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#2563eb",
+        "members": 2100,
+        "level": 9,
+        "lastContent": {
+            "type": "video",
+            "preview": "App en React Native",
+            "time": "25m"
+        }
+    },
+    {
+        "id": "32",
+        "name": "Fotografía de Retrato",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#374151",
+        "members": 780,
+        "level": 6,
+        "lastContent": {
+            "type": "image",
+            "preview": "Sesión de fotos familiar",
+            "time": "1h"
+        }
+    },
+    {
+        "id": "33",
+        "name": "Yoga Avanzado",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#059669",
+        "members": 650,
+        "level": 7,
+        "lastContent": {
+            "type": "video",
+            "preview": "Posturas invertidas",
+            "time": "30m"
+        }
+    },
+    {
+        "id": "34",
+        "name": "Lectura de Fantasía",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#7c3aed",
+        "members": 480,
+        "level": 4,
+        "lastContent": {
+            "type": "text",
+            "preview": "Reseña de 'El Señor de los Anillos'",
+            "time": "2h"
+        }
+    },
+    {
+        "id": "35",
+        "name": "Ciclismo de Ruta",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#dc2626",
+        "members": 920,
+        "level": 8,
+        "lastContent": {
+            "type": "image",
+            "preview": "Paseo por la costa",
+            "time": "45m"
+        }
+    },
+    {
+        "id": "36",
+        "name": "Arte Contemporáneo",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#b91c1c",
+        "members": 350,
+        "level": 2,
+        "lastContent": {
+            "type": "video",
+            "preview": "Exposición virtual",
+            "time": "3h"
+        }
+    },
+    {
+        "id": "37",
+        "name": "Música Indie",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#92400e",
+        "members": 1100,
+        "level": 9,
+        "lastContent": {
+            "type": "text",
+            "preview": "Descubrimientos musicales",
+            "time": "10m"
+        }
+    },
+    {
+        "id": "38",
+        "name": "Senderismo",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#166534",
+        "members": 1400,
+        "level": 7,
+        "lastContent": {
+            "type": "image",
+            "preview": "Vista desde la montaña",
+            "time": "20m"
+        }
+    },
+    {
+        "id": "39",
+        "name": "Fotografía de Moda",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#c2410c",
+        "members": 560,
+        "level": 5,
+        "lastContent": {
+            "type": "video",
+            "preview": "Sesión de fotos en estudio",
+            "time": "55m"
+        }
+    },
+    {
+        "id": "40",
+        "name": "Cocina Mediterránea",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#ea580c",
+        "members": 720,
+        "level": 6,
+        "lastContent": {
+            "type": "text",
+            "preview": "Ensalada griega tradicional",
+            "time": "1h"
+        }
+    },
+    {
+        "id": "41",
+        "name": "Desarrollo de Software",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#1d4ed8",
+        "members": 3000,
+        "level": 10,
+        "lastContent": {
+            "type": "text",
+            "preview": "Metodologías ágiles",
+            "time": "5m"
+        }
+    },
+    {
+        "id": "42",
+        "name": "Pintura al Óleo",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#7c2d12",
+        "members": 290,
+        "level": 1,
+        "lastContent": {
+            "type": "image",
+            "preview": "Pintura de un paisaje",
+            "time": "4h"
+        }
+    },
+    {
+        "id": "43",
+        "name": "Bailes de Salón",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#b91c1c",
+        "members": 850,
+        "level": 7,
+        "lastContent": {
+            "type": "video",
+            "preview": "Vals vienés",
+            "time": "35m"
+        }
+    },
+    {
+        "id": "44",
+        "name": "Astronomía Profesional",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#1e40af",
+        "members": 180,
+        "level": 1,
+        "lastContent": {
+            "type": "text",
+            "preview": "Observación de constelaciones",
+            "time": "5h"
+        }
+    },
+    {
+        "id": "45",
+        "name": "Diseño de Interiores",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#7c3aed",
+        "members": 1200,
+        "level": 8,
+        "lastContent": {
+            "type": "image",
+            "preview": "Sala de estar moderna",
+            "time": "40m"
+        }
+    }
+]

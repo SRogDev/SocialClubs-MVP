@@ -1,3 +1,5 @@
+"use client"
+
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { useState, useEffect } from "react"
@@ -13,9 +15,7 @@ import GlassCard from "@/components/ui/glass-card"
 import CreateClubLink from "@/components/create-club-link"
 import SuperlikeModal from "@/components/post/superlike-modal"
 import EditProfileModal from "@/components/profile/edit-profile-modal"
-import { signOut } from "@/lib/supabase"
-import { redirect } from "next/navigation"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 // Datos de ejemplo para el perfil
 const mockProfile = {

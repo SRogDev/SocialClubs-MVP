@@ -34,6 +34,8 @@ export async function POST(request: NextRequest) {
         const { data: userData, error: userError } = await supabase
             .from('users')
             .select('role')
+            .eq('id', user.id)
+            .single()
 
         if (userError || userData?.role !== 'admin') {
             return NextResponse.json(

@@ -22,7 +22,7 @@ export function ClubAdminCard({ club }: ClubAdminCardProps) {
 
     // Badge de nivel
     const getLevelBadge = () => {
-        if (club.level >= 10) {
+        if (club.level && club.level >= 10) {
             return (
                 <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
                     <Crown className="mr-1 h-3 w-3" />
@@ -30,7 +30,7 @@ export function ClubAdminCard({ club }: ClubAdminCardProps) {
                 </Badge>
             )
         }
-        if (club.level >= 5) {
+        if (club.level && club.level >= 5) {
             return (
                 <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                     <Shield className="mr-1 h-3 w-3" />
@@ -92,14 +92,14 @@ export function ClubAdminCard({ club }: ClubAdminCardProps) {
                             <Avatar className="h-6 w-6">
                                 <AvatarImage
                                     src={club.creator.avatar_url || undefined}
-                                    alt={club.creator.name}
+                                    alt={club.creator.name || 'User'}
                                 />
                                 <AvatarFallback className="text-xs">
-                                    {club.creator.name.charAt(0)}
+                                    {club.creator.name?.charAt(0) || 'U'}
                                 </AvatarFallback>
                             </Avatar>
                             <span className="text-sm text-muted-foreground">
-                                @{club.creator.username}
+                                @{club.creator.username || 'unknown'}
                             </span>
                         </div>
                         {getLevelBadge()}

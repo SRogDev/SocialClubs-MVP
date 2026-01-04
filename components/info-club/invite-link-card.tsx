@@ -3,17 +3,18 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Copy } from "lucide-react"
+import { Copy, Share2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { type Club } from "@/types/club"
 
 type InviteLinkCardProps = {
-    clubId: string
+    club: Club
     color: string
 }
 
-export default function InviteLinkCard({ clubId, color }: InviteLinkCardProps) {
+export default function InviteLinkCard({ club, color }: InviteLinkCardProps) {
     const { toast } = useToast()
-    const inviteLink = `https://socialclubs.com/invite/${clubId}`
+    const inviteLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://socialclubs.com'}/clubs/join/${club.club_link}`
 
     const copyInviteLink = () => {
         navigator.clipboard.writeText(inviteLink)
@@ -23,10 +24,27 @@ export default function InviteLinkCard({ clubId, color }: InviteLinkCardProps) {
         })
     }
 
+    const shareInviteLink = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `Únete a ${club.name}`,
+                    text: `Te invito a unirte a mi club "${club.name}" en SocialClubs`,
+                    url: inviteLink,
+                })
+            } catch (error) {
+                // User cancelled share or error occurred
+                console.log('Error sharing:', error)
+            }
+        } else {
+            // Fallback to copy
+            copyInviteLink()
+        }
+    }
+
     return (
-        <GlassCard
+        <Card
             className="shadow-sm hover:shadow-md transition-all duration-300"
-            color={color}
             style={{ borderColor: `${color}40` }}
         >
             <CardContent className="pt-6">
@@ -38,6 +56,11 @@ export default function InviteLinkCard({ clubId, color }: InviteLinkCardProps) {
                     <Button variant="outline" size="sm" onClick={copyInviteLink}>
                         <Copy size={16} />
                     </Button>
+                    {navigator.share && (
+                        <Button variant="outline" size="sm" onClick={shareInviteLink}>
+                            <Share2 size={16} />
+                        </Button>
+                    )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
                     Comparte este enlace para invitar a otros a unirse al club

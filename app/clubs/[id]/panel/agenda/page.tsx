@@ -8,7 +8,17 @@ export default async function AgendaPage({ params }: { params: { id: string } })
     if (error || !data?.claims) {
         redirect("/auth/login");
     }
-    // TODO: Fetch club events data
-    // const events = await getClubEvents(params.id)
-    return <AgendaSection />;
+
+    // Verify user is the club creator
+    const { data: club } = await supabase
+        .from('clubs')
+        .select('creator')
+        .eq('id', params.id)
+        .single();
+
+    if (!club || club.creator !== data.claims.sub) {
+        redirect(`/clubs/${params.id}`);
+    }
+
+    return <AgendaSection clubId={params.id} />;
 }

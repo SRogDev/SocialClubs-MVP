@@ -1,0 +1,28 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "buildCommand": "next build",
+    "framework": "nextjs",
+    "installCommand": "pnpm install",
+    "devCommand": "pnpm dev",
+    "outputDirectory": ".next",
+    "ignoreCommand": "echo 'Skipping build checks'",
+    "crons": [
+        {
+            "path": "/api/cron/check-appointments",
+            "schedule": "*/5 * * * *"
+        }
+    ],
+    "env": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+        "NEXT_PUBLIC_POSTHOG_KEY",
+        "NEXT_PUBLIC_POSTHOG_HOST",
+        "NEXT_PUBLIC_CRISP_WEBSITE_ID",
+        "RESEND_API_KEY",
+        "DAILY_API_KEY",
+        "NEXT_PUBLIC_DAILY_DOMAIN",
+        "CRON_SECRET",
+        "STRIPE_SECRET_KEY",
+        "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"
+    ]
+}

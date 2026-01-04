@@ -1,84 +1,53 @@
 import { redirect } from "next/navigation"
+
 import { createClient } from "@/lib/supabase/server"
-import { motion } from "framer-motion"
-import ClubCard from "@/components/home-clubs/club-card"
+import HomeList from "@/components/home-clubs/home-list"
 import CreateClubLink from "@/components/create-club-link"
 
-const mockClubs = [
-  {
-    id: "1",
-    name: "Programación",
-    image: "/placeholder.svg?height=60&width=60",
-    color: "#f97316",
-    members: 1250,
-    level: 8,
-    lastContent: {
-      type: "text",
-      preview: "¿Alguien sabe cómo optimizar esta consulta SQL?",
-      time: "2m",
-    },
-  },
-  {
-    id: "2",
-    name: "Fotografía",
-    image: "/placeholder.svg?height=60&width=60",
-    color: "#8b5cf6",
-    members: 890,
-    level: 10,
-    lastContent: {
-      type: "image",
-      preview: "Compartió una nueva foto del atardecer",
-      time: "15m",
-    },
-  },
-  {
-    id: "3",
-    name: "Fitness",
-    image: "/placeholder.svg?height=60&width=60",
-    color: "#10b981",
-    members: 2100,
-    level: 6,
-    lastContent: {
-      type: "video",
-      preview: "Rutina de ejercicios para principiantes",
-      time: "1h",
-    },
-  },
-  {
-    id: "4",
-    name: "Cocina",
-    image: "/placeholder.svg?height=60&width=60",
-    color: "#ef4444",
-    members: 567,
-    level: 3,
-    lastContent: {
-      type: "text",
-      preview: "Receta de pasta carbonara auténtica italiana",
-      time: "3h",
-    },
-  },
-]
+import { getUserClubs } from "@/services/clubService"
+import mockClubs from "@/mock-data/clubs-mock-home.json"
 
 export default async function ClubsPage() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getClaims();
-  if (error || !data?.claims) {
-    redirect("/auth/login");
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    redirect("/auth/login")
   }
+
+  // Try to get user's clubs from Supabase, fallback to mock data
+  let userClubs = mockClubs
+  try {
+    const clubsFromDb = await getUserClubs(user.id)
+    if (clubsFromDb && clubsFromDb.length > 0) {
+      // Transform database clubs to match the expected format
+      userClubs = clubsFromDb.map(club => ({
+        id: club.id,
+        name: club.name || 'Club sin nombre',
+        image: club.logo?.url || '/placeholder.svg?height=60&width=60',
+        color: club.color || '#f97316',
+        members: club.total_members || 0,
+        level: club.level || 1,
+        lastContent: {
+          type: 'text' as const,
+          preview: 'Nuevo contenido disponible',
+          time: 'ahora'
+        }
+      }))
+    }
+  } catch (error) {
+    console.error('Error fetching user clubs:', error)
+    // Keep using mock data as fallback
+  }
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="container max-w-2xl mx-auto py-6">
-        <div className="space-y-3 mb-6">
-          {mockClubs.map((club, index) => (
-            <motion.div
-              key={club.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <ClubCard club={club} />
-            </motion.div>
-          ))}
+        <div className="mb-6">
+          <HomeList clubs={userClubs} />
         </div>
 
         <div className="pt-4">

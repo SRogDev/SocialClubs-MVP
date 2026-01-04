@@ -36,7 +36,7 @@ export function ClubModerationCard({ club }: ClubModerationCardProps) {
     const handleWarn = async () => {
         setIsWarning(true)
         try {
-            const result = await warnCreatorAction(club.id, club.name, club.creator.email)
+            const result = await warnCreatorAction(club.id, 'Múltiples reportes recibidos')
 
             if (result.success) {
                 toast({
@@ -64,7 +64,7 @@ export function ClubModerationCard({ club }: ClubModerationCardProps) {
     const handleBan = async () => {
         setIsBanning(true)
         try {
-            const result = await banClubAction(club.id, club.name, club.creator.email)
+            const result = await banClubAction(club.id)
 
             if (result.success) {
                 toast({

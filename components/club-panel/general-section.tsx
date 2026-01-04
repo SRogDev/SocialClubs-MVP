@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import DeleteClubButton from "@/components/club-panel/delete-club-button"
 import { updateClubAction } from "@/app/actions"
 import { useRouter } from "next/navigation"
-import { vibratePattern } from "@/utils/pwa"
+import { vibrate, VibrationPatterns } from "@/utils/pwa"
 
 type Club = {
     id: string
@@ -49,7 +49,7 @@ export default function GeneralSection({ club }: GeneralSectionProps) {
         })
 
         if (result.success) {
-            vibratePattern([50, 100, 50])
+            vibrate([50, 100, 50])
             setSuccess(true)
             router.refresh()
 

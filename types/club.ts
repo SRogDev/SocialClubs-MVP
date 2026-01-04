@@ -13,6 +13,7 @@ export interface Club {
     creator: string | null
     tags: any | null
     total_members: number | null
+    club_link: string | null
     created_at: string
 }
 

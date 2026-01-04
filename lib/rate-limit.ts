@@ -57,6 +57,12 @@ export const RATE_LIMITS = {
         windowMs: 60 * 1000, // 100 requests per minute
         useIp: true,
     },
+    // For query operations (admin)
+    QUERY: {
+        limit: 50,
+        windowMs: 60 * 1000, // 50 requests per minute
+        useIp: true,
+    },
     // Very strict for auth operations
     AUTH: {
         limit: 5,

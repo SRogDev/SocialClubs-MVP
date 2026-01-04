@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Heart, MessageCircle, Eye, Flame } from "lucide-react"
 import { motion } from "framer-motion"
 import { likePostAction, unlikePostAction, superlikePostAction } from "@/app/actions"
-import { vibratePattern } from "@/utils/pwa"
+import { vibrate } from "@/utils/pwa"
 
 interface PostActionsProps {
   postId: string
@@ -45,7 +45,7 @@ export default function PostActions({
     const newLikedState = !liked
     setLiked(newLikedState)
     setCurrentLikes(prev => newLikedState ? prev + 1 : prev - 1)
-    vibratePattern([50])
+    vibrate([50])
 
     try {
       if (newLikedState) {
@@ -73,7 +73,7 @@ export default function PostActions({
     setSuperliked(true)
     setCurrentSuperlikes(prev => prev + 1)
     setShowSuperlikeAnimation(true)
-    vibratePattern([50, 100, 50])
+    vibrate([50, 100, 50])
     setTimeout(() => setShowSuperlikeAnimation(false), 1000)
 
     try {

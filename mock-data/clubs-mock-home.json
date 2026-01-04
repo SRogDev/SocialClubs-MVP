@@ -1,0 +1,54 @@
+[
+    {
+        "id": "1",
+        "name": "Programación",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#f97316",
+        "members": 1250,
+        "level": 8,
+        "lastContent": {
+            "type": "text",
+            "preview": "¿Alguien sabe cómo optimizar esta consulta SQL?",
+            "time": "2m"
+        }
+    },
+    {
+        "id": "2",
+        "name": "Fotografía",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#8b5cf6",
+        "members": 890,
+        "level": 10,
+        "lastContent": {
+            "type": "image",
+            "preview": "Compartió una nueva foto del atardecer",
+            "time": "15m"
+        }
+    },
+    {
+        "id": "3",
+        "name": "Fitness",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#10b981",
+        "members": 2100,
+        "level": 6,
+        "lastContent": {
+            "type": "video",
+            "preview": "Rutina de ejercicios para principiantes",
+            "time": "1h"
+        }
+    },
+    {
+        "id": "4",
+        "name": "Cocina",
+        "image": "/placeholder.svg?height=60&width=60",
+        "color": "#ef4444",
+        "members": 567,
+        "level": 3,
+        "lastContent": {
+            "type": "text",
+            "preview": "Receta de pasta carbonara auténtica italiana",
+            "time": "3h"
+        }
+    }
+]

@@ -36,12 +36,12 @@ export function EmailMarketingPanel() {
 
         setIsSending(true)
         try {
-            const result = await sendMarketingEmailAction(emailContent)
+            const result = await sendMarketingEmailAction(emailContent, 'Marketing Update')
 
             if (result.success) {
                 toast({
                     title: 'Emails enviados',
-                    description: `Se enviaron ${result.sent} emails de marketing a los usuarios`,
+                    description: result.message || 'Emails enviados exitosamente',
                 })
                 setEmailContent('')
             } else {

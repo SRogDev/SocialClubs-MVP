@@ -14,7 +14,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { useClubDelete } from "@/hooks/use-club-actions"
-import { vibratePattern } from "@/utils/pwa"
+import { vibrate } from "@/utils/pwa"
 
 type DeleteClubButtonProps = {
     clubId: string
@@ -33,7 +33,7 @@ export default function DeleteClubButton({ clubId, clubName }: DeleteClubButtonP
     const handleDelete = async () => {
         try {
             // Vibration feedback
-            vibratePattern([50, 100, 50])
+            vibrate([50, 100, 50])
 
             await deleteClub(clubId)
 

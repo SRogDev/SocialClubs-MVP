@@ -22,6 +22,7 @@ const mockClub = {
   level: 8,
   isAdmin: true,
   color: "#f97316",
+  club_link: "prog123", // Mock club link
   tags: ["JavaScript", "React", "Node.js", "TypeScript", "Web Dev"],
   highlights: [
     { id: "1", title: "Tutorial", imageUrl: "/placeholder.svg?height=60&width=60" },
@@ -82,7 +83,7 @@ export default async function ClubInfoPage({ params }: { params: { id: string } 
       />
 
       {/* Invite link */}
-      <InviteLinkCard clubId={mockClub.id} color={mockClub.color} />
+      <InviteLinkCard club={mockClub} color={mockClub.color} />
 
       {/* Tags */}
       <ClubTags tags={mockClub.tags} color={mockClub.color} />

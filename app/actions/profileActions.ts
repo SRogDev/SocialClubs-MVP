@@ -125,7 +125,7 @@ export async function uploadProfileImageAction(
         } = supabase.storage.from('profiles').getPublicUrl(filePath)
 
         // Update user profile with new image URL
-        await updateUserProfile(user.id, { image_url: publicUrl })
+        await updateUserProfile(user.id, { avatar_url: publicUrl })
 
         // Revalidate paths
         revalidatePath('/profile')

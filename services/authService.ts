@@ -24,6 +24,61 @@ export async function signIn(input: SignInInput) {
         throw new Error('Invalid email or password')
     }
 
+    // NUEVO: Verificar si hay un invite code pendiente
+    if (typeof window !== 'undefined') {
+        const inviteCode = sessionStorage.getItem('club_invite_code');
+
+        if (inviteCode) {
+            try {
+                // Buscar el club por el invite code
+                const { data: club } = await supabase
+                    .from('clubs')
+                    .select('id, creator')
+                    .eq('club_link', inviteCode)
+                    .single();
+
+                if (club) {
+                    // Verificar si ya es miembro
+                    const { data: existingMembership } = await supabase
+                        .from('users_clubs')
+                        .select('id')
+                        .eq('user_id', data.user.id)
+                        .eq('club_id', club.id)
+                        .single();
+
+                    if (!existingMembership) {
+                        // Unirse al club
+                        await supabase
+                            .from('users_clubs')
+                            .insert({
+                                user_id: data.user.id,
+                                club_id: club.id,
+                                role: 'member',
+                                invite_code: inviteCode,
+                            });
+
+                        // Crear entrada en referrals
+                        await supabase
+                            .from('referrals')
+                            .insert({
+                                referrer_id: club.creator,
+                                referral_id: data.user.id,
+                                club_id: club.id,
+                            });
+
+                        // Incrementar contador
+                        await supabase.rpc('increment_club_members', { club_uuid: club.id });
+                    }
+
+                    // Limpiar el invite code
+                    sessionStorage.removeItem('club_invite_code');
+                }
+            } catch (error) {
+                console.error('Error processing invite code on login:', error);
+            }
+        }
+    }
+
     return data
 }
 
@@ -79,6 +134,52 @@ export async function signUp(input: SignUpInput) {
                 user: data.user.id,
                 superlikes: 10, // Default starting superlikes
             })
+
+        // NUEVO: Verificar si hay un invite code pendiente
+        if (typeof window !== 'undefined') {
+            const inviteCode = sessionStorage.getItem('club_invite_code');
+
+            if (inviteCode) {
+                try {
+                    // Buscar el club por el invite code
+                    const { data: club } = await supabase
+                        .from('clubs')
+                        .select('id, creator')
+                        .eq('club_link', inviteCode)
+                        .single();
+
+                    if (club) {
+                        // Unirse al club automáticamente
+                        await supabase
+                            .from('users_clubs')
+                            .insert({
+                                user_id: data.user.id,
+                                club_id: club.id,
+                                role: 'member',
+                                invite_code: inviteCode,
+                            });
+
+                        // Crear entrada en referrals (referrer_id es el creator del club)
+                        await supabase
+                            .from('referrals')
+                            .insert({
+                                referrer_id: club.creator,
+                                referral_id: data.user.id,
+                                club_id: club.id,
+                            });
+
+                        // Incrementar contador de miembros
+                        await supabase.rpc('increment_club_members', { club_uuid: club.id });
+
+                        // Limpiar el invite code
+                        sessionStorage.removeItem('club_invite_code');
+                    }
+                } catch (error) {
+                    console.error('Error processing invite code:', error);
+                    // No fallar el sign-up, solo logear el error
+                }
+            }
+        }
     }
 
     return data

@@ -8,6 +8,44 @@ import { createClubSchema, updateClubSchema, type CreateClubInput, type UpdateCl
 import type { Club, ClubStats } from '@/types/club'
 
 /**
+ * Generate a unique random club link
+ * Format: 8-character alphanumeric string (e.g., 'aB3xK9mQ')
+ * Similar to invite links in WhatsApp, Telegram, etc.
+ */
+export async function generateUniqueClubLink(): Promise<string> {
+    const supabase = await createClient()
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const length = 8
+    let isUnique = false
+    let clubLink = ''
+
+    // Keep generating until we find a unique link
+    while (!isUnique) {
+        // Generate random string
+        clubLink = Array.from({ length }, () =>
+            characters.charAt(Math.floor(Math.random() * characters.length))
+        ).join('')
+
+        // Check if it already exists
+        const { data, error } = await supabase
+            .from('clubs')
+            .select('id')
+            .eq('club_link', clubLink)
+            .maybeSingle()
+
+        if (error) {
+            console.error('Error checking club_link uniqueness:', error)
+            throw new Error('Failed to generate unique club link')
+        }
+
+        // If no club found with this link, it's unique
+        isUnique = !data
+    }
+
+    return clubLink
+}
+
+/**
  * Get all clubs
  */
 export const getClubs = cache(async (): Promise<Club[]> => {
@@ -40,6 +78,26 @@ export const getClubById = cache(async (id: string): Promise<Club | null> => {
 
     if (error) {
         console.error('Error fetching club:', error)
+        return null
+    }
+
+    return data
+})
+
+/**
+ * Get a single club by club_link (for invite/join functionality)
+ */
+export const getClubByLink = cache(async (clubLink: string): Promise<Club | null> => {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('clubs')
+        .select('*')
+        .eq('club_link', clubLink)
+        .single()
+
+    if (error) {
+        console.error('Error fetching club by link:', error)
         return null
     }
 
@@ -95,11 +153,15 @@ export async function createClub(input: CreateClubInput, userId: string): Promis
 
     const supabase = await createClient()
 
+    // Generate unique club link
+    const clubLink = await generateUniqueClubLink()
+
     const { data, error } = await supabase
         .from('clubs')
         .insert({
             ...validated,
             creator: userId,
+            club_link: clubLink,
         })
         .select()
         .single()

@@ -38,7 +38,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
                             <YAxis
                                 className="text-xs"
                                 tickMargin={8}
-                                tickFormatter={(value) => `$${value}`}
+                                tickFormatter={(value: number) => `$${value}`}
                             />
                             <ChartTooltip content={<ChartTooltipContent />} />
                             <Line

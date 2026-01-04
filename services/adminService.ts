@@ -36,7 +36,15 @@ export interface PlatformMetrics {
     newSignups: number
 }
 
-export interface ClubWithDetails extends Club {
+export interface ClubWithDetails {
+    id: string
+    name: string
+    logo: Record<string, any> | null
+    bio: string | null
+    level: number | null
+    total_members: number
+    status: 'active' | 'banned' | 'suspended'
+    created_at: string
     creator: User
     stats: {
         engagement: number

@@ -19,8 +19,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { DotsLoader } from "@/components/ui/spinner"
-import GlassCard from "@/ui/glass-card"
-import AvatarWithBadge from "@/ui/avatar-with-badge"
+import GlassCard from "@/components/ui/glass-card"
+import AvatarWithBadge from "@/components/ui/avatar-with-badge"
 import type { Club } from "@/types/club"
 
 const mockClub: Club = {

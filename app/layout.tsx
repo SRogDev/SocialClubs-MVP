@@ -4,6 +4,7 @@ import { Manrope } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { CookieBanner } from "@/components/shared/cookie-banner"
+import { VideocallFloatingButton } from "@/components/shared/videocall-float-button"
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -30,6 +31,7 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
             {children}
             <CookieBanner />
+            <VideocallFloatingButton />
           </ThemeProvider>
         </div>
       </body>

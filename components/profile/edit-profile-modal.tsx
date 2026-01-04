@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Camera } from "lucide-react"
 import { updateProfileAction, uploadProfileImageAction } from "@/app/actions"
 import { useRouter } from "next/navigation"
-import { vibratePattern } from "@/utils/pwa"
+import { vibrate } from "@/utils/pwa"
 
 interface Profile {
   name: string
@@ -47,7 +47,7 @@ export default function EditProfileModal({ open, onOpenChange, profile }: EditPr
 
     if (result.success && result.url) {
       setImageUrl(result.url)
-      vibratePattern([50])
+      vibrate([50])
     } else {
       setError(result.error || 'Error al subir imagen')
     }
@@ -68,7 +68,7 @@ export default function EditProfileModal({ open, onOpenChange, profile }: EditPr
     })
 
     if (result.success) {
-      vibratePattern([50, 100, 50])
+      vibrate([50, 100, 50])
       onOpenChange(false)
       router.refresh()
     } else {

@@ -24,7 +24,7 @@ export function ClubsGrid({ clubs }: ClubsGridProps) {
             // Filtro de búsqueda
             const matchesSearch =
                 club.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                club.creator.username.toLowerCase().includes(searchQuery.toLowerCase())
+                (club.creator.username?.toLowerCase() || '').includes(searchQuery.toLowerCase())
 
             // Filtro de status
             const matchesStatus = statusFilter === 'all' || club.status === statusFilter
