@@ -1,0 +1,272 @@
+[
+  {
+    "id": "academia-online",
+    "name": "Academia Online",
+    "description": "Plataforma educativa para cursos y aprendizaje colaborativo",
+    "color": "#3b82f6",
+    "isPrivate": false,
+    "welcomeMessage": "¡Bienvenido a nuestra academia! Aquí aprenderás y crecerás junto a otros estudiantes apasionados.",
+    "channels": [
+      {
+        "name": "Curso Básico",
+        "price": 0,
+        "type": "escalonado"
+      },
+      {
+        "name": "Curso Avanzado",
+        "price": 29.99,
+        "type": "escalonado"
+      },
+      {
+        "name": "Mentoría Personal",
+        "price": 99.99,
+        "type": "extra"
+      }
+    ],
+    "gamification": {
+      "pointsForPost": 10,
+      "pointsForReferral": 50
+    },
+    "agent": {
+      "personality": {
+        "role": "Tutor educativo y motivador",
+        "tone": "didactico",
+        "temperature": 0.7
+      },
+      "context": {
+        "baseKnowledge": "Soy un tutor especializado en educación online, ayudando a estudiantes a aprender de manera efectiva.",
+        "boundaryRules": [
+          "No proporcionar respuestas directas a exámenes",
+          "Fomentar el aprendizaje activo",
+          "Mantener un tono positivo y motivador"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Explicar conceptos",
+          "action": "Proporcionar explicaciones detalladas de temas educativos"
+        },
+        {
+          "name": "Crear quizzes",
+          "action": "Generar preguntas de evaluación para reforzar el aprendizaje"
+        }
+      ]
+    }
+  },
+  {
+    "id": "empresa",
+    "name": "Empresa Corporativa",
+    "description": "Espacio de trabajo colaborativo para equipos empresariales",
+    "color": "#10b981",
+    "isPrivate": true,
+    "welcomeMessage": "Bienvenido al espacio de trabajo de nuestra empresa. Juntos construiremos el futuro.",
+    "channels": [
+      {
+        "name": "Anuncios Generales",
+        "price": 0,
+        "type": "escalonado"
+      },
+      {
+        "name": "Proyecto Alpha",
+        "price": 49.99,
+        "type": "escalonado"
+      },
+      {
+        "name": "Ejecutivo VIP",
+        "price": 199.99,
+        "type": "extra"
+      }
+    ],
+    "gamification": {
+      "pointsForPost": 5,
+      "pointsForReferral": 100
+    },
+    "agent": {
+      "personality": {
+        "role": "Asistente corporativo eficiente",
+        "tone": "reflexivo",
+        "temperature": 0.5
+      },
+      "context": {
+        "baseKnowledge": "Soy un asistente especializado en entornos corporativos, ayudando con productividad y colaboración.",
+        "boundaryRules": [
+          "Mantener confidencialidad de información sensible",
+          "Priorizar eficiencia y resultados",
+          "Seguir protocolos empresariales"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Organizar reuniones",
+          "action": "Coordinar agendas y preparar materiales para reuniones"
+        },
+        {
+          "name": "Analizar datos",
+          "action": "Procesar y resumir información empresarial"
+        }
+      ]
+    }
+  },
+  {
+    "id": "fan-club",
+    "name": "Fan Club Oficial",
+    "description": "Comunidad de fans apasionados por compartir su entusiasmo",
+    "color": "#f59e0b",
+    "isPrivate": false,
+    "welcomeMessage": "¡Únete a la familia de fans! Aquí celebramos juntos nuestra pasión compartida.",
+    "channels": [
+      {
+        "name": "Noticias y Actualizaciones",
+        "price": 0,
+        "type": "escalonado"
+      },
+      {
+        "name": "Contenido Exclusivo",
+        "price": 9.99,
+        "type": "escalonado"
+      },
+      {
+        "name": "Meet & Greet",
+        "price": 79.99,
+        "type": "extra"
+      }
+    ],
+    "gamification": {
+      "pointsForPost": 15,
+      "pointsForReferral": 75
+    },
+    "agent": {
+      "personality": {
+        "role": "Animador de comunidad entusiasta",
+        "tone": "alegre",
+        "temperature": 0.8
+      },
+      "context": {
+        "baseKnowledge": "Soy el animador oficial de esta comunidad de fans, manteniendo el entusiasmo y la positividad.",
+        "boundaryRules": [
+          "Mantener un ambiente positivo y respetuoso",
+          "Fomentar la participación activa",
+          "Celebrar logros y momentos especiales"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Organizar eventos",
+          "action": "Planificar y promocionar eventos comunitarios"
+        },
+        {
+          "name": "Crear contenido",
+          "action": "Generar posts y discusiones engaging"
+        }
+      ]
+    }
+  },
+  {
+    "id": "artista-visual",
+    "name": "Estudio de Arte Visual",
+    "description": "Espacio creativo para artistas visuales y amantes del arte",
+    "color": "#8b5cf6",
+    "isPrivate": false,
+    "welcomeMessage": "Bienvenido al estudio creativo. Aquí tu arte cobra vida y se comparte con el mundo.",
+    "channels": [
+      {
+        "name": "Galería Pública",
+        "price": 0,
+        "type": "escalonado"
+      },
+      {
+        "name": "Taller Avanzado",
+        "price": 19.99,
+        "type": "escalonado"
+      },
+      {
+        "name": "Sesión Privada",
+        "price": 149.99,
+        "type": "extra"
+      }
+    ],
+    "gamification": {
+      "pointsForPost": 20,
+      "pointsForReferral": 60
+    },
+    "agent": {
+      "personality": {
+        "role": "Curador artístico inspirador",
+        "tone": "entusiasta",
+        "temperature": 0.9
+      },
+      "context": {
+        "baseKnowledge": "Soy un curador artístico que ayuda a artistas a expresarse y conectar con su audiencia.",
+        "boundaryRules": [
+          "Respetar la originalidad y propiedad intelectual",
+          "Fomentar la crítica constructiva",
+          "Celebrar la diversidad artística"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Analizar obras",
+          "action": "Proporcionar feedback detallado sobre arte visual"
+        },
+        {
+          "name": "Inspirar creatividad",
+          "action": "Sugerir ideas y técnicas para nuevos proyectos"
+        }
+      ]
+    }
+  },
+  {
+    "id": "nicho",
+    "name": "Comunidad de Nicho",
+    "description": "Espacio especializado para entusiastas de un tema específico",
+    "color": "#ef4444",
+    "isPrivate": true,
+    "welcomeMessage": "Bienvenido a nuestra comunidad especializada. Aquí los expertos se reúnen para compartir conocimientos profundos.",
+    "channels": [
+      {
+        "name": "Discusiones Generales",
+        "price": 0,
+        "type": "escalonado"
+      },
+      {
+        "name": "Contenido Premium",
+        "price": 39.99,
+        "type": "escalonado"
+      },
+      {
+        "name": "Consultoría Experta",
+        "price": 299.99,
+        "type": "extra"
+      }
+    ],
+    "gamification": {
+      "pointsForPost": 25,
+      "pointsForReferral": 150
+    },
+    "agent": {
+      "personality": {
+        "role": "Experto especializado y analítico",
+        "tone": "reflexivo",
+        "temperature": 0.6
+      },
+      "context": {
+        "baseKnowledge": "Soy un experto en este nicho específico, proporcionando conocimientos profundos y análisis detallados.",
+        "boundaryRules": [
+          "Mantener estándares de calidad altos",
+          "Verificar información antes de compartir",
+          "Fomentar discusiones intelectuales"
+        ]
+      },
+      "skills": [
+        {
+          "name": "Investigar temas",
+          "action": "Profundizar en temas específicos del nicho"
+        },
+        {
+          "name": "Resolver problemas",
+          "action": "Ayudar con consultas técnicas especializadas"
+        }
+      ]
+    }
+  }
+]

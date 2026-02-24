@@ -15,13 +15,12 @@ import type { MediaType } from "@/components/post/media-selection-modal";
 import AllWidget from "@/components/widgets/all-widget";
 import ContentCreationBar from "@/components/club/content-creation-bar";
 import { motion, AnimatePresence } from "framer-motion";
-import PostPoll from "@/features/post/components/post-poll";
 import ChatContentCreationBar from "@/components/chats/chat-content-creation-bar";
 import { usePostStore } from "@/stores/post";
-import PostImage from "@/features/post/components/post-image";
-import PostVideo from "@/features/post/components/post-video";
-import PostAudio from "@/features/post/components/post-audio";
-import PostText from "@/features/post/components/post-text";
+import FloatingJoinButton from "@/components/club/floating-join-button";
+// import { joinClubAction } from "@/actions/clubActions"; // TODO: Implementar
+import { useToast } from "@/hooks/use-toast";
+// import { triggerVibration } from "@/utils/pwa"; // TODO: Implementar
 
 // Datos de ejemplo para el club
 const mockClub = {
@@ -75,9 +74,6 @@ const mockClub = {
   ],
 };
 
-// Simular que no pertenezco al club "Fotografía"
-const isVisitor = mockClub.name === "Fotografía";
-
 // Ordenar canales: primero escalonados de menor a mayor, luego extras
 const sortedChannels = [...mockClub.channels].sort((a, b) => {
   // Si ambos son del mismo tipo, ordenar por precio
@@ -92,7 +88,17 @@ const sortedChannels = [...mockClub.channels].sort((a, b) => {
   return 1;
 });
 
+// Simular estado de membresía - TODO: Reemplazar con hook real useIsMember
+const isVisitor = true; // Cambiar a false para simular miembro
+const isMember = !isVisitor;
+
+// Filtrar canales para visitantes: solo mostrar el primer canal (general, que es free)
+const availableChannels = isVisitor
+  ? sortedChannels.filter((channel) => channel.order === 1) // Solo el primer canal
+  : sortedChannels;
+
 const posts = usePostStore((s) => s.posts);
+const { toast } = useToast();
 const [activeTab, setActiveTab] = useState("general");
 const [message, setMessage] = useState("");
 const [showWidgetModal, setShowWidgetModal] = useState(false);
@@ -108,6 +114,9 @@ const [lastScrollY, setLastScrollY] = useState(0);
 
 const widgetButtonRef = useRef<HTMLButtonElement>(null);
 const contentRef = useRef<HTMLDivElement>(null);
+
+// Para visitantes, forzar el tab activo al primer canal
+const effectiveActiveTab = isVisitor ? availableChannels[0]?.id || "general" : activeTab;
 
 // Ocultar la barra de navegación inferior cuando estamos dentro de un club
 useEffect(() => {
@@ -162,19 +171,43 @@ const handleMediaSelect = (source: string, file?: File) => {
   // Aquí iría la lógica para procesar el archivo seleccionado
 };
 
-const handleJoinClub = () => {
-  setShowJoinAnimation(true);
-  setTimeout(() => {
+const handleJoinClub = async () => {
+  try {
+    // TODO: Trigger vibration feedback
+    // triggerVibration("medium");
+
+    setShowJoinAnimation(true);
+
+    // TODO: Usar el ID real del club desde params
+    // const result = await joinClubAction(mockClub.id);
+
+    // Simular éxito por ahora
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     setHasJoined(true);
+    toast({
+      title: "¡Te has unido al club!",
+      description: `Bienvenido a ${mockClub.name}`,
+    });
+  } catch (error) {
+    toast({
+      title: "Error al unirse",
+      description: "Ha ocurrido un error inesperado",
+      variant: "destructive",
+    });
+  } finally {
     setShowJoinAnimation(false);
-  }, 1500);
+  }
 };
 
 const activeChannel = mockClub.channels.find(
   (channel) => channel.id === activeTab
 );
-// Simular que solo tenemos suscripción al canal general (precio 0)
-const hasSubscription = activeChannel?.price === 0;
+// Para visitantes: solo acceso al primer canal (free)
+// Para miembros: acceso basado en suscripción
+const hasSubscription = isVisitor
+  ? activeChannel?.order === 1 // Solo primer canal para visitantes
+  : activeChannel?.price === 0; // Lógica existente para miembros
 
 const handleSuperlakesPurchase = () => {
   console.log("Comprando 30 superlikes por $4.99");
@@ -230,13 +263,13 @@ return (
             >
               <Tabs
                 defaultValue="general"
-                value={activeTab}
+                value={effectiveActiveTab}
                 onValueChange={setActiveTab}
                 className="w-full"
               >
                 <ScrollArea className="w-full">
                   <TabsList className="w-full flex justify-start px-0 h-10 bg-transparent">
-                    {sortedChannels.map((channel) => (
+                    {availableChannels.map((channel) => (
                       <TabsTrigger
                         key={channel.id}
                         value={channel.id}
@@ -263,11 +296,11 @@ return (
         <div ref={contentRef} className="h-full overflow-y-auto pb-32">
           <Tabs
             defaultValue="general"
-            value={activeTab}
+            value={effectiveActiveTab}
             onValueChange={setActiveTab}
             className="w-full"
           >
-            {sortedChannels.map((channel) => (
+            {availableChannels.map((channel) => (
               <TabsContent
                 key={channel.id}
                 value={channel.id}
@@ -300,60 +333,10 @@ return (
                   <div className="w-full">
                     {channel.id === "general" ? (
                       <div className="w-full" data-channel="general">
-                        {posts.map((post) => (
-                          <>
-                            {post.type === "poll" && (
-                              <PostPoll
-                                key={post.id}
-                                onComment={() => console.log("nada por ahora")}
-                                availableSuperlikes={availableSuperlikes}
-                                clubColor="red"
-                                onSuperlikePurchase={handleSuperlakesPurchase}
-                                post={post}
-                              ></PostPoll>
-                            )}
-                            {post.type === "image" && (
-                              <PostImage
-                                key={post.id}
-                                onComment={() => console.log("nada por ahora")}
-                                availableSuperlikes={availableSuperlikes}
-                                clubColor="red"
-                                onSuperlikePurchase={handleSuperlakesPurchase}
-                                post={post}
-                              ></PostImage>
-                            )}
-                            {post.type == "video" && (
-                              <PostVideo
-                                key={post.id}
-                                onComment={() => console.log("nada por ahora")}
-                                availableSuperlikes={availableSuperlikes}
-                                clubColor="red"
-                                onSuperlikePurchase={handleSuperlakesPurchase}
-                                post={post}
-                              ></PostVideo>
-                            )}
-                            {post.type === "audio" && (
-                              <PostAudio
-                                key={post.id}
-                                onComment={() => console.log("nada por ahora")}
-                                availableSuperlikes={availableSuperlikes}
-                                clubColor="red"
-                                onSuperlikePurchase={handleSuperlakesPurchase}
-                                post={post}
-                              ></PostAudio>
-                            )}
-                            {post.type === "text" && (
-                              <PostText
-                                key={post.id}
-                                onComment={() => console.log("nada por ahora")}
-                                availableSuperlikes={availableSuperlikes}
-                                clubColor="red"
-                                onSuperlikePurchase={handleSuperlakesPurchase}
-                                post={post}
-                              ></PostText>
-                            )}
-                          </>
-                        ))}
+                        {/* TODO: Render posts here */}
+                        <div className="p-4 text-center text-muted-foreground">
+                          Contenido del canal {channel.name}
+                        </div>
                       </div>
                     ) : (
                       <div className="container py-8">
@@ -385,9 +368,9 @@ return (
         )}
       </AnimatePresence>
 
-      {/* Barra de creación de contenido - Siempre visible */}
+      {/* Barra de creación de contenido - Solo para miembros */}
       <AnimatePresence>
-        {showUI && mockClub.isCreator && hasSubscription && !isVisitor && (
+        {showUI && mockClub.isCreator && hasSubscription && isMember && (
           <motion.div
             initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
@@ -401,76 +384,15 @@ return (
         )}
       </AnimatePresence>
 
-      {/* Botón flotante para visitantes */}
+      {/* Botón flotante para unirse - Solo para visitantes */}
       {isVisitor && !hasJoined && (
-        <AnimatePresence>
-          <motion.div
-            className="fixed bottom-4 right-4 z-50"
-            initial={{ opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 100 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Button
-              onClick={handleJoinClub}
-              className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg rounded-xl px-6 py-3 flex items-center gap-3"
-              size="lg"
-            >
-              <AnimatePresence>
-                {!showJoinAnimation ? (
-                  <motion.div
-                    key="icon"
-                    initial={{ opacity: 1, scale: 1 }}
-                    exit={{
-                      opacity: 0,
-                      scale: 0,
-                      y: -50,
-                      transition: { duration: 0.8, ease: "easeInOut" },
-                    }}
-                    className="flex items-center gap-3"
-                  >
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage
-                        src={mockClub.imageUrl || "/placeholder.svg"}
-                        alt={mockClub.name}
-                      />
-                      <AvatarFallback className="text-xs">
-                        {mockClub.name.substring(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium">Unirse</span>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="particles"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex items-center gap-3"
-                  >
-                    {[...Array(5)].map((_, i) => (
-                      <motion.div
-                        key={i}
-                        className="w-2 h-2 bg-white rounded-full"
-                        initial={{ opacity: 1, y: 0 }}
-                        animate={{
-                          opacity: 0,
-                          y: -100,
-                          x: (i - 2) * 20,
-                        }}
-                        transition={{
-                          duration: 1.2,
-                          delay: i * 0.1,
-                          ease: "easeOut",
-                        }}
-                      />
-                    ))}
-                    <UserPlus className="h-5 w-5" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Button>
-          </motion.div>
-        </AnimatePresence>
+        <FloatingJoinButton
+          clubName={mockClub.name}
+          clubIconUrl={mockClub.imageUrl}
+          clubColor={mockClub.color}
+          onJoin={handleJoinClub}
+          isJoining={showJoinAnimation}
+        />
       )}
 
       <AllWidget
@@ -487,6 +409,5 @@ return (
         clubId={mockClub.id}
       />
     </div>
-  </div >
   </>
-}
+)

@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { GuestButton } from "@/components/auth/guest-button";
+import posthog from 'posthog-js';
 
 export function SignUpForm({
   className,
@@ -49,6 +50,13 @@ export function SignUpForm({
         },
       });
       if (error) throw error;
+      
+      // Capture PostHog event on success (client-side only)
+      posthog.capture('user_registered', {
+        email: email,
+        timestamp: new Date().toISOString(),
+      });
+      
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");

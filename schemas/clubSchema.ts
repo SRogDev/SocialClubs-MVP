@@ -13,6 +13,7 @@ export const clubSchema = z.object({
     level: z.number().int().min(1).max(10).nullable().optional(),
     privacity: z.enum(['public', 'private', 'restricted']).nullable().optional(),
     tags: z.any().nullable().optional(),
+    welcomeMessage: z.string().max(1000, 'El mensaje de bienvenida no puede superar 1000 caracteres').optional(),
 })
 
 // Club creation schema
