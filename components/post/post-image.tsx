@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import PostHeader from "./post-header";
 import PostActions from "./post-actions";
+import { Image } from "@imagekit/next";
 import type { Post } from "@/types/post";
 
 interface PostImageProps {
@@ -33,10 +34,13 @@ export default function PostImage({
 
       {post.imageUrl && (
         <div className="relative">
-          <img
-            src={post.imageUrl || "/placeholder.svg"}
+          <Image
+            src={post.imageUrl}
             alt="Post content"
+            width={800}
+            height={600}
             className="w-full h-auto object-cover"
+            transformation={[{ quality: 85, format: 'auto' }]}
           />
         </div>
       )}

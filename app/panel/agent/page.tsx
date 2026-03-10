@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MainConfig } from '@/components/agent/MainConfig'
@@ -8,11 +8,23 @@ import { MainChat } from '@/components/agent/MainChat'
 import { AgentTabsTransition } from '@/components/agent/AgentTabsTransition'
 import { Card } from '@/components/ui/card'
 import { Bot, Settings } from 'lucide-react'
+import { getAgentMetaAction } from '@/app/actions/agentActions'
 
 export default function AgentPage() {
     const searchParams = useSearchParams()
     const clubId = searchParams.get('clubId') || ''
     const [activeTab, setActiveTab] = useState<'config' | 'chat'>('config')
+    const [agentName, setAgentName] = useState<string>('Agente del club')
+    const [agentSkills, setAgentSkills] = useState<{ name: string; action: string }[]>([])
+
+    useEffect(() => {
+        if (!clubId) return
+        getAgentMetaAction(clubId).then((meta) => {
+            if (!meta) return
+            setAgentName(meta.agentName)
+            setAgentSkills(meta.skills)
+        })
+    }, [clubId])
 
     if (!clubId) {
         return (
@@ -55,6 +67,8 @@ export default function AgentPage() {
                             ) : (
                                 <MainChat
                                     clubId={clubId}
+                                    agentName={agentName}
+                                    agentSkills={agentSkills}
                                     onBackToConfig={() => setActiveTab('config')}
                                 />
                             )}

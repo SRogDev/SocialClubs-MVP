@@ -9,6 +9,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { updateUserProfile } from '@/services/userService'
 import { updateProfileSchema, type UpdateProfileInput } from '@/schemas/profileSchema'
+import { uploadToImageKit, IK_FOLDERS } from '@/lib/imagekit'
 import type { User } from '@/types/user'
 
 /**
@@ -103,26 +104,15 @@ export async function uploadProfileImageAction(
         }
 
         // Generate unique filename
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${user.id}-${Date.now()}.${fileExt}`
-        const filePath = `avatars/${fileName}`
+        const fileExt = file.name.split('.').pop() || 'jpg'
+        const fileName = `avatar-${user.id}-${Date.now()}.${fileExt}`
 
-        // Upload to Supabase Storage
-        const { error: uploadError } = await supabase.storage
-            .from('profiles')
-            .upload(filePath, file, {
-                upsert: true,
-                contentType: file.type,
-            })
-
-        if (uploadError) {
-            throw new Error('Error al subir la imagen')
-        }
-
-        // Get public URL
-        const {
-            data: { publicUrl },
-        } = supabase.storage.from('profiles').getPublicUrl(filePath)
+        // Upload to ImageKit
+        const { url: publicUrl } = await uploadToImageKit(
+            file,
+            fileName,
+            IK_FOLDERS.avatars
+        )
 
         // Update user profile with new image URL
         await updateUserProfile(user.id, { avatar_url: publicUrl })

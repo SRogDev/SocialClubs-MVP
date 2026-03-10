@@ -74,7 +74,9 @@ export function ChannelsStep({
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor={`channel-price-${channel.id}`}>Precio (€)</Label>
+                                    <Label htmlFor={`channel-price-${channel.id}`}>
+                                        Precio/mes ($) <span className="text-muted-foreground font-normal">— 0 = gratuito</span>
+                                    </Label>
                                     <Input
                                         id={`channel-price-${channel.id}`}
                                         type="number"
@@ -83,7 +85,18 @@ export function ChannelsStep({
                                         value={channel.price}
                                         onChange={(e) => onChannelChange(channel.id, 'price', parseFloat(e.target.value) || 0)}
                                         placeholder="0.00"
+                                        className={channel.price > 0 && channel.price < 5 ? 'border-destructive' : ''}
                                     />
+                                    {channel.price > 0 && channel.price < 5 && (
+                                        <p className="text-xs text-destructive mt-1">
+                                            Mínimo $5/mes para canales de pago
+                                        </p>
+                                    )}
+                                    {channel.price >= 5 && (
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Anual: ${(channel.price * 10).toFixed(0)}/año (2 meses gratis)
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                             <div>

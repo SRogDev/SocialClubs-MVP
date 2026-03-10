@@ -24,6 +24,9 @@ import {
     type CommentInput,
 } from '@/schemas/postSchema'
 import type { Post, PostComment } from '@/types/post'
+import { checkLikeRateLimit, checkCommentRateLimit } from '@/lib/rate-limit-redis'
+import { invalidatePostStatsCache } from '@/lib/post-stats-cache'
+import { enqueueGamificationEvent } from '@/lib/qstash'
 
 /**
  * Create a new post
@@ -63,6 +66,15 @@ export async function createPostAction(
 
         // Create post
         const post = await createPost(validated, user.id)
+
+        // Enqueue gamification event (fire-and-forget — does not block response)
+        enqueueGamificationEvent({
+            userId: user.id,
+            clubId: validated.club_id,
+            actionType: 'post_created',
+            metadata: { postId: post.id },
+            triggeredAt: Date.now(),
+        }).catch((err) => console.error('[createPostAction] QStash enqueue failed:', err))
 
         // Revalidate paths
         revalidatePath(`/clubs/${validated.club_id}`)
@@ -208,6 +220,15 @@ export async function addCommentAction(
             return { success: false, error: 'Usuario no autenticado' }
         }
 
+        // Rate limiting: 5 comments per user per 10 seconds
+        const rateCheck = await checkCommentRateLimit(user.id)
+        if (!rateCheck.allowed) {
+            return {
+                success: false,
+                error: `Demasiados comentarios. Intenta en ${rateCheck.retryAfter}s`,
+            }
+        }
+
         // Verify post exists and get club_id
         const { data: post } = await supabase
             .from('posts')
@@ -221,6 +242,18 @@ export async function addCommentAction(
 
         // Add comment
         const comment = await addComment(validated, user.id)
+
+        // Invalidate stats cache (comment count changed)
+        await invalidatePostStatsCache(validated.post_id)
+
+        // Enqueue gamification event (fire-and-forget)
+        enqueueGamificationEvent({
+            userId: user.id,
+            clubId: post.club_id,
+            actionType: 'comment_added',
+            metadata: { postId: validated.post_id, commentId: comment.id },
+            triggeredAt: Date.now(),
+        }).catch((err) => console.error('[addCommentAction] QStash enqueue failed:', err))
 
         // Revalidate paths
         revalidatePath(`/clubs/${post.club_id}`)
@@ -254,6 +287,15 @@ export async function likePostAction(
             return { success: false, error: 'Usuario no autenticado' }
         }
 
+        // Rate limiting: 1 like per (userId + postId) per 2 seconds
+        const rateCheck = await checkLikeRateLimit(user.id, postId)
+        if (!rateCheck.allowed) {
+            return {
+                success: false,
+                error: `Demasiadas acciones. Intenta en ${rateCheck.retryAfter}s`,
+            }
+        }
+
         // Verify post exists and get club_id
         const { data: post } = await supabase
             .from('posts')
@@ -273,6 +315,18 @@ export async function likePostAction(
             },
             user.id
         )
+
+        // Invalidate stats cache (like count changed)
+        await invalidatePostStatsCache(postId)
+
+        // Enqueue gamification event (fire-and-forget)
+        enqueueGamificationEvent({
+            userId: user.id,
+            clubId: post.club_id,
+            actionType: 'like_given',
+            metadata: { postId },
+            triggeredAt: Date.now(),
+        }).catch((err) => console.error('[likePostAction] QStash enqueue failed:', err))
 
         // Revalidate paths
         revalidatePath(`/clubs/${post.club_id}`)
@@ -325,6 +379,9 @@ export async function unlikePostAction(
 
         // Remove like interaction
         await removePostInteraction(postId, user.id, 'like')
+
+        // Invalidate stats cache (like count changed)
+        await invalidatePostStatsCache(postId)
 
         // Revalidate paths
         revalidatePath(`/clubs/${post.club_id}`)
@@ -393,6 +450,18 @@ export async function superlikePostAction(
             user_id_input: user.id,
             amount_input: 1,
         })
+
+        // Invalidate stats cache (superlike count changed)
+        await invalidatePostStatsCache(postId)
+
+        // Enqueue gamification event (fire-and-forget)
+        enqueueGamificationEvent({
+            userId: user.id,
+            clubId: post.club_id,
+            actionType: 'superlike_given',
+            metadata: { postId },
+            triggeredAt: Date.now(),
+        }).catch((err) => console.error('[superlikePostAction] QStash enqueue failed:', err))
 
         // Revalidate paths
         revalidatePath(`/clubs/${post.club_id}`)

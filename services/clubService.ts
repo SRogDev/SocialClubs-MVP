@@ -276,9 +276,16 @@ export const isUserClubMember = cache(async (userId: string, clubId: string): Pr
 
 /**
  * Join a club (add user to club membership)
+ * Checks ban status before inserting.
  */
 export async function joinClub(userId: string, clubId: string, role: string = 'member'): Promise<void> {
     const supabase = await createClient()
+
+    // Check if user is banned from this club
+    const banned = await isUserBannedFromClub(userId, clubId)
+    if (banned) {
+        throw new Error('Has sido baneado de este club y no puedes unirte.')
+    }
 
     const { error } = await supabase
         .from('users_clubs')
@@ -292,6 +299,74 @@ export async function joinClub(userId: string, clubId: string, role: string = 'm
     if (error) {
         console.error('Error joining club:', error)
         throw new Error('Failed to join club')
+    }
+}
+
+/**
+ * Check if a user is banned from a specific club
+ */
+export async function isUserBannedFromClub(userId: string, clubId: string): Promise<boolean> {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+        .from('club_bans')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('club_id', clubId)
+        .maybeSingle()
+
+    if (error) {
+        console.error('Error checking club ban:', error)
+        return false // Fail open — don't block users on DB errors
+    }
+    return !!data
+}
+
+/**
+ * Ban a user from a club (prevents them from rejoining)
+ */
+export async function banUserFromClub(
+    userId: string,
+    clubId: string,
+    bannedBy: string,
+    reason?: string
+): Promise<void> {
+    const supabase = await createClient()
+
+    const { error } = await supabase
+        .from('club_bans')
+        .upsert(
+            { user_id: userId, club_id: clubId, banned_by: bannedBy, reason: reason ?? null },
+            { onConflict: 'user_id,club_id' }
+        )
+
+    if (error) {
+        console.error('Error banning user from club:', error)
+        throw new Error('Failed to ban user from club')
+    }
+
+    // Also remove existing membership
+    await supabase
+        .from('users_clubs')
+        .delete()
+        .eq('user_id', userId)
+        .eq('club_id', clubId)
+}
+
+/**
+ * Unban a user from a club
+ */
+export async function unbanUserFromClub(userId: string, clubId: string): Promise<void> {
+    const supabase = await createClient()
+
+    const { error } = await supabase
+        .from('club_bans')
+        .delete()
+        .eq('user_id', userId)
+        .eq('club_id', clubId)
+
+    if (error) {
+        console.error('Error unbanning user from club:', error)
+        throw new Error('Failed to unban user from club')
     }
 }
 

@@ -60,19 +60,22 @@ export default function EditProfileModal({ open, onOpenChange, profile }: EditPr
     setIsSubmitting(true)
     setError(null)
 
+    // Optimistic: close modal immediately and refresh in background
+    vibrate([50, 100, 50])
+    onOpenChange(false)
+
     const result = await updateProfileAction({
       name,
       username,
       bio: description,
-      image_url: imageUrl,
+      avatar_url: imageUrl,
     })
 
     if (result.success) {
-      vibrate([50, 100, 50])
-      onOpenChange(false)
       router.refresh()
     } else {
       setError(result.error || 'Error al actualizar perfil')
+      onOpenChange(true) // Reopen modal on error
     }
 
     setIsSubmitting(false)
@@ -82,13 +85,13 @@ export default function EditProfileModal({ open, onOpenChange, profile }: EditPr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center font-serif">Editar perfil</DialogTitle>
+          <DialogTitle className="text-center font-sans">Editar perfil</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
           {error && (
-            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md mb-4">
-              {error}
+            <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+              <span>{error}</span>
             </div>
           )}
 
@@ -165,7 +168,9 @@ export default function EditProfileModal({ open, onOpenChange, profile }: EditPr
               Cancelar
             </Button>
             <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-              {isSubmitting ? "Guardando..." : "Guardar cambios"}
+              {isSubmitting ? (
+                <><span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden /> Guardando...</>
+              ) : "Guardar cambios"}
             </Button>
           </DialogFooter>
         </form>

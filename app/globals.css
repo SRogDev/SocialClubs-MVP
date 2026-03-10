@@ -4,42 +4,48 @@
 
 @layer base {
   :root {
-    /* Colores Primary - Dark Orange (modo claro) */
-    --primary: 28 80% 52%;
-    /* Dark Orange #FF8C00 */
+    /* Colores Primary - Electric Orange (modo claro) #FF5500 */
+    --primary: 20 100% 50%;
+    /* Electric Orange #FF5500 */
     --primary-foreground: 0 0% 100%;
     /* Blanco sobre primary */
 
+    /* Electric orange variants for effects */
+    --electric-orange: 20 100% 50%;
+    --electric-orange-bright: 25 100% 55%;
+    --electric-orange-deep: 15 100% 45%;
+    --electric-orange-glow: 20 100% 65%;
+
     /* Fondos y textos - Neutros cálidos */
-    --background: 36 39% 96%;
-    /* Warm White - Fondo principal cálido */
-    --foreground: 24 10% 10%;
-    /* Dark Brown - Texto principal */
+    --background: 0 0% 98%;
+    /* Near White - Fondo principal */
+    --foreground: 20 10% 8%;
+    /* Near Black - Texto principal */
 
     /* Cards y superficies elevadas */
     --card: 0 0% 100%;
     /* Blanco puro para cards */
-    --card-foreground: 24 10% 10%;
+    --card-foreground: 20 10% 8%;
 
     /* Popovers y tooltips */
     --popover: 0 0% 100%;
-    --popover-foreground: 24 10% 10%;
+    --popover-foreground: 20 10% 8%;
 
     /* Colores secundarios */
-    --secondary: 30 25% 90%;
+    --secondary: 20 15% 92%;
     /* Gris cálido claro */
-    --secondary-foreground: 24 10% 10%;
+    --secondary-foreground: 20 10% 8%;
 
     /* Fondos apagados (muted) */
-    --muted: 30 20% 92%;
+    --muted: 20 10% 94%;
     /* Light Warm Gray */
-    --muted-foreground: 24 10% 45%;
+    --muted-foreground: 20 8% 45%;
     /* Texto sobre muted */
 
     /* Accent (para highlights sutiles) */
-    --accent: 28 80% 95%;
-    /* Naranja muy claro */
-    --accent-foreground: 28 80% 35%;
+    --accent: 20 100% 95%;
+    /* Naranja eléctrico muy claro */
+    --accent-foreground: 20 100% 35%;
     /* Naranja oscuro */
 
     /* Estados */
@@ -48,15 +54,15 @@
     --destructive-foreground: 0 0% 98%;
 
     /* Bordes e inputs */
-    --border: 30 20% 85%;
+    --border: 20 12% 88%;
     /* Bordes sutiles cálidos */
-    --input: 30 20% 85%;
-    --ring: 28 80% 52%;
-    /* Focus ring en primary */
+    --input: 20 12% 88%;
+    --ring: 20 100% 50%;
+    /* Focus ring en electric orange */
 
     /* Charts */
-    --chart-1: 28 80% 52%;
-    /* Primary naranja */
+    --chart-1: 20 100% 50%;
+    /* Electric orange */
     --chart-2: 142 71% 45%;
     /* Verde */
     --chart-3: 199 89% 48%;
@@ -72,43 +78,49 @@
   }
 
   .dark {
-    /* Colores Primary - Deep Saffron (modo oscuro) */
-    --primary: 30 100% 60%;
-    /* Deep Saffron #FF9933 */
-    --primary-foreground: 24 10% 10%;
-    /* Texto oscuro sobre primary */
+    /* Colores Primary - Electric Orange Vivid (modo oscuro) */
+    --primary: 20 100% 55%;
+    /* Electric Orange Vivid #FF6217 */
+    --primary-foreground: 0 0% 100%;
+    /* Blanco sobre primary */
 
-    /* Fondos y textos - Neutros cálidos oscuros */
-    --background: 24 10% 10%;
-    /* Dark Warm Brown - Fondo principal */
-    --foreground: 36 39% 96%;
-    /* Warm White - Texto principal */
+    /* Electric orange variants */
+    --electric-orange: 20 100% 55%;
+    --electric-orange-bright: 25 100% 62%;
+    --electric-orange-deep: 15 100% 48%;
+    --electric-orange-glow: 20 100% 70%;
+
+    /* Fondos y textos - Oscuros */
+    --background: 220 15% 6%;
+    /* Dark Near Black */
+    --foreground: 0 0% 95%;
+    /* Near White - Texto principal */
 
     /* Cards y superficies elevadas */
-    --card: 24 10% 12%;
+    --card: 220 12% 9%;
     /* Ligeramente más claro que fondo */
-    --card-foreground: 36 39% 96%;
+    --card-foreground: 0 0% 95%;
 
     /* Popovers y tooltips */
-    --popover: 24 10% 12%;
-    --popover-foreground: 36 39% 96%;
+    --popover: 220 12% 9%;
+    --popover-foreground: 0 0% 95%;
 
     /* Colores secundarios */
-    --secondary: 24 10% 18%;
-    /* Gris cálido medio */
-    --secondary-foreground: 36 39% 96%;
+    --secondary: 220 10% 14%;
+    /* Gris oscuro */
+    --secondary-foreground: 0 0% 95%;
 
     /* Fondos apagados (muted) */
-    --muted: 24 10% 15%;
-    /* Medium Warm Gray */
-    --muted-foreground: 30 10% 65%;
+    --muted: 220 10% 12%;
+    /* Dark Gray */
+    --muted-foreground: 220 8% 60%;
     /* Texto apagado */
 
     /* Accent (para highlights sutiles) */
-    --accent: 30 100% 20%;
-    /* Naranja oscuro profundo */
-    --accent-foreground: 30 100% 75%;
-    /* Naranja claro */
+    --accent: 20 100% 15%;
+    /* Naranja eléctrico oscuro profundo */
+    --accent-foreground: 20 100% 75%;
+    /* Naranja eléctrico claro */
 
     /* Estados */
     --destructive: 0 84% 60%;
@@ -116,15 +128,15 @@
     --destructive-foreground: 0 0% 98%;
 
     /* Bordes e inputs */
-    --border: 24 10% 20%;
+    --border: 220 10% 16%;
     /* Bordes sutiles */
-    --input: 24 10% 20%;
-    --ring: 30 100% 60%;
-    /* Focus ring en primary */
+    --input: 220 10% 16%;
+    --ring: 20 100% 55%;
+    /* Focus ring en electric orange */
 
     /* Charts */
-    --chart-1: 30 100% 60%;
-    /* Primary saffron */
+    --chart-1: 20 100% 55%;
+    /* Electric orange vivid */
     --chart-2: 142 71% 45%;
     /* Verde */
     --chart-3: 199 89% 48%;

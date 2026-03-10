@@ -11,9 +11,8 @@ import { ChannelsStep } from "./channels-step"
 import { GamificationStep } from "./gamification-step"
 import { AgentStep } from "./agent-step"
 import { useClubCreate } from "@/hooks/use-club-actions"
-import { createClient } from "@/lib/supabase/client"
 import { compressImage } from "@/app/utils/compressImage"
-import { Snackbar } from "@/components/ui/snackbar"
+import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import {
     Dialog,
@@ -118,15 +117,7 @@ export function ClubCreationWizard() {
     const [newClubId, setNewClubId] = useState("1")
     const [file, setFile] = useState<File | undefined>(undefined)
     const { createClub, loading, error } = useClubCreate()
-
-    //SnackBar
-    const [snackBarOpen, setSnackBarOpen] = useState(false)
-    const [snackBarErrorMsg, setSnackBarErrorMsg] = useState("")
-
-    const handleCloseSnackBar = () => {
-        setSnackBarOpen(false)
-        setSnackBarErrorMsg("")
-    }
+    const { toast } = useToast()
 
     const handleTemplateSelect = (template: Template | null) => {
         setSelectedTemplate(template)
@@ -168,7 +159,7 @@ export function ClubCreationWizard() {
                 }
             })
         }
-        setCurrentStep(1)
+        // Don't auto-advance — user must click "Continuar" explicitly
     }
 
     const handleNext = () => {
@@ -200,28 +191,33 @@ export function ClubCreationWizard() {
 
     useEffect(() => {
         if (error) {
-            setSnackBarErrorMsg(`Ocurrió un error: ${error}`)
-            setSnackBarOpen(true)
+            toast({ title: 'Error', description: `Ocurrió un error: ${error}`, variant: 'destructive' })
         }
-    }, [error])
+    }, [error, toast])
 
-    // Upload logo helper
-    async function uploadLogo(file: File, path: string): Promise<{ url: string | null, error: Error | null }> {
+    // Upload logo helper — uses ImageKit via /api/upload-auth
+    async function uploadLogo(file: File): Promise<{ url: string | null, error: Error | null }> {
         try {
-            const supabase = createClient()
-            const { data, error } = await supabase.storage
-                .from('clubs')
-                .upload(path, file, { upsert: true })
+            // Get upload auth params from our API route
+            const authRes = await fetch('/api/upload-auth')
+            if (!authRes.ok) throw new Error('Error obteniendo credenciales de subida')
+            const { token, expire, signature, publicKey } = await authRes.json()
 
-            if (error) {
-                return { url: null, error }
-            }
+            const { upload } = await import('@imagekit/next')
+            const fileName = `club-logo-${Date.now()}.jpg`
 
-            const { data: { publicUrl } } = supabase.storage
-                .from('clubs')
-                .getPublicUrl(path)
+            const response = await upload({
+                file,
+                fileName,
+                folder: '/clubs/logos',
+                useUniqueFileName: true,
+                token,
+                expire,
+                signature,
+                publicKey,
+            })
 
-            return { url: publicUrl, error: null }
+            return { url: response.url, error: null }
         } catch (err) {
             return { url: null, error: err instanceof Error ? err : new Error('Upload failed') }
         }
@@ -269,7 +265,7 @@ export function ClubCreationWizard() {
             // Upload logo if file is provided
             if (file) {
                 const compressedFile = await compressImage(file as File, 0.7, 800) as File
-                const { url, error } = await uploadLogo(compressedFile, `${formData.name.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.jpg`)
+                const { url, error } = await uploadLogo(compressedFile)
 
                 if (error) {
                     throw new Error(`Error al subir la imagen: ${error.message}`)
@@ -296,8 +292,11 @@ export function ClubCreationWizard() {
 
         } catch (error) {
             console.error('Error creating club:', error)
-            setSnackBarErrorMsg(error instanceof Error ? error.message : "Ocurrió un error al crear el club")
-            setSnackBarOpen(true)
+            toast({
+                title: 'Error al crear club',
+                description: error instanceof Error ? error.message : "Ocurrió un error inesperado",
+                variant: 'destructive',
+            })
         } finally {
             setIsLoading(false)
         }
@@ -384,17 +383,9 @@ export function ClubCreationWizard() {
                         </span>
                     </div>
                     <Progress value={progress} className="w-full" />
-                    <div className="flex justify-between mt-2">
-                        {steps.map((step, index) => (
-                            <div
-                                key={index}
-                                className={`text-xs ${index <= currentStep ? 'text-primary font-medium' : 'text-muted-foreground'
-                                    }`}
-                            >
-                                {step.title}
-                            </div>
-                        ))}
-                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                        {steps[currentStep].description}
+                    </p>
                 </div>
 
                 {/* Step Content */}
@@ -404,30 +395,33 @@ export function ClubCreationWizard() {
                     </CardContent>
 
                     {/* Navigation */}
-                    {currentStep > 0 && (
-                        <CardFooter className="flex justify-between">
-                            <Button
-                                variant="outline"
-                                onClick={handleBack}
-                                disabled={isLoading}
-                            >
+                    <CardFooter className="flex justify-between">
+                        {currentStep > 0 ? (
+                            <Button variant="outline" onClick={handleBack} disabled={isLoading}>
                                 <ArrowLeft size={16} className="mr-2" />
                                 Anterior
                             </Button>
+                        ) : (
+                            <div />
+                        )}
 
-                            {currentStep < steps.length - 1 ? (
-                                <Button onClick={handleNext} disabled={isLoading}>
-                                    Siguiente
-                                    <ArrowRight size={16} className="ml-2" />
-                                </Button>
-                            ) : (
-                                <Button onClick={handleSubmit} disabled={isLoading || !formData.name.trim()}>
-                                    {isLoading ? "Creando..." : "Crear Club"}
-                                    <Check size={16} className="ml-2" />
-                                </Button>
-                            )}
-                        </CardFooter>
-                    )}
+                        {currentStep === 0 ? (
+                            <Button onClick={handleNext} disabled={!selectedTemplate && formData.name === ''}>
+                                Continuar
+                                <ArrowRight size={16} className="ml-2" />
+                            </Button>
+                        ) : currentStep < steps.length - 1 ? (
+                            <Button onClick={handleNext} disabled={isLoading}>
+                                Siguiente
+                                <ArrowRight size={16} className="ml-2" />
+                            </Button>
+                        ) : (
+                            <Button onClick={handleSubmit} disabled={isLoading || !formData.name.trim()}>
+                                {isLoading ? "Creando..." : "Crear Club"}
+                                <Check size={16} className="ml-2" />
+                            </Button>
+                        )}
+                    </CardFooter>
                 </Card>
 
                 {/* Success Dialog */}
@@ -447,13 +441,6 @@ export function ClubCreationWizard() {
                     </DialogContent>
                 </Dialog>
 
-                {/* Error Snackbar */}
-                <Snackbar
-                    open={snackBarOpen}
-                    onClose={handleCloseSnackBar}
-                    message={snackBarErrorMsg}
-                    severity="error"
-                />
             </div>
         </div>
     )

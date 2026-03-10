@@ -77,7 +77,8 @@ export function usePostStats(postId: string | null, config?: SWRConfiguration) {
         {
             revalidateOnFocus: false,
             revalidateOnReconnect: true,
-            refreshInterval: 5000, // Refresh every 5 seconds for real-time stats
+            refreshInterval: 30000, // Matches Redis TTL (30s) — no benefit polling faster
+            dedupingInterval: 10000,
             ...config,
         }
     )

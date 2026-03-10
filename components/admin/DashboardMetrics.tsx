@@ -16,6 +16,7 @@ export function DashboardMetrics({ metrics }: DashboardMetricsProps) {
                 value={metrics.mau.toLocaleString()}
                 icon={Users}
                 description="Usuarios activos último mes"
+                index={0}
             />
 
             <MetricCard
@@ -23,6 +24,7 @@ export function DashboardMetrics({ metrics }: DashboardMetricsProps) {
                 value={metrics.dau.toLocaleString()}
                 icon={Activity}
                 description="Usuarios activos hoy"
+                index={1}
             />
 
             <MetricCard
@@ -30,6 +32,7 @@ export function DashboardMetrics({ metrics }: DashboardMetricsProps) {
                 value={metrics.totalClubs.toLocaleString()}
                 icon={Building2}
                 description="Clubs con status activo"
+                index={2}
             />
 
             <MetricCard
@@ -37,6 +40,7 @@ export function DashboardMetrics({ metrics }: DashboardMetricsProps) {
                 value={metrics.activeSubscriptions.toLocaleString()}
                 icon={CreditCard}
                 description="Membresías pagadas activas"
+                index={3}
             />
 
             <MetricCard
@@ -44,6 +48,7 @@ export function DashboardMetrics({ metrics }: DashboardMetricsProps) {
                 value={`$${(metrics.monthlyRevenue / 100).toLocaleString()}`}
                 icon={TrendingUp}
                 description="Ingresos del mes actual"
+                index={4}
             />
 
             <MetricCard
@@ -51,6 +56,7 @@ export function DashboardMetrics({ metrics }: DashboardMetricsProps) {
                 value={`${Math.floor(metrics.avgSessionLength / 60)}m`}
                 icon={Clock}
                 description="Duración promedio de sesión"
+                index={5}
             />
 
             <MetricCard
@@ -58,6 +64,7 @@ export function DashboardMetrics({ metrics }: DashboardMetricsProps) {
                 value={`${metrics.retentionRate}%`}
                 icon={Repeat}
                 description="Usuarios que regresan"
+                index={6}
             />
 
             <MetricCard
@@ -65,6 +72,7 @@ export function DashboardMetrics({ metrics }: DashboardMetricsProps) {
                 value={metrics.postsToday.toLocaleString()}
                 icon={FileText}
                 description="Contenido creado hoy"
+                index={7}
             />
 
             <MetricCard
@@ -72,6 +80,7 @@ export function DashboardMetrics({ metrics }: DashboardMetricsProps) {
                 value={metrics.newSignups.toLocaleString()}
                 icon={UserPlus}
                 description="Registros de hoy"
+                index={8}
             />
         </div>
     )

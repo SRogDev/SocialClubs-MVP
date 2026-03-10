@@ -9,6 +9,7 @@ export interface Club {
     bio: string | null
     color: string | null
     level: number | null
+    xp: number | null
     privacity: string | null
     creator: string | null
     tags: any | null

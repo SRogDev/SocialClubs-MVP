@@ -4,41 +4,50 @@
 
 import { z } from 'zod'
 
-// Base widget schema
-export const widgetSchema = z.object({
-    name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres').max(100),
-    schema: z.record(z.any()).default({}),
+// Widget slugs
+export const widgetSlugSchema = z.enum(['giveaway', 'countdown', 'question-box'])
+
+// Publish a widget (generic — formData is validated per-slug in the action)
+export const publishWidgetSchema = z.object({
+    clubId: z.string().uuid('Invalid club ID'),
+    widgetSlug: widgetSlugSchema,
+    formData: z.record(z.string(), z.string()),
 })
 
-// Widget creation schema
-export const createWidgetSchema = widgetSchema
-
-// Widget update schema
-export const updateWidgetSchema = widgetSchema.partial()
-
-// Club widget schema (instance of a widget in a club)
-export const clubWidgetSchema = z.object({
-    club_id: z.string().uuid('ID de club inválido'),
-    widget_id: z.string().uuid('ID de widget inválido'),
-    cache_data: z.record(z.any()).default({}),
+// Per-widget form data schemas
+export const giveawayFormSchema = z.object({
+    title: z.string().min(3, 'Title must be at least 3 characters').max(100),
+    prize: z.string().min(5, 'Prize description must be at least 5 characters').max(500),
+    resolve_at: z.string().min(1, 'Draw date is required'),
 })
 
-// Club widget data schema
-export const clubWidgetDataSchema = z.object({
-    club_widget_id: z.string().uuid('ID de club widget inválido'),
-    key: z.string().min(1, 'La key no puede estar vacía'),
+export const countdownFormSchema = z.object({
+    title: z.string().min(3, 'Title must be at least 3 characters').max(100),
+    target_at: z.string().min(1, 'Target date is required'),
+})
+
+export const questionBoxFormSchema = z.object({
+    title: z.string().min(3, 'Title must be at least 3 characters').max(100),
+})
+
+// Interact with a widget
+export const interactWithWidgetSchema = z.object({
+    clubWidgetId: z.string().uuid('Invalid club widget ID'),
+    action: z.enum(['join', 'leave', 'ask', 'answer']),
+    payload: z.record(z.string(), z.any()).optional(),
+})
+
+// Generic data field update (admin)
+export const updateWidgetDataFieldSchema = z.object({
+    clubWidgetId: z.string().uuid(),
+    key: z.string().min(1),
     value: z.any(),
 })
 
-// Update club widget data
-export const updateClubWidgetDataSchema = clubWidgetDataSchema.partial().extend({
-    club_widget_id: z.string().uuid('ID de club widget inválido'),
-})
-
 // TypeScript types inferred from schemas
-export type WidgetInput = z.infer<typeof widgetSchema>
-export type CreateWidgetInput = z.infer<typeof createWidgetSchema>
-export type UpdateWidgetInput = z.infer<typeof updateWidgetSchema>
-export type ClubWidgetInput = z.infer<typeof clubWidgetSchema>
-export type ClubWidgetDataInput = z.infer<typeof clubWidgetDataSchema>
-export type UpdateClubWidgetDataInput = z.infer<typeof updateClubWidgetDataSchema>
+export type WidgetSlug = z.infer<typeof widgetSlugSchema>
+export type PublishWidgetInput = z.infer<typeof publishWidgetSchema>
+export type GiveawayFormInput = z.infer<typeof giveawayFormSchema>
+export type CountdownFormInput = z.infer<typeof countdownFormSchema>
+export type QuestionBoxFormInput = z.infer<typeof questionBoxFormSchema>
+export type InteractWithWidgetInput = z.infer<typeof interactWithWidgetSchema>

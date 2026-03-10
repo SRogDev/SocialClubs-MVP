@@ -5,6 +5,10 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { CookieBanner } from "@/components/shared/cookie-banner"
 import { VideocallFloatingButton } from "@/components/shared/videocall-float-button"
+import { OneSignalProvider } from "@/components/shared/onesignal-provider"
+import { AppShell } from "@/components/shared/app-shell"
+import { ImageKitProvider } from "@imagekit/next"
+import { RootErrorBoundary } from "@/components/shared/error-boundary"
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -26,14 +30,28 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={manrope.className}  >
-        <div className=" dark:bg-gradient-to-br  from-amber-600 to-orange-500">
+      <body className={manrope.className}>
+        {/* Skip to main content — accessibility */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-white focus:font-semibold focus:shadow-lg"
+        >
+          Saltar al contenido principal
+        </a>
+        <ImageKitProvider urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT!}>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-            {children}
+            <RootErrorBoundary>
+              <AppShell>
+                <main id="main-content">
+                  {children}
+                </main>
+              </AppShell>
+            </RootErrorBoundary>
+            <OneSignalProvider />
             <CookieBanner />
             <VideocallFloatingButton />
           </ThemeProvider>
-        </div>
+        </ImageKitProvider>
       </body>
     </html>
   )

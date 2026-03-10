@@ -26,3 +26,4 @@
 • **Retention a 7 días de nuevos miembros.**
 • **Tiempo medio en sesión.**
 • **Tickets de soporte (Crisp) por creador.**
+

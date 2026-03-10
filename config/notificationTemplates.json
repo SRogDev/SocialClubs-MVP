@@ -1,0 +1,134 @@
+{
+  "en": {
+    "new_post_club": {
+      "title": "📝 New post in {clubName}",
+      "body": "{authorName} published: {postTitle}",
+      "url": "/clubs/{clubId}/posts/{postId}",
+      "type": "new_post_club",
+      "category": "engagement",
+      "icon": "📝"
+    },
+    "videocall_announcement": {
+      "title": "📹 Live session in {clubName}",
+      "body": "{hostName} is starting: {sessionTitle}",
+      "url": "/clubs/{clubId}/videocall/{sessionId}",
+      "type": "videocall_announcement",
+      "category": "engagement",
+      "icon": "📹"
+    },
+    "new_message_club": {
+      "title": "💬 New message in {clubName}",
+      "body": "{senderName}: {messagePreview}",
+      "url": "/clubs/{clubId}/chat",
+      "type": "new_message_club",
+      "category": "engagement",
+      "icon": "💬"
+    },
+    "reminder_use": {
+      "title": "👋 We miss you, {userName}!",
+      "body": "It's been a while. Come back and see what's new in your clubs.",
+      "url": "/explore",
+      "type": "reminder_use",
+      "category": "marketing",
+      "icon": "👋"
+    },
+    "new_subscriber_pay": {
+      "title": "🎉 New member in {clubName}!",
+      "body": "{subscriberName} just joined your club.",
+      "url": "/clubs/{clubId}/members",
+      "type": "new_subscriber_pay",
+      "category": "transactional",
+      "icon": "🎉"
+    },
+    "club_level_up": {
+      "title": "🚀 {clubName} leveled up!",
+      "body": "Your club reached level {newLevel}. Keep it up!",
+      "url": "/clubs/{clubId}",
+      "type": "club_level_up",
+      "category": "engagement",
+      "icon": "🚀"
+    },
+    "user_level_up": {
+      "title": "⭐ Level up, {userName}!",
+      "body": "You reached level {newLevel} in {clubName}.",
+      "url": "/clubs/{clubId}/profile",
+      "type": "user_level_up",
+      "category": "engagement",
+      "icon": "⭐"
+    },
+    "other": {
+      "title": "{title}",
+      "body": "{body}",
+      "url": "{url}",
+      "type": "other",
+      "category": "transactional",
+      "icon": "🔔"
+    }
+  },
+  "es": {
+    "new_post_club": {
+      "title": "📝 Nueva publicación en {clubName}",
+      "body": "{authorName} publicó: {postTitle}",
+      "url": "/clubs/{clubId}/posts/{postId}",
+      "type": "new_post_club",
+      "category": "engagement",
+      "icon": "📝"
+    },
+    "videocall_announcement": {
+      "title": "📹 Sesión en vivo en {clubName}",
+      "body": "{hostName} está iniciando: {sessionTitle}",
+      "url": "/clubs/{clubId}/videocall/{sessionId}",
+      "type": "videocall_announcement",
+      "category": "engagement",
+      "icon": "📹"
+    },
+    "new_message_club": {
+      "title": "💬 Nuevo mensaje en {clubName}",
+      "body": "{senderName}: {messagePreview}",
+      "url": "/clubs/{clubId}/chat",
+      "type": "new_message_club",
+      "category": "engagement",
+      "icon": "💬"
+    },
+    "reminder_use": {
+      "title": "👋 ¡Te extrañamos, {userName}!",
+      "body": "Ha pasado un tiempo. Vuelve a ver qué hay de nuevo en tus clubs.",
+      "url": "/explore",
+      "type": "reminder_use",
+      "category": "marketing",
+      "icon": "👋"
+    },
+    "new_subscriber_pay": {
+      "title": "🎉 ¡Nuevo miembro en {clubName}!",
+      "body": "{subscriberName} acaba de unirse a tu club.",
+      "url": "/clubs/{clubId}/members",
+      "type": "new_subscriber_pay",
+      "category": "transactional",
+      "icon": "🎉"
+    },
+    "club_level_up": {
+      "title": "🚀 ¡{clubName} subió de nivel!",
+      "body": "Tu club alcanzó el nivel {newLevel}. ¡Sigan así!",
+      "url": "/clubs/{clubId}",
+      "type": "club_level_up",
+      "category": "engagement",
+      "icon": "🚀"
+    },
+    "user_level_up": {
+      "title": "⭐ ¡Subiste de nivel, {userName}!",
+      "body": "Alcanzaste el nivel {newLevel} en {clubName}.",
+      "url": "/clubs/{clubId}/profile",
+      "type": "user_level_up",
+      "category": "engagement",
+      "icon": "⭐"
+    },
+    "other": {
+      "title": "{title}",
+      "body": "{body}",
+      "url": "{url}",
+      "type": "other",
+      "category": "transactional",
+      "icon": "🔔"
+    }
+  }
+}

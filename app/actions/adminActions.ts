@@ -61,9 +61,9 @@ export async function banClubAction(clubId: string) {
 }
 
 /**
- * Server Action para enviar advertencia a un creator
+ * Server Action para enviar advertencia a un creator y registrarla en BD
  * Requiere rol de admin
- * TODO: Implementar lógica completa de advertencias
+ * Lógica: 3 strikes del mismo tipo → suspensión automática del club
  */
 export async function warnCreatorAction(clubId: string, warningReason?: string) {
     const supabase = await createClient()
@@ -89,19 +89,71 @@ export async function warnCreatorAction(clubId: string, warningReason?: string) 
     }
 
     try {
-        // Enviar email de advertencia
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-        await fetch(`${baseUrl}/api/resend/warning-club`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clubId, warningReason }),
-        })
+        // Obtener creator del club
+        const { data: club } = await supabase
+            .from('clubs')
+            .select('creator, name')
+            .eq('id', clubId)
+            .single()
 
-        // TODO: Registrar la advertencia en la base de datos
-        // TODO: Incrementar contador de advertencias del club
-        // TODO: Si tiene 3 advertencias, considerar suspensión automática
+        if (!club?.creator) {
+            return { error: 'Club no encontrado' }
+        }
 
-        return { success: true }
+        // Insertar advertencia en user_warnings
+        const { error: warnError } = await supabase
+            .from('user_warnings')
+            .insert({
+                user_id: club.creator,
+                club_id: clubId,
+                issued_by: user.id,
+                type: 'warning',
+                severity: 'medium',
+                reason: warningReason ?? 'Incumplimiento de normas de la plataforma',
+                expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 días
+            })
+
+        if (warnError) {
+            console.error('Error inserting warning:', warnError)
+            // Don't fail — still send email
+        }
+
+        // Contar strikes activos del creator para este club
+        const { count: strikeCount } = await supabase
+            .from('user_warnings')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', club.creator)
+            .eq('club_id', clubId)
+            .eq('type', 'warning')
+            .or(`expires_at.is.null,expires_at.gte.${new Date().toISOString()}`)
+
+        // Auto-suspender si tiene 3+ strikes
+        if ((strikeCount ?? 0) >= 3) {
+            await supabase
+                .from('clubs')
+                .update({ status: 'suspended' })
+                .eq('id', clubId)
+
+            console.warn(`Club ${clubId} auto-suspended after ${strikeCount} strikes`)
+        }
+
+        // Enviar email de advertencia (no-fail)
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+            await fetch(`${baseUrl}/api/resend/warning-club`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ clubId, warningReason }),
+            })
+        } catch (emailError) {
+            console.error('Error sending warning email (non-fatal):', emailError)
+        }
+
+        // Revalidar paths
+        revalidatePath('/admin/moderation')
+        revalidatePath(`/clubs/${clubId}`)
+
+        return { success: true, autoSuspended: (strikeCount ?? 0) >= 3 }
     } catch (error) {
         console.error('Error in warnCreatorAction:', error)
         return { error: 'Error al enviar advertencia' }

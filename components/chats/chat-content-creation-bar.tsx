@@ -15,10 +15,17 @@ import PollForm from "../post/poll-form";
 import PreviewImage from "../post/preview-image";
 import { DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 import useOptions from "@/hooks/use-options";
+import WidgetSelector from "@/components/widgets/widget-selector";
 
-function ChatContentCreationBar() {
+interface ChatContentCreationBarProps {
+  clubId: string;
+  userId: string | null;
+}
+
+function ChatContentCreationBar({ clubId, userId }: ChatContentCreationBarProps) {
   const [isLoading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [showWidgetSelector, setShowWidgetSelector] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const prueba = useOptions();
 
@@ -29,6 +36,7 @@ function ChatContentCreationBar() {
         textareaRef.current.scrollHeight + "px";
     }
   }, [message]);
+
   function handleClick() {
     if (isLoading) {
       setLoading(false);
@@ -40,6 +48,7 @@ function ChatContentCreationBar() {
       }, 2000);
     }
   }
+
   const listOptions = [
     {
       value: "video",
@@ -60,6 +69,14 @@ function ChatContentCreationBar() {
       icon: <PuzzleIcon className="size-3" />,
     },
   ];
+
+  function handleOptionClick(type: string) {
+    if (type === "widget") {
+      setShowWidgetSelector(true);
+    } else {
+      prueba.handleContentClick(type);
+    }
+  }
 
   return (
     <>
@@ -83,7 +100,7 @@ function ChatContentCreationBar() {
                 <Image size={16} className="text-sm capitalize" />
                 Imagen
               </Button>
-              {/* Input oculto */}
+              {/* Hidden file input */}
               <input
                 type="file"
                 accept="image/*"
@@ -96,7 +113,7 @@ function ChatContentCreationBar() {
                   <Button
                     type="button"
                     className="w-full text-white flex bg-transparent justify-start hover:rounded-lg hover:bg-slate-800 rounded-lg gap-2"
-                    onClick={() => prueba.handleContentClick(option.type)}
+                    onClick={() => handleOptionClick(option.type)}
                   >
                     {option.icon}
                     <span className="capitalize">{option.label}</span>
@@ -122,6 +139,8 @@ function ChatContentCreationBar() {
           )}
         </Button>
       </div>
+
+      {/* Poll dialog */}
       {prueba.contentType == "poll" && prueba.showContentModal && (
         <Dialog
           open={prueba.showContentModal}
@@ -129,7 +148,7 @@ function ChatContentCreationBar() {
         >
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Crear Encuensta</DialogTitle>
+              <DialogTitle>Crear Encuesta</DialogTitle>
             </DialogHeader>
             <PollForm
               action="add"
@@ -138,6 +157,8 @@ function ChatContentCreationBar() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Image upload dialog */}
       {prueba.preview && prueba.selectedFile && prueba.showContentModal && (
         <Dialog
           open={prueba.showContentModal}
@@ -157,6 +178,14 @@ function ChatContentCreationBar() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Widget selector bottom sheet */}
+      <WidgetSelector
+        open={showWidgetSelector}
+        onOpenChange={setShowWidgetSelector}
+        clubId={clubId}
+        userId={userId}
+      />
     </>
   );
 }

@@ -1,7 +1,7 @@
 import { ImageIcon, Image as Imagen, SendIcon } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
-import Image from "next/image";
+import { Image } from "@imagekit/next";
 import useActions from "@/hooks/use-actions";
 import { Spinner } from "./ui/spinner";
 import useOptions from "@/hooks/use-options";

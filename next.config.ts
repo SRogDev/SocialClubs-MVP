@@ -18,7 +18,18 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'pcfmjmdxaveiqrvrqauj.supabase.co',
       },
+      {
+        // ImageKit CDN
+        protocol: 'https',
+        hostname: 'ik.imagekit.io',
+      },
+      {
+        // Supabase Storage CDN (old hostname pattern)
+        protocol: 'https',
+        hostname: '*.supabase.co',
+      },
     ],
+    formats: ['image/avif', 'image/webp'],
   },
 };
 

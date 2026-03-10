@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { ChatMessageItem } from '@/components/chat-message'
+import { ChatMessageItem } from '@/components/chats/chat-message'
 import { useChatScroll } from '@/hooks/use-chat-scroll'
 import {
     type ChatMessage,
@@ -9,8 +9,9 @@ import {
 } from '@/hooks/use-realtime-chat'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Send } from 'lucide-react'
+import { Send, MessageCircle, Lock, Sparkles } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface RealtimeChatProps {
     roomName: string
@@ -19,14 +20,6 @@ interface RealtimeChatProps {
     messages?: ChatMessage[]
 }
 
-/**
- * Realtime chat component
- * @param roomName - The name of the room to join. Each room is a unique chat.
- * @param username - The username of the user
- * @param onMessage - The callback function to handle the messages. Useful if you want to store the messages in a database.
- * @param messages - The messages to display in the chat. Useful if you want to display messages from a database.
- * @returns The chat component
- */
 export const RealtimeChat = ({
     roomName,
     username,
@@ -45,27 +38,19 @@ export const RealtimeChat = ({
     })
     const [newMessage, setNewMessage] = useState('')
 
-    // Merge realtime messages with initial messages
     const allMessages = useMemo(() => {
         const mergedMessages = [...initialMessages, ...realtimeMessages]
-        // Remove duplicates based on message id
         const uniqueMessages = mergedMessages.filter(
             (message, index, self) => index === self.findIndex((m) => m.id === message.id)
         )
-        // Sort by creation date
-        const sortedMessages = uniqueMessages.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-
-        return sortedMessages
+        return uniqueMessages.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
     }, [initialMessages, realtimeMessages])
 
     useEffect(() => {
-        if (onMessage) {
-            onMessage(allMessages)
-        }
+        if (onMessage) onMessage(allMessages)
     }, [allMessages, onMessage])
 
     useEffect(() => {
-        // Scroll to bottom whenever messages change
         scrollToBottom()
     }, [allMessages, scrollToBottom])
 
@@ -73,7 +58,6 @@ export const RealtimeChat = ({
         (e: React.FormEvent) => {
             e.preventDefault()
             if (!newMessage.trim() || !isConnected) return
-
             sendMessage(newMessage)
             setNewMessage('')
         },
@@ -82,55 +66,102 @@ export const RealtimeChat = ({
 
     return (
         <div className="flex flex-col h-full w-full bg-background text-foreground antialiased">
-            {/* Messages */}
-            <div ref={containerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-                {allMessages.length === 0 ? (
-                    <div className="text-center text-sm text-muted-foreground">
-                        No messages yet. Start the conversation!
-                    </div>
-                ) : null}
-                <div className="space-y-1">
-                    {allMessages.map((message, index) => {
-                        const prevMessage = index > 0 ? allMessages[index - 1] : null
-                        const showHeader = !prevMessage || prevMessage.user.name !== message.user.name
-
-                        return (
-                            <div
-                                key={message.id}
-                                className="animate-in fade-in slide-in-from-bottom-4 duration-300"
-                            >
-                                <ChatMessageItem
-                                    message={message}
-                                    isOwnMessage={message.user.name === username}
-                                    showHeader={showHeader}
-                                />
+            {/* Messages area */}
+            <div ref={containerRef} className="flex-1 overflow-y-auto p-4 space-y-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+                <AnimatePresence initial={false}>
+                    {allMessages.length === 0 ? (
+                        <motion.div
+                            key="empty"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, ease: 'easeOut' }}
+                            className="flex flex-col items-center justify-center min-h-[60vh] gap-5 text-center px-6"
+                        >
+                            {/* Glow ring */}
+                            <div className="relative">
+                                <div className="absolute inset-0 rounded-full bg-primary/20 blur-2xl scale-150 animate-pulse" />
+                                <div className="relative p-5 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 border border-primary/20 backdrop-blur-sm">
+                                    <Lock className="w-10 h-10 text-primary/70" />
+                                </div>
                             </div>
-                        )
-                    })}
-                </div>
+
+                            <div className="space-y-2 max-w-xs">
+                                <h3 className="text-lg font-bold text-foreground flex items-center gap-2 justify-center">
+                                    Chat privado del club
+                                    <Sparkles className="w-4 h-4 text-primary" />
+                                </h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    Nadie ha escrito aún. Sé el primero en romper el hielo y comenzar la conversación.
+                                </p>
+                            </div>
+
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.4 }}
+                                className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium"
+                            >
+                                <MessageCircle className="w-3.5 h-3.5" />
+                                Comienza a chatear ↓
+                            </motion.div>
+                        </motion.div>
+                    ) : (
+                        allMessages.map((message, index) => {
+                            const prevMessage = index > 0 ? allMessages[index - 1] : null
+                            const showHeader = !prevMessage || prevMessage.user.name !== message.user.name
+                            return (
+                                <motion.div
+                                    key={message.id}
+                                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                                >
+                                    <ChatMessageItem
+                                        message={message}
+                                        isOwnMessage={message.user.name === username}
+                                        showHeader={showHeader}
+                                    />
+                                </motion.div>
+                            )
+                        })
+                    )}
+                </AnimatePresence>
             </div>
 
-            <form onSubmit={handleSendMessage} className="flex w-full gap-2 border-t border-border p-4">
+            {/* Glass input bar */}
+            <form
+                onSubmit={handleSendMessage}
+                className="flex w-full items-center gap-2 border-t border-border/50 p-3 bg-background/80 backdrop-blur-sm"
+            >
                 <Input
                     className={cn(
-                        'rounded-full bg-background text-sm transition-all duration-300',
-                        isConnected && newMessage.trim() ? 'w-[calc(100%-36px)]' : 'w-full'
+                        'rounded-full bg-muted/60 border-transparent focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/30 text-sm transition-all duration-300 placeholder:text-muted-foreground/50',
+                        isConnected && newMessage.trim() ? 'w-[calc(100%-44px)]' : 'w-full'
                     )}
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type a message..."
+                    placeholder={isConnected ? 'Escribe un mensaje...' : 'Conectando...'}
                     disabled={!isConnected}
                 />
-                {isConnected && newMessage.trim() && (
-                    <Button
-                        className="aspect-square rounded-full animate-in fade-in slide-in-from-right-4 duration-300"
-                        type="submit"
-                        disabled={!isConnected}
-                    >
-                        <Send className="size-4" />
-                    </Button>
-                )}
+                <AnimatePresence>
+                    {isConnected && newMessage.trim() && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.7, x: 10 }}
+                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.7, x: 10 }}
+                            transition={{ duration: 0.15 }}
+                        >
+                            <Button
+                                type="submit"
+                                size="icon"
+                                className="rounded-full h-9 w-9 bg-primary hover:bg-primary/90 shadow-[0_0_12px_hsl(var(--primary)/0.4)] hover:shadow-[0_0_20px_hsl(var(--primary)/0.6)] transition-shadow"
+                            >
+                                <Send className="size-4" />
+                            </Button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </form>
         </div>
     )

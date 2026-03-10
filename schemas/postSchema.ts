@@ -5,7 +5,7 @@
 import { z } from 'zod'
 
 // Post types enum
-export const postTypeSchema = z.enum(['text', 'image', 'video', 'audio', 'poll'])
+export const postTypeSchema = z.enum(['text', 'image', 'video', 'audio', 'poll', 'widget'])
 
 // Base post schema
 export const postSchema = z.object({
@@ -37,11 +37,20 @@ export const postWithPollSchema = postSchema.extend({
     poll: pollSchema,
 })
 
+// Widget post schema
+export const widgetPostSchema = postSchema.extend({
+    type: z.literal('widget'),
+    pinned: z.boolean().default(false),
+})
+
 // Post creation schema
 export const createPostSchema = z.discriminatedUnion('type', [
     postSchema.extend({ type: z.enum(['text', 'image', 'video', 'audio']) }),
     postWithPollSchema,
+    widgetPostSchema,
 ])
+
+export type WidgetPostInput = z.infer<typeof widgetPostSchema>
 
 // Post update schema
 export const updatePostSchema = postSchema.partial()

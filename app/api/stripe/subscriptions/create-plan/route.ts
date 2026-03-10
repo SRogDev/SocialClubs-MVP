@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 import { createSubscriptionPlan } from '@/services/stripeService';
+import { MIN_SUBSCRIPTION_PRICE_CENTS } from '@/lib/stripe';
 import { z } from 'zod';
 
 const createPlanSchema = z.object({
@@ -9,7 +10,9 @@ const createPlanSchema = z.object({
     membership_id: z.string().uuid(),
     name: z.string().min(1).max(100),
     description: z.string().optional(),
-    price: z.number().int().positive(), // En centavos
+    price: z.number().int().min(MIN_SUBSCRIPTION_PRICE_CENTS, {
+        message: `El precio mínimo es $${MIN_SUBSCRIPTION_PRICE_CENTS / 100}/mes`,
+    }),
 });
 
 /**
@@ -76,8 +79,8 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Crear producto y precio en Stripe
-        const stripePriceId = await createSubscriptionPlan({
+        // Crear producto y precios (mensual + anual) en Stripe
+        const { monthlyPriceId, yearlyPriceId } = await createSubscriptionPlan({
             connectedAccountId: connectAccount.stripe_account_id,
             clubId: club_id,
             membershipId: membership_id,
@@ -86,10 +89,13 @@ export async function POST(request: NextRequest) {
             price,
         });
 
-        // Actualizar membership con stripe_price_id
+        // Guardar ambos price IDs en la membership
         const { error: updateError } = await supabase
             .from('memberships')
-            .update({ stripe_price_id: stripePriceId })
+            .update({
+                stripe_price_id: monthlyPriceId,
+                stripe_yearly_price_id: yearlyPriceId,
+            })
             .eq('id', membership_id);
 
         if (updateError) {
@@ -99,7 +105,8 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            stripe_price_id: stripePriceId,
+            stripe_price_id: monthlyPriceId,
+            stripe_yearly_price_id: yearlyPriceId,
         });
     } catch (error: any) {
         console.error('Error creating subscription plan:', error);

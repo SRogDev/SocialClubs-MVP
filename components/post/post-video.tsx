@@ -1,5 +1,6 @@
 'use client'
 
+import { Image } from '@imagekit/next'
 import { Card } from "@/components/ui/card"
 import { Loader2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -62,11 +63,14 @@ export default function PostVideo({
         {status === 'processing' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
             {thumbnailUrl && (
-              <img
-                src={thumbnailUrl}
-                alt="Video thumbnail"
-                className="absolute inset-0 w-full h-full object-cover opacity-30"
-              />
+              <div className="absolute inset-0">
+                <Image
+                  src={thumbnailUrl}
+                  alt="Video thumbnail"
+                  fill
+                  className="object-cover opacity-30"
+                />
+              </div>
             )}
             <div className="relative z-10 flex flex-col items-center">
               <Loader2 className="w-12 h-12 animate-spin mb-3" />

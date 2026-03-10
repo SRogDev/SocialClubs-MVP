@@ -4,6 +4,7 @@ import { RevenueChart } from '@/components/admin/RevenueChart'
 import { UserGrowthChart } from '@/components/admin/UserGrowthChart'
 import { TopClubsChart } from '@/components/admin/TopClubsChart'
 import { DashboardExportButton } from '@/components/admin/DashboardExportButton'
+import { ChartWrapper } from '@/components/admin/chart-wrapper'
 import chartData from '@/mock-data/admin-charts.json'
 
 /**
@@ -32,12 +33,18 @@ export default async function AdminDashboard() {
 
             {/* Gráficos */}
             <div className="grid gap-6 md:grid-cols-2">
-                <RevenueChart data={chartData.revenueData} />
-                <UserGrowthChart data={chartData.userGrowthData} />
+                <ChartWrapper index={0}>
+                    <RevenueChart data={chartData.revenueData} />
+                </ChartWrapper>
+                <ChartWrapper index={1}>
+                    <UserGrowthChart data={chartData.userGrowthData} />
+                </ChartWrapper>
             </div>
 
             <div className="grid gap-6">
-                <TopClubsChart data={chartData.topClubsData} />
+                <ChartWrapper index={2}>
+                    <TopClubsChart data={chartData.topClubsData} />
+                </ChartWrapper>
             </div>
         </div>
     )

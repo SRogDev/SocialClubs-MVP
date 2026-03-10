@@ -1,4 +1,4 @@
-import { stripe, calculatePlatformFee } from '@/lib/stripe';
+import { stripe, calculatePlatformFee, PLATFORM_FEE_PERCENT, ANNUAL_BILLING_MONTHS } from '@/lib/stripe';
 import { createClient } from '@/lib/supabase/server';
 import Stripe from 'stripe';
 
@@ -242,7 +242,7 @@ export async function createSubscriptionCheckoutSession(params: {
             },
         ],
         subscription_data: {
-            application_fee_percent: 10, // 10% comisión de plataforma
+            application_fee_percent: PLATFORM_FEE_PERCENT,
             transfer_data: {
                 destination: params.connectedAccountId,
             },
@@ -270,10 +270,11 @@ export async function createSubscriptionCheckoutSession(params: {
 // ============================================================================
 
 /**
- * Crea un producto y precio en Stripe para una membership
- * 
+ * Crea un producto con precio mensual Y anual en Stripe para una membership.
+ * El precio anual equivale a 10 meses (2 meses gratis, ~17% descuento).
+ *
  * @param params - Parámetros del plan de suscripción
- * @returns Price ID de Stripe
+ * @returns { monthlyPriceId, yearlyPriceId }
  */
 export async function createSubscriptionPlan(params: {
     connectedAccountId: string;
@@ -281,43 +282,46 @@ export async function createSubscriptionPlan(params: {
     membershipId: string;
     name: string;
     description: string;
-    price: number; // En centavos
-}): Promise<string> {
+    price: number; // En centavos (mensual)
+}): Promise<{ monthlyPriceId: string; yearlyPriceId: string }> {
+    const stripeAccount = { stripeAccount: params.connectedAccountId };
+    const meta = { club_id: params.clubId, membership_id: params.membershipId };
+
     // Crear producto
     const product = await stripe.products.create(
         {
             name: params.name,
             description: params.description,
-            metadata: {
-                club_id: params.clubId,
-                membership_id: params.membershipId,
-            },
+            metadata: meta,
         },
-        {
-            stripeAccount: params.connectedAccountId,
-        }
+        stripeAccount
     );
 
-    // Crear precio recurrente mensual
-    const price = await stripe.prices.create(
+    // Precio mensual
+    const monthlyPrice = await stripe.prices.create(
         {
             product: product.id,
             unit_amount: params.price,
             currency: 'usd',
-            recurring: {
-                interval: 'month',
-            },
-            metadata: {
-                club_id: params.clubId,
-                membership_id: params.membershipId,
-            },
+            recurring: { interval: 'month' },
+            metadata: meta,
         },
-        {
-            stripeAccount: params.connectedAccountId,
-        }
+        stripeAccount
     );
 
-    return price.id;
+    // Precio anual: ANNUAL_BILLING_MONTHS meses (2 meses gratis)
+    const yearlyPrice = await stripe.prices.create(
+        {
+            product: product.id,
+            unit_amount: params.price * ANNUAL_BILLING_MONTHS,
+            currency: 'usd',
+            recurring: { interval: 'year' },
+            metadata: meta,
+        },
+        stripeAccount
+    );
+
+    return { monthlyPriceId: monthlyPrice.id, yearlyPriceId: yearlyPrice.id };
 }
 
 // ============================================================================
@@ -467,4 +471,119 @@ async function updateClubBalance(userId: string, amount: number) {
             available_balance: amount,
         });
     }
+}
+
+// ============================================================================
+// ESCROW — Booking Payments
+// ============================================================================
+
+/**
+ * Libera el pago en escrow al creator (90%) después de que completa la videollamada.
+ * La plataforma retiene el 10% como comisión.
+ *
+ * Flujo:
+ *  1. La videollamada se marca como completada
+ *  2. Se hace una transferencia del 90% al creator
+ *  3. Se actualiza escrow_status = 'released' en users_agendas
+ *
+ * @param bookingId     - ID del booking en users_agendas
+ * @param paymentIntentId - Stripe PaymentIntent ID capturado en checkout
+ * @param connectedAccountId - Stripe account ID del creator
+ * @param totalAmountCents - Monto total pagado (en centavos)
+ */
+export async function releaseEscrowToCreator(params: {
+    bookingId: number
+    paymentIntentId: string
+    connectedAccountId: string
+    totalAmountCents: number
+    creatorUserId: string
+}): Promise<void> {
+    const supabase = await createClient()
+
+    const platformFee = calculatePlatformFee(params.totalAmountCents)
+    const creatorAmount = params.totalAmountCents - platformFee
+
+    // Transfer 90% to the creator's connected account
+    const transfer = await stripe.transfers.create({
+        amount: creatorAmount,
+        currency: 'usd',
+        destination: params.connectedAccountId,
+        source_transaction: params.paymentIntentId,
+        metadata: {
+            booking_id: params.bookingId.toString(),
+            type: 'videocall_escrow_release',
+        },
+    })
+
+    // Mark escrow as released in DB
+    const now = new Date().toISOString()
+    await supabase
+        .from('users_agendas')
+        .update({
+            escrow_status: 'released',
+            escrow_released_at: now,
+        })
+        .eq('id', params.bookingId)
+
+    // Record the payout
+    await recordPayment({
+        userId: params.creatorUserId,
+        amount: creatorAmount,
+        txnType: 'payout',
+        txnStripeId: transfer.id,
+        status: 'completed',
+        direction: 'out',
+    })
+}
+
+/**
+ * Reembolsa el 90% al usuario (no-show del creator o cancelación).
+ * La plataforma retiene el 10% de comisión por el servicio.
+ *
+ * @param bookingId        - ID del booking
+ * @param paymentIntentId  - Stripe PaymentIntent ID
+ * @param totalAmountCents - Monto total pagado (en centavos)
+ * @param userId           - ID del usuario que pagó
+ */
+export async function createBookingRefund(params: {
+    bookingId: number
+    paymentIntentId: string
+    totalAmountCents: number
+    userId: string
+}): Promise<Stripe.Refund> {
+    const supabase = await createClient()
+
+    const platformFee = calculatePlatformFee(params.totalAmountCents)
+    const refundAmount = params.totalAmountCents - platformFee // 90%
+
+    const refund = await stripe.refunds.create({
+        payment_intent: params.paymentIntentId,
+        amount: refundAmount,
+        reason: 'requested_by_customer',
+        metadata: {
+            booking_id: params.bookingId.toString(),
+            type: 'videocall_noshow_refund',
+        },
+    })
+
+    // Update escrow status in DB
+    await supabase
+        .from('users_agendas')
+        .update({
+            escrow_status: 'refunded',
+            refund_stripe_id: refund.id,
+        })
+        .eq('id', params.bookingId)
+
+    // Record refund transaction
+    await recordPayment({
+        userId: params.userId,
+        amount: refundAmount,
+        txnType: 'refund',
+        txnStripeId: refund.id,
+        status: 'completed',
+        direction: 'out',
+    })
+
+    return refund
 }

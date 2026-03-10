@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Image } from "@imagekit/next";
 import { toast } from "@/components/ui/use-toast";
 
 interface WelcomeClubMessageProps {
@@ -32,10 +33,12 @@ export default function WelcomeClubMessage({
                         filter: "brightness(1.15)",
                     }}
                 >
-                    <img
+                    <Image
                         src={clubIconUrl}
                         alt={clubName}
-                        className="w-12 h-12 rounded-full border-2 border-white shadow"
+                        width={48}
+                        height={48}
+                        className="w-12 h-12 rounded-full border-2 border-white shadow object-cover"
                         style={{ background: clubColor }}
                     />
                     <div>

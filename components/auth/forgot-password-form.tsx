@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useState } from "react";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 export function ForgotPasswordForm({
   className,
@@ -82,9 +83,16 @@ export function ForgotPasswordForm({
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
-                {error && <p className="text-sm text-red-500">{error}</p>}
+                {error && (
+                  <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+                    <AlertCircle size={15} className="shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Sending..." : "Send reset email"}
+                  {isLoading ? (
+                    <><Loader2 size={16} className="mr-2 animate-spin" /> Enviando...</>
+                  ) : "Enviar email de recuperación"}
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm">

@@ -77,6 +77,7 @@ export enum PostTypes {
     VIDEO = 'video',
     AUDIO = 'audio',
     POLL = 'poll',
+    WIDGET = 'widget',
 }
 
 export enum InteractionType {

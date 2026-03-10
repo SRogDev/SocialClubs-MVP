@@ -21,22 +21,34 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 /**
  * Platform Fee Percentage
- * 
- * Comisión que retiene la plataforma SocialClubs en todas las transacciones.
- * Aplicable a:
- * - Subscripciones a clubs
- * - Consultas de videollamadas
+ *
+ * Comisión base que retiene SocialClubs. Se reduce según el volumen del creator:
+ *   $0–$500 MRR   → 15%
+ *   $500–$2K MRR  → 12%
+ *   $2K–$10K MRR  → 10%
+ *   +$10K MRR     → 7%
+ *
+ * Cubre: comisión de plataforma + fees de procesamiento de Stripe.
  */
-export const PLATFORM_FEE_PERCENT = 10;
+export const PLATFORM_FEE_PERCENT = 15;
+
+/** Precio mínimo permitido para suscripciones de pago (en centavos) */
+export const MIN_SUBSCRIPTION_PRICE_CENTS = 500; // $5.00
+
+/**
+ * Meses que se cobran en una suscripción anual (2 meses gratis = ~17% descuento).
+ * yearly_price = monthly_price * ANNUAL_BILLING_MONTHS
+ */
+export const ANNUAL_BILLING_MONTHS = 10;
 
 /**
  * Calcula el monto de la comisión de plataforma
- * 
+ *
  * @param amount - Monto total en centavos
  * @returns Monto de la comisión en centavos
- * 
+ *
  * @example
- * calculatePlatformFee(2000) // returns 200 (10% of $20)
+ * calculatePlatformFee(2000) // returns 300 (15% of $20)
  */
 export function calculatePlatformFee(amount: number): number {
     return Math.round((amount * PLATFORM_FEE_PERCENT) / 100);

@@ -1,59 +1,59 @@
+import { notFound } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/server"
+import { getClubById, isUserClubMember } from "@/services/clubService"
 import ClubHeader from "@/components/info-club/club-header"
 import ClubEditButton from "@/components/info-club/club-edit-button"
 import ClubInteractiveWrapper from "@/components/info-club/club-interactive-wrapper"
 import ClubDescription from "@/components/info-club/club-description"
 import InviteLinkCard from "@/components/info-club/invite-link-card"
 import ClubTags from "@/components/info-club/club-tags"
-import ClubHighlights from "@/components/info-club/club-highlights"
-import ClubRewards from "@/components/info-club/club-rewards"
 import ClubStats from "@/components/info-club/club-stats"
+import ClubVisitorCTA from "@/components/info-club/ClubVisitorCTA"
 
-// Mock data — replace with real fetch later
-const mockClub = {
-  id: "1",
-  name: "Programación",
-  imageUrl: "/placeholder.svg?height=100&width=100",
-  description:
-    "Comunidad dedicada a compartir conocimientos y recursos sobre programación, desarrollo web y tecnologías emergentes. Aquí encontrarás desde tutoriales básicos hasta discusiones avanzadas sobre arquitectura de software.",
-  members: 1250,
-  createdAt: "Enero 2023",
-  level: 8,
-  isAdmin: true,
-  color: "#f97316",
-  club_link: "prog123", // Mock club link
-  tags: ["JavaScript", "React", "Node.js", "TypeScript", "Web Dev"],
-  highlights: [
-    { id: "1", title: "Tutorial", imageUrl: "/placeholder.svg?height=60&width=60" },
-    { id: "2", title: "Proyecto", imageUrl: "/placeholder.svg?height=60&width=60" },
-    { id: "3", title: "Tip", imageUrl: "/placeholder.svg?height=60&width=60" },
-    { id: "4", title: "Recurso", imageUrl: "/placeholder.svg?height=60&width=60" },
-  ],
-  rewards: [
-    { id: "1", title: "Suscripción Premium", points: 100, icon: "💎" },
-    { id: "2", title: "Consulta Gratis", points: 250, icon: "📞" },
-    { id: "3", title: "Acceso Beta", points: 500, icon: "🧪" },
-  ],
-  consultations: 47,
-  newMembersThisMonth: 89,
+interface PageProps {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ invite?: string }>
 }
 
-const mockUser = {
-  socialCoins: 120,
-}
+export default async function ClubInfoPage({ params, searchParams }: PageProps) {
+  const { id } = await params
+  const { invite } = await searchParams
 
-export default async function ClubInfoPage({ params }: { params: { id: string } }) {
-  // TODO: Fetch real club data
-  // const club = await getClubById(params.id)
-  // const user = await getCurrentUser()
+  const supabase = await createClient()
+
+  const [club, { data: authData }] = await Promise.all([
+    getClubById(id),
+    supabase.auth.getUser(),
+  ])
+
+  if (!club) notFound()
+
+  const user = authData.user
+  const isCreator = user?.id === club.creator
+  const isMember = isCreator || (user ? await isUserClubMember(user.id, id) : false)
+
+  // Derive display-friendly values from the real Club type
+  const clubColor = club.color ?? "#f97316"
+  const clubName = club.name ?? "Club"
+  const clubLogoUrl =
+    club.logo && typeof club.logo === "object" && "url" in club.logo
+      ? (club.logo.url as string)
+      : "/placeholder.svg"
+
+  const tags = Array.isArray(club.tags) ? (club.tags as string[]) : []
+  const createdAt = new Date(club.created_at).toLocaleDateString("es-ES", {
+    month: "long",
+    year: "numeric",
+  })
 
   return (
-    <div className="container py-6 space-y-6">
+    <div className="container py-6 space-y-6 max-w-lg mx-auto">
       {/* Back button */}
       <div className="mb-4">
         <Link
-          href={`/clubs/${params.id}`}
+          href={`/clubs/${id}`}
           className="flex items-center text-muted-foreground hover:text-foreground group"
         >
           <ArrowLeft size={18} className="mr-1 group-hover:-translate-x-1 transition-transform" />
@@ -61,45 +61,60 @@ export default async function ClubInfoPage({ params }: { params: { id: string } 
         </Link>
       </div>
 
-      {/* Header with edit button */}
+      {/* Header with conditional edit button */}
       <div className="relative">
-        {mockClub.isAdmin && <ClubEditButton clubId={params.id} />}
-        <ClubHeader club={mockClub} />
+        {isCreator && <ClubEditButton clubId={id} />}
+        <ClubHeader
+          club={{
+            name: clubName,
+            imageUrl: clubLogoUrl,
+            color: clubColor,
+            level: club.level ?? 1,
+          }}
+        />
       </div>
 
-      {/* Interactive actions and notifications (client components) */}
-      <ClubInteractiveWrapper
-        clubName={mockClub.name}
-        clubColor={mockClub.color}
-        initialSocialCoins={mockUser.socialCoins}
-      />
+      {/* CTA for visitors (non-members) */}
+      {!isMember && (
+        <ClubVisitorCTA
+          clubId={id}
+          clubName={clubName}
+          clubColor={clubColor}
+          inviteCode={invite ?? club.club_link ?? null}
+          userId={user?.id ?? null}
+        />
+      )}
+
+      {/* Interactive actions (tip, notifications) — only for members */}
+      {isMember && (
+        <ClubInteractiveWrapper
+          clubName={clubName}
+          clubColor={clubColor}
+          initialSocialCoins={0}
+        />
+      )}
 
       {/* Description */}
       <ClubDescription
-        description={mockClub.description}
-        members={mockClub.members}
-        createdAt={mockClub.createdAt}
-        color={mockClub.color}
+        description={club.bio ?? ""}
+        members={club.total_members ?? 0}
+        createdAt={createdAt}
+        color={clubColor}
       />
 
-      {/* Invite link */}
-      <InviteLinkCard club={mockClub} color={mockClub.color} />
+      {/* Invite link — only for members */}
+      {isMember && club.club_link && (
+        <InviteLinkCard club={club as any} color={clubColor} />
+      )}
 
       {/* Tags */}
-      <ClubTags tags={mockClub.tags} color={mockClub.color} />
-
-      {/* Highlights */}
-      <ClubHighlights highlights={mockClub.highlights} color={mockClub.color} />
-
-      {/* Rewards */}
-      <ClubRewards rewards={mockClub.rewards} color={mockClub.color} />
+      {tags.length > 0 && (
+        <ClubTags tags={tags} color={clubColor} />
+      )}
 
       {/* Stats */}
-      <ClubStats
-        consultations={mockClub.consultations}
-        newMembersThisMonth={mockClub.newMembersThisMonth}
-        color={mockClub.color}
-      />
+      <ClubStats consultations={0} newMembersThisMonth={0} color={clubColor} />
     </div>
   )
 }
+

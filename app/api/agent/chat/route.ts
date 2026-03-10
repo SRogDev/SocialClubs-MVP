@@ -58,8 +58,19 @@ export async function POST(request: Request) {
         // Obtener skills del agente
         const skills = await getAgentSkills(agent.id)
 
-        // Construir system prompt con skills
+        // Fetch club context for grounded answers
+        const { data: club } = await supabase
+            .from('clubs')
+            .select('name, bio, total_members, level')
+            .eq('id', clubId)
+            .single()
+
+        // Construir system prompt con contexto del club y skills
         let systemPrompt = agent.system_prompt || 'You are a helpful assistant.'
+
+        if (club) {
+            systemPrompt += `\n\nCLUB CONTEXT (auto-injected):\n- Club name: ${club.name}\n- Description: ${club.bio || 'Sin descripción'}\n- Members: ${club.total_members ?? 0}\n- Level: ${club.level ?? 1}`
+        }
 
         if (skills.length > 0) {
             systemPrompt += '\n\nYou have access to the following skills:\n'
