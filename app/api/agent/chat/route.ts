@@ -1,25 +1,22 @@
 import { createClient } from '@/lib/supabase/server'
 import { getAgentByClubId, getAgentSkills, saveAgentMessage } from '@/services/agentService'
-import { streamText } from 'ai'
+import { streamText, tool } from 'ai'
 import { google } from '@ai-sdk/google'
 import { rateLimit } from '@/lib/rate-limit'
-
-const limiter = rateLimit({
-    interval: 60 * 1000, // 1 minute
-    uniqueTokenPerInterval: 500,
-})
+import { z } from 'zod'
+import { NextRequest } from 'next/server'
+import { routeClubPrompt } from '@/services/routerAgentService'
+import { buildAnalyticsAgentInstructions } from '@/services/analyticsAgentService'
+import { buildServiceAgentInstructions } from '@/services/serviceAgentService'
+import { buildEngagementAgentInstructions } from '@/services/engagementAgentService'
+import { runClubSqlTool, retrieveClubKnowledgeTool } from '@/services/agentToolsService'
 
 export const runtime = 'edge'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
-        // Rate limiting
-        const ip = request.headers.get('x-forwarded-for') || 'anonymous'
-        try {
-            await limiter.check(10, ip) // 10 requests per minute
-        } catch {
-            return new Response('Rate limit exceeded', { status: 429 })
-        }
+        const limited = await rateLimit(request)
+        if (limited) return limited
 
         // Autenticación
         const supabase = await createClient()
@@ -38,7 +35,7 @@ export async function POST(request: Request) {
 
         // Verificar que el usuario es miembro del club
         const { data: membership } = await supabase
-            .from('memberships')
+            .from('users_clubs')
             .select('*')
             .eq('club_id', clubId)
             .eq('user_id', user.id)
@@ -65,8 +62,19 @@ export async function POST(request: Request) {
             .eq('id', clubId)
             .single()
 
+        const latestUserMessage = [...messages].reverse().find((message) => message.role === 'user')
+        const routing = routeClubPrompt(String(latestUserMessage?.content ?? ''))
+
+        const specialistPrompt =
+            routing.agent === 'analytics'
+                ? buildAnalyticsAgentInstructions()
+                : routing.agent === 'engagement'
+                    ? buildEngagementAgentInstructions()
+                    : buildServiceAgentInstructions()
+
         // Construir system prompt con contexto del club y skills
         let systemPrompt = agent.system_prompt || 'You are a helpful assistant.'
+        systemPrompt += `\n\nMULTI-AGENT ROUTING:\n- Selected specialist: ${routing.agent}\n- Confidence: ${routing.confidence.toFixed(2)}\n- Reason: ${routing.reason}\n\n${specialistPrompt}`
 
         if (club) {
             systemPrompt += `\n\nCLUB CONTEXT (auto-injected):\n- Club name: ${club.name}\n- Description: ${club.bio || 'Sin descripción'}\n- Members: ${club.total_members ?? 0}\n- Level: ${club.level ?? 1}`
@@ -79,6 +87,8 @@ export async function POST(request: Request) {
             })
         }
 
+        systemPrompt += '\n\nTOOLS:\n- Use `clubSqlTool` for controlled club/user preference queries.\n- Use `clubKnowledgeTool` for retrieving club RAG context when needed.'
+
         // Guardar mensaje del usuario
         const userMessage = messages[messages.length - 1]
         if (userMessage.role === 'user') {
@@ -87,18 +97,42 @@ export async function POST(request: Request) {
 
         // Streaming con Gemini 2.5 Flash
         const result = streamText({
-            model: google('gemini-2.0-flash-exp'),
+            model: google('gemini-2.0-flash-exp') as any,
             system: systemPrompt,
             messages,
-            temperature: agent.temperature,
-            maxTokens: 2000,
+            temperature: agent.temperature ?? 0.7,
+            maxOutputTokens: 2000,
+            tools: {
+                clubSqlTool: tool({
+                    description: 'Run controlled SQL-like queries for club profile, member summary, and user preference signals.',
+                    inputSchema: z.object({
+                        queryName: z.enum(['club_profile', 'club_member_summary', 'user_membership_preferences']),
+                    }),
+                    execute: async ({ queryName }) => {
+                        return runClubSqlTool(queryName, {
+                            clubId,
+                            userId: user.id,
+                        })
+                    },
+                }),
+                clubKnowledgeTool: tool({
+                    description: 'Retrieve relevant club knowledge chunks from the RAG service.',
+                    inputSchema: z.object({
+                        query: z.string().min(2),
+                    }),
+                    execute: async ({ query }) => {
+                        return retrieveClubKnowledgeTool(clubId, query)
+                    },
+                }),
+            },
             onFinish: async ({ text }) => {
                 // Guardar respuesta del asistente
                 await saveAgentMessage(agent.id, 'assistant', { text })
             },
         })
 
-        return result.toDataStreamResponse()
+        const dataStreamResponse = (result as any).toDataStreamResponse?.()
+        return dataStreamResponse ?? result.toTextStreamResponse()
     } catch (error) {
         console.error('Error in agent chat:', error)
         return new Response('Internal Server Error', { status: 500 })

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { Layout, Users, Zap, Calendar, Joystick, BarChart2, Megaphone, HeadphonesIcon } from "lucide-react"
+import { Layout, Users, Zap, Calendar, Joystick, BarChart2, Megaphone, HeadphonesIcon, Bot } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 type SidebarProps = {
@@ -17,13 +18,14 @@ type SidebarProps = {
  * Server Component that uses Link for navigation.
  */
 export default function ClubPanelSidebar({ clubId, activeSection, clubName }: SidebarProps) {
-    const items: { value: string; label: string; icon: React.ElementType }[] = [
+    const items: { value: string; label: string; icon: LucideIcon }[] = [
         { value: "general", label: "General", icon: Layout },
         { value: "miembros", label: "Miembros", icon: Users },
         { value: "automatizar", label: "Automatizar", icon: Zap },
         { value: "agenda", label: "Agenda", icon: Calendar },
         { value: "gamificacion", label: "Gamificación", icon: Joystick },
         { value: "analiticas", label: "Analíticas", icon: BarChart2 },
+        { value: "agent", label: "AI Agent", icon: Bot },
         { value: "marketing", label: "Marketing", icon: Megaphone },
         { value: "support", label: "Soporte", icon: HeadphonesIcon },
     ]

@@ -26,6 +26,15 @@ export interface AgentSkill {
   updated_at: string
 }
 
+export interface AgentMessage {
+  id: string
+  agent_id: string
+  role: 'user' | 'assistant' | 'system' | 'tool'
+  content: Record<string, unknown>
+  tool_used: string | null
+  created_at: string
+}
+
 /**
  * Get agent by club ID
  */
@@ -267,4 +276,33 @@ export async function deleteAgentSkill(skillId: string): Promise<void> {
   if (error) {
     throw new Error(`Failed to delete agent skill: ${error.message}`)
   }
+}
+
+/**
+ * Save a message in agent history
+ */
+export async function saveAgentMessage(
+  agentId: string,
+  role: AgentMessage['role'],
+  content: Record<string, unknown>,
+  toolUsed?: string
+): Promise<AgentMessage> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('agent_messages')
+    .insert({
+      agent_id: agentId,
+      role,
+      content,
+      tool_used: toolUsed || null,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    throw new Error(`Failed to save agent message: ${error.message}`)
+  }
+
+  return data
 }
