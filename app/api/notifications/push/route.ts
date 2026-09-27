@@ -14,7 +14,9 @@
  *   - Header: x-webhook-secret = <SUPABASE_WEBHOOK_SECRET>
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { send } from '@/services/notificationTemplateService'
 
 // Supabase webhook payload shape (INSERT)

@@ -1,8 +1,10 @@
 import { SendIcon } from "lucide-react";
-import { Button } from "../ui/button";
 import { useEffect, useRef, useState } from "react";
 import { RiGeminiLine } from "react-icons/ri";
-import { Spinner } from "./ui/spinner";
+
+import { Spinner } from "@/components/ui/spinner";
+
+import { Button } from "../ui/button";
 import { Dialog, DialogContent } from "../ui/dialog";
 import { Textarea } from "../ui/textarea";
 
@@ -21,7 +23,7 @@ export default function TextMessageModal({
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height =
-        textareaRef.current.scrollHeight + "px";
+        `${textareaRef.current.scrollHeight  }px`;
     }
   }, [message]);
 

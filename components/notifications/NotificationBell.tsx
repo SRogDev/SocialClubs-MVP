@@ -1,8 +1,9 @@
 'use client'
 
-import Link from 'next/link'
-import { Bell } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Bell } from 'lucide-react'
+import Link from 'next/link'
+
 import { useUnreadNotificationCount } from '@/hooks/swr/useNotifications'
 import { cn } from '@/lib/utils'
 

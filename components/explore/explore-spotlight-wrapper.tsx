@@ -1,7 +1,8 @@
 'use client'
 
-import { Spotlight } from '@/components/ui/spotlight'
 import { motion } from 'framer-motion'
+
+import { Spotlight } from '@/components/ui/spotlight'
 
 export function ExploreSpotlightWrapper({ children }: { children: React.ReactNode }) {
   return (

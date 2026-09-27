@@ -1,8 +1,9 @@
-import { Card } from '@/components/ui/card'
 import { redirect } from 'next/navigation'
+
+import { AgentPanelClient } from '@/components/agent/AgentPanelClient'
+import { Card } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/server'
 import { getAgentByClubId, getAgentSkills } from '@/services/agentService'
-import { AgentPanelClient } from '@/components/agent/AgentPanelClient'
 
 export default async function AgentPage({ params }: { params: { id: string } }) {
     const clubId = params.id

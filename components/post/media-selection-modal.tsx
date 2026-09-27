@@ -1,12 +1,13 @@
 "use client"
 
+import { Camera, ImageIcon, Upload, Mic, VideoIcon, FileText, Folder, Radio } from "lucide-react"
 import type React from "react"
-
 import { useState } from "react"
+
+import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Camera, ImageIcon, Upload, Mic, VideoIcon, FileText, Folder, Radio } from "lucide-react"
+
 import VideoUpload from "./video-upload"
 
 export type MediaType = "image" | "video" | "audio" | "document"

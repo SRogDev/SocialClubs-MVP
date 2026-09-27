@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Download, X, Smartphone } from "lucide-react"
+import { useEffect, useState } from "react"
+
 import { Button } from "@/components/ui/button"
 import { isPWA, promptInstall, setupInstallPrompt, vibrate, VibrationPatterns } from "@/utils/pwa"
 

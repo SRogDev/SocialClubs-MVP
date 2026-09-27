@@ -1,5 +1,7 @@
 import useSWR from 'swr'
-import useSWRSubscription, { SWRSubscriptionOptions } from 'swr/subscription'
+import type { SWRSubscriptionOptions } from 'swr/subscription';
+import useSWRSubscription from 'swr/subscription'
+
 import type {
     PlatformMetrics,
     ClubWithDetails,

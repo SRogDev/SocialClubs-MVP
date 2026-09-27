@@ -1,13 +1,14 @@
 'use client'
 
-import { memo } from 'react'
+import { Image } from '@imagekit/next'
+import { ImageIcon, Video, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
+import { memo } from 'react'
+
+import { ClubLevelBadge } from '@/components/shared/ClubLevelBadge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { ImageIcon, Video, MessageSquare } from 'lucide-react'
-import { Image } from '@imagekit/next'
 import { Card3D } from '@/components/ui/card-3d'
-import { ClubLevelBadge } from '@/components/shared/ClubLevelBadge'
 
 interface ClubCardProps {
   id?: string

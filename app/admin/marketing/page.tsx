@@ -1,6 +1,3 @@
-import { adminService } from '@/services'
-import { MetricCard } from '@/components/admin/MetricCard'
-import { EmailMarketingPanel } from '@/components/admin/EmailMarketingPanel'
 import {
     TrendingUp,
     Mail,
@@ -9,6 +6,11 @@ import {
     Users,
     Target,
 } from 'lucide-react'
+
+import { EmailMarketingPanel } from '@/components/admin/EmailMarketingPanel'
+import { MetricCard } from '@/components/admin/MetricCard'
+import { adminService } from '@/services'
+
 
 /**
  * Página de Marketing (Server Component)

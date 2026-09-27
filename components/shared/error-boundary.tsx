@@ -6,8 +6,9 @@
  * Use <SectionErrorBoundary> for isolated feature sections.
  */
 
-import React from 'react'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
+import React from 'react'
+
 import { Button } from '@/components/ui/button'
 
 interface ErrorBoundaryState {

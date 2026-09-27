@@ -1,5 +1,6 @@
 import useSWR from 'swr';
-import { Appointment } from '@/types/database';
+
+import type { Appointment } from '@/types/database';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 

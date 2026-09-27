@@ -1,6 +1,7 @@
 "use client"
 
 import { usePathname } from "next/navigation"
+
 import ClubPanelSidebar from "./club-panel-sidebar"
 
 type ClubPanelSidebarWrapperProps = {

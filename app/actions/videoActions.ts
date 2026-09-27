@@ -5,9 +5,10 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+
 import { createClient } from '@/lib/supabase/server'
-import { createMuxDirectUpload } from '@/services/videoService'
 import { createVideoUploadSchema, type CreateVideoUploadInput } from '@/schemas/videoSchema'
+import { createMuxDirectUpload } from '@/services/videoService'
 
 /**
  * Create a video upload and get Direct Upload URL

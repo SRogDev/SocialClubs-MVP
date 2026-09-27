@@ -1,11 +1,12 @@
 'use client'
 
-import { memo } from 'react'
-import { SpotlightCard } from '@/components/ui/spotlight'
-import { Badge } from '@/components/ui/badge'
-import { Users, Lock } from 'lucide-react'
-import { motion } from 'framer-motion'
 import { Image } from '@imagekit/next'
+import { motion } from 'framer-motion'
+import { Users, Lock } from 'lucide-react'
+import { memo } from 'react'
+
+import { Badge } from '@/components/ui/badge'
+import { SpotlightCard } from '@/components/ui/spotlight'
 import type { Club } from '@/types/club'
 
 interface FeedClubCardProps {

@@ -1,14 +1,16 @@
 'use client'
 
-import { useCallback, useOptimistic, useTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, BellOff, CheckCheck, Loader2 } from 'lucide-react'
+import { useCallback, useOptimistic, useTransition } from 'react'
+
+import { markAllNotificationsReadAction } from '@/app/actions/notificationActions'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { NotificationItem } from './NotificationItem'
 import { useNotifications } from '@/hooks/swr/useNotifications'
-import { markAllNotificationsReadAction } from '@/app/actions/notificationActions'
 import type { Notification } from '@/types/notification'
+
+import { NotificationItem } from './NotificationItem'
 
 /**
  * Centro de notificaciones completo.

@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
 import { Image } from "@imagekit/next";
+import { useEffect, useState } from "react";
+
 import { toast } from "@/components/ui/use-toast";
 
 interface WelcomeClubMessageProps {

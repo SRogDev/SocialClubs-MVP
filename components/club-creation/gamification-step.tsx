@@ -1,9 +1,10 @@
 "use client"
 
+import { Trophy } from "lucide-react"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Trophy } from "lucide-react"
 
 interface GamificationData {
     pointsForPost: number

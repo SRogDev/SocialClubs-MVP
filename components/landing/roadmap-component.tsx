@@ -1,9 +1,10 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
 import { Rocket, TestTube, Gamepad2, ShoppingCart, User, Brain, Network, Shield } from "lucide-react"
 import { useRef } from "react"
+
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 
 const roadmapPhases = [
   {

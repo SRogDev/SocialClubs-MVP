@@ -1,8 +1,10 @@
-import { Card } from "@/components/ui/card";
-import PostHeader from "./post-header";
-import PostActions from "./post-actions";
 import { Image } from "@imagekit/next";
+
+import { Card } from "@/components/ui/card";
 import type { Post } from "@/types/post";
+
+import PostActions from "./post-actions";
+import PostHeader from "./post-header";
 
 interface PostImageProps {
   post: Post;

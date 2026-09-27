@@ -17,8 +17,8 @@
  * ```
  */
 
-import type { Club } from '@/types/club'
 import { generateClubJsonLd } from '@/schemas/clubJsonLdSchema'
+import type { Club } from '@/types/club'
 
 interface ClubJsonLdProps {
     club: Club

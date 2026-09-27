@@ -1,9 +1,10 @@
 "use client";
 
-import { usePosts } from "@/context/PostsContext";
-import { Poll, Post } from "@/types/post";
 import { useState } from "react";
+
+import { usePosts } from "@/context/PostsContext";
 import { toast } from "@/hooks/use-toast";
+import type { Poll, Post } from "@/types/post";
 
 function useActions() {
   const [isLoading, setLoading] = useState(false);
@@ -43,7 +44,7 @@ function useActions() {
       });
     } catch (e) {
       setError(e.message);
-      console.log("Error en:" + e.message);
+      console.log(`Error en:${  e.message}`);
     } finally {
       setLoading(false);
     }
@@ -62,7 +63,7 @@ function useActions() {
       });
     } catch (e) {
       setError(e.message);
-      console.log("Error en:" + e.message);
+      console.log(`Error en:${  e.message}`);
     } finally {
       setLoading(false);
     }
@@ -86,7 +87,7 @@ function useActions() {
       });
     } catch (e) {
       setError(e.message);
-      console.log("Error en:" + e.message);
+      console.log(`Error en:${  e.message}`);
     } finally {
       setLoading(false);
     }
@@ -104,7 +105,7 @@ function useActions() {
       });
     } catch (e) {
       setError(e.message);
-      console.log("Error en:" + e.message);
+      console.log(`Error en:${  e.message}`);
     } finally {
       setLoading(false);
     }
@@ -119,7 +120,7 @@ function useActions() {
       });
     } catch (e) {
       setError(e.message);
-      console.log("Error en:" + e.message);
+      console.log(`Error en:${  e.message}`);
     } finally {
       setLoading(false);
     }

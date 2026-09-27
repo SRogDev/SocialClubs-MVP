@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Coins } from "lucide-react"
+import { useState } from "react"
+
+import { Button } from "@/components/ui/button"
 import SocialCoinModal from "@/components/Zphase/social-coin-modal"
 
 interface SocialCoinsSectionProps {

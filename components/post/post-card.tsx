@@ -1,18 +1,19 @@
 "use client"
 
-import { useState } from "react"
 import { Image } from "@imagekit/next"
-import WidgetPost from "@/components/widgets/widget-post"
+import { motion, AnimatePresence } from "framer-motion"
+import { Heart, MessageCircle, Eye, Flame, Play, Pause } from "lucide-react"
+import { useState } from "react"
+
+import { likePostAction, unlikePostAction, superlikePostAction } from "@/app/actions/postActions"
+import CommentsModal from "@/components/post/comments-modal"
+import SuperlikeModal from "@/components/post/superlike-modal"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Heart, MessageCircle, Eye, Flame, Play, Pause } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { motion, AnimatePresence } from "framer-motion"
-import SuperlikeModal from "@/components/post/superlike-modal"
-import CommentsModal from "@/components/post/comments-modal"
-import { likePostAction, unlikePostAction, superlikePostAction } from "@/app/actions/postActions"
+import WidgetPost from "@/components/widgets/widget-post"
 import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
 import { vibrate } from "@/utils/pwa"
 
 /* ─── Extracted: Superlike Animation ──────────────────────────── */

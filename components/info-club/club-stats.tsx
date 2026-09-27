@@ -1,5 +1,7 @@
-import { Card, CardContent } from "@/components/ui/card"
 import { TrendingUp, Users } from "lucide-react"
+
+import { CardContent } from "@/components/ui/card"
+import GlassCard from "@/components/ui/glass-card"
 
 type ClubStatsProps = {
     consultations: number
@@ -40,5 +42,7 @@ export default function ClubStats({ consultations, newMembersThisMonth, color }:
                     </h3>
                     <p className="text-xs text-muted-foreground">Miembros nuevos este mes</p>
                 </CardContent>
-            </Card>
+            </GlassCard>
+        </div>
+    )
 }

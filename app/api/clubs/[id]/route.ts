@@ -3,10 +3,12 @@
  * DELETE /api/clubs/[id]
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
+import { rateLimit, RATE_LIMITS, addRateLimitHeaders } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { deleteClub, getClubById } from '@/services/clubService'
-import { rateLimit, RATE_LIMITS, addRateLimitHeaders } from '@/lib/rate-limit'
 
 export async function DELETE(
     request: NextRequest,

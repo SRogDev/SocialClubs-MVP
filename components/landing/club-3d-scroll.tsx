@@ -1,10 +1,10 @@
 'use client'
 
-import { useRef, useEffect, useState, Suspense } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
 import { MeshDistortMaterial } from '@react-three/drei'
-import * as THREE from 'three'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import { useRef, useEffect, useState, Suspense } from 'react'
+import * as THREE from 'three'
 
 const FEATURE_ICONS = [
   { color: '#FF5500', label: '🎮 Gamificación', position: [0, 0] as [number, number] },

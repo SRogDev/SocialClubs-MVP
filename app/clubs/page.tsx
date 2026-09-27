@@ -1,12 +1,14 @@
-import { Suspense } from 'react'
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import HomeList from '@/components/home-clubs/home-list'
-import CreateClubLink from '@/components/create-club-link'
-import { getUserClubs } from '@/services/clubService'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
+
+import CreateClubLink from '@/components/create-club-link'
+import HomeList from '@/components/home-clubs/home-list'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { createClient } from '@/lib/supabase/server'
+import { getUserClubs } from '@/services/clubService'
+
 
 function HomeListSkeleton() {
   return (

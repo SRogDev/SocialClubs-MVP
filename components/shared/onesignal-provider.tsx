@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import { initOneSignal } from '@/lib/onesignal';
+
 import { useOneSignalAuth } from '@/hooks/use-onesignal-auth';
+import { initOneSignal } from '@/lib/onesignal';
 
 /**
  * Client component that initializes OneSignal and links the current user.

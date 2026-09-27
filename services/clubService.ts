@@ -3,6 +3,7 @@
  */
 
 import { cache } from 'react'
+
 import { createClient } from '@/lib/supabase/server'
 import { createClubSchema, updateClubSchema, type CreateClubInput, type UpdateClubInput } from '@/schemas/clubSchema'
 import type { Club, ClubStats } from '@/types/club'

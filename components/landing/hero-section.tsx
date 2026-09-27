@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
 import { motion, useAnimationFrame } from 'framer-motion'
-import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { useEffect, useRef, useState } from 'react'
+
+import { Button } from '@/components/ui/button'
+
 
 // ─── Background Beams ─────────────────────────────────────────────────────────
 

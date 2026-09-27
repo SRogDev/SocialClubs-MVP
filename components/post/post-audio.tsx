@@ -1,12 +1,14 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
 import { Play, Pause, Volume2 } from "lucide-react";
 import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
-import PostHeader from "./post-header";
-import PostActions from "./post-actions";
+import { Card } from "@/components/ui/card";
 import type { Post } from "@/types/post";
+
+import PostActions from "./post-actions";
+import PostHeader from "./post-header";
 
 interface PostAudioProps {
   post: Post;

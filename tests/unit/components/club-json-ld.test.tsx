@@ -2,6 +2,7 @@
  * Integration test for ClubJsonLd component (TDD)
  */
 import { render } from '@testing-library/react'
+
 import ClubJsonLd from '@/components/club-json-ld'
 import type { Club } from '@/types/club'
 

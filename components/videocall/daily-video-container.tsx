@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import DailyIframe from '@daily-co/daily-js';
 import { X, Mic, MicOff, Video, VideoOff, Monitor, MonitorOff, Phone } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { vibrate } from '@/utils/pwa';
 
@@ -70,7 +71,7 @@ export function DailyVideoContainer({ roomUrl, roomId, userId, userName }: Daily
         callFrame
             .join({
                 url: roomUrl,
-                userName: userName,
+                userName,
             })
             .catch((err: any) => {
                 console.error('[Daily] Error joining:', err);

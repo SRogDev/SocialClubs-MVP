@@ -7,7 +7,8 @@
  * Copy this pattern to your actual club pages.
  */
 
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
+
 import ClubJsonLd from '@/components/club-json-ld'
 import { getClubById } from '@/services/clubService'
 import type { Club } from '@/types/club'

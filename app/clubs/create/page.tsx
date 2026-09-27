@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+
 import { ClubCreationWizard } from "@/components/club-creation"
 
 function CreateClubSkeleton() {

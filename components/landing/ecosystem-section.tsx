@@ -1,7 +1,7 @@
 'use client'
 
-import { useRef } from 'react'
 import { motion, useAnimationFrame } from 'framer-motion'
+import { useRef } from 'react'
 
 const SOCIAL_NETWORKS = [
   { name: 'Instagram', icon: '📸', bgFrom: '#E1306C', bgTo: '#833AB4' },

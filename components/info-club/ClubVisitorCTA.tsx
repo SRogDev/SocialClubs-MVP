@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import { Eye, UserPlus, Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+
 import { joinClubAction } from "@/app/actions/clubActions"
+import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { vibrate, VibrationPatterns } from "@/utils/pwa"
 

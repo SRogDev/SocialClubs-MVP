@@ -1,11 +1,12 @@
 'use client'
 
+import { motion } from 'framer-motion'
+import { Home, Compass, Bell, User, Zap, LayoutDashboard } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Compass, Bell, User, Zap, LayoutDashboard } from 'lucide-react'
-import { motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
+
 import { useUnreadNotificationCount } from '@/hooks/swr/useNotifications'
+import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
     { href: '/clubs', icon: Home, label: 'Inicio' },
@@ -41,7 +42,7 @@ export function DesktopSidebar() {
                     const isActive =
                         item.href === '/clubs'
                             ? pathname === '/clubs' || pathname.startsWith('/clubs/')
-                            : pathname === item.href || pathname.startsWith(item.href + '/')
+                            : pathname === item.href || pathname.startsWith(`${item.href  }/`)
 
                     return (
                         <Link key={item.href} href={item.href}>

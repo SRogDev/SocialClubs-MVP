@@ -1,6 +1,7 @@
-import React, { useRef } from "react";
-import { Button } from "./ui/button";
 import { ImageIcon } from "lucide-react";
+import React, { useRef } from "react";
+
+import { Button } from "./ui/button";
 
 interface ImageUploadButtonProps {
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;

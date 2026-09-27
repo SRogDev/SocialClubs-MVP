@@ -1,7 +1,12 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import { AlertCircle, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import posthog from 'posthog-js';
+import { useState } from "react";
+
+import { GuestButton } from "@/components/auth/guest-button";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,12 +17,11 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { GuestButton } from "@/components/auth/guest-button";
-import posthog from 'posthog-js';
-import { AlertCircle, Loader2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
+
+
+
 
 interface SignUpFormProps extends React.ComponentPropsWithoutRef<"div"> {
   /** club_link code when coming from an invite link */
@@ -69,7 +73,7 @@ export function SignUpForm({
 
       // Capture PostHog event on success (client-side only)
       posthog.capture('user_registered', {
-        email: email,
+        email,
         timestamp: new Date().toISOString(),
         invite_code: inviteCode ?? null,
       });
@@ -78,7 +82,7 @@ export function SignUpForm({
       if (inviteCode) successParams.set("invite", inviteCode);
       if (clubName) successParams.set("club", clubName);
       const qs = successParams.toString();
-      router.push(`/auth/sign-up-success${qs ? '?' + qs : ''}`);
+      router.push(`/auth/sign-up-success${qs ? `?${  qs}` : ''}`);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {

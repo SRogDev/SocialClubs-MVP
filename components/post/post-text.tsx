@@ -1,7 +1,8 @@
 import { Card } from "@/components/ui/card"
-import PostHeader from "./post-header"
-import PostActions from "./post-actions"
 import type { Post } from "@/types/post"
+
+import PostActions from "./post-actions"
+import PostHeader from "./post-header"
 
 interface PostTextProps {
   post: Post

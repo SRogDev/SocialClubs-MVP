@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Edit } from "lucide-react"
+import { useState } from "react"
+
 import EditProfileModal from "@/components/profile/edit-profile-modal"
+import { Button } from "@/components/ui/button"
 
 interface EditProfileSectionProps {
     userId: string

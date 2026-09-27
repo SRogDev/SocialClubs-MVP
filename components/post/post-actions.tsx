@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useOptimistic } from "react"
-import { Button } from "@/components/ui/button"
-import { Heart, MessageCircle, Eye, Flame } from "lucide-react"
 import { motion } from "framer-motion"
+import { Heart, MessageCircle, Eye, Flame } from "lucide-react"
+import { useState, useOptimistic } from "react"
+
 import { likePostAction, unlikePostAction, superlikePostAction } from "@/app/actions"
+import { Button } from "@/components/ui/button"
 import { vibrate } from "@/utils/pwa"
 
 interface PostActionsProps {

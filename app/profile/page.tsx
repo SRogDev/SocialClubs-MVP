@@ -1,9 +1,10 @@
-import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { getUserProfile } from '@/services/userService'
+import { Suspense } from 'react'
+
 import ProfileClient from '@/components/profile/profile-client'
 import { Skeleton } from '@/components/ui/skeleton'
+import { createClient } from '@/lib/supabase/server'
+import { getUserProfile } from '@/services/userService'
 
 function ProfileSkeleton() {
   return (

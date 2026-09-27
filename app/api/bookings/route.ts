@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { rateLimit, RATE_LIMITS, addRateLimitHeaders } from '@/lib/rate-limit';
-import { getUserBookings, getClubBookings, cancelBooking } from '@/services/bookingService';
+import { createClient } from '@/lib/supabase/server';
 import { getBookingsSchema, cancelBookingSchema } from '@/schemas/appointmentSchema';
+import { getUserBookings, getClubBookings, cancelBooking } from '@/services/bookingService';
 
 /**
  * GET /api/bookings

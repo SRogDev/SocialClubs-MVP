@@ -1,9 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+import type Stripe from 'stripe';
+
 import { stripe, STRIPE_WEBHOOK_SECRET } from '@/lib/stripe';
 import { createClient } from '@/lib/supabase/server';
 import { confirmBooking } from '@/services/bookingService';
 import { recordPayment } from '@/services/stripeService';
-import Stripe from 'stripe';
 
 /**
  * POST /api/webhooks/stripe

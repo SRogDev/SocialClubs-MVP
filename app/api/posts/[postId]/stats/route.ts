@@ -5,10 +5,11 @@
  * Cache is invalidated by server actions on every like/superlike/comment.
  * Called by the usePostStats SWR hook.
  */
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { getPostStatsWithCache } from '@/lib/post-stats-cache'
 
-export const runtime = 'nodejs'
 
 export async function GET(
     _request: NextRequest,

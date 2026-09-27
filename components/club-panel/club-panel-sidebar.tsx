@@ -1,8 +1,9 @@
-import Link from "next/link"
-import { cn } from "@/lib/utils"
 import { Layout, Users, Zap, Calendar, Joystick, BarChart2, Megaphone, HeadphonesIcon, Bot } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
+import Link from "next/link"
+
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 type SidebarProps = {
     /** current club ID for navigation */

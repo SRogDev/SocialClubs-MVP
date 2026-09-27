@@ -1,10 +1,11 @@
-import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
+
+import { ClubPageClient } from '@/components/club/club-page-client'
+import { ClubPageSkeleton } from '@/components/club/club-page-skeleton'
 import { createClient } from '@/lib/supabase/server'
 import { getClubById, isUserClubMember } from '@/services/clubService'
 import { getPosts } from '@/services/postService'
-import { ClubPageClient } from '@/components/club/club-page-client'
-import { ClubPageSkeleton } from '@/components/club/club-page-skeleton'
 
 interface PageProps {
   params: Promise<{ id: string }>

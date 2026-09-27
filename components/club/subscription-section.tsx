@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { ChevronDown, ChevronUp } from "lucide-react"
+import { useState } from "react"
+
 import SubscriptionCard from "@/components/club/subscription-card"
+import { Button } from "@/components/ui/button"
 
 interface SubscriptionSectionProps {
   subscriptionsCount: number

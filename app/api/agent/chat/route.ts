@@ -1,17 +1,17 @@
+import { google } from '@ai-sdk/google'
+import { streamText, tool, convertToModelMessages } from 'ai'
+import type { NextRequest } from 'next/server'
+import { z } from 'zod'
+
+import { rateLimit } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { getAgentByClubId, getAgentSkills, saveAgentMessage } from '@/services/agentService'
-import { streamText, tool } from 'ai'
-import { google } from '@ai-sdk/google'
-import { rateLimit } from '@/lib/rate-limit'
-import { z } from 'zod'
-import { NextRequest } from 'next/server'
-import { routeClubPrompt } from '@/services/routerAgentService'
-import { buildAnalyticsAgentInstructions } from '@/services/analyticsAgentService'
-import { buildServiceAgentInstructions } from '@/services/serviceAgentService'
-import { buildEngagementAgentInstructions } from '@/services/engagementAgentService'
 import { runClubSqlTool, retrieveClubKnowledgeTool } from '@/services/agentToolsService'
+import { buildAnalyticsAgentInstructions } from '@/services/analyticsAgentService'
+import { buildEngagementAgentInstructions } from '@/services/engagementAgentService'
+import { routeClubPrompt } from '@/services/routerAgentService'
+import { buildServiceAgentInstructions } from '@/services/serviceAgentService'
 
-export const runtime = 'edge'
 
 export async function POST(request: NextRequest) {
     try {
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
         const result = streamText({
             model: google('gemini-2.0-flash-exp') as any,
             system: systemPrompt,
-            messages,
+            messages: convertToModelMessages(messages),
             temperature: agent.temperature ?? 0.7,
             maxOutputTokens: 2000,
             tools: {
@@ -131,8 +131,7 @@ export async function POST(request: NextRequest) {
             },
         })
 
-        const dataStreamResponse = (result as any).toDataStreamResponse?.()
-        return dataStreamResponse ?? result.toTextStreamResponse()
+        return result.toUIMessageStreamResponse()
     } catch (error) {
         console.error('Error in agent chat:', error)
         return new Response('Internal Server Error', { status: 500 })

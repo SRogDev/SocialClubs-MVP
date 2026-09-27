@@ -4,10 +4,11 @@
 
 'use client'
 
-import { useState } from 'react'
 import posthog from 'posthog-js'
-import type { Club } from '@/types/club'
+import { useState } from 'react'
+
 import type { CreateClubInput } from '@/schemas/clubSchema'
+import type { Club } from '@/types/club'
 
 interface UseClubCreateResult {
     createClub: (input: CreateClubInput) => Promise<Club>

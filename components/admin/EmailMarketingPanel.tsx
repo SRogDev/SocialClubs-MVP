@@ -1,12 +1,10 @@
 'use client'
 
-import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { Send } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
-import { sendMarketingEmailAction } from '@/app/actions/adminActions'
 import { useState } from 'react'
+
+import { sendMarketingEmailAction } from '@/app/actions/adminActions'
+import { Button } from '@/components/ui/button'
 import {
     Card,
     CardContent,
@@ -14,6 +12,9 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { useToast } from '@/hooks/use-toast'
 
 /**
  * Panel de email marketing

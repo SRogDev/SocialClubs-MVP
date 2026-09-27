@@ -1,12 +1,15 @@
 "use client"
 
+import { LockIcon, Globe } from "lucide-react"
+
+import ColorPicker from "@/components/shared/color-picker"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { LockIcon, Globe } from "lucide-react"
-import ColorPicker from "@/components/shared/color-picker"
+import { Textarea } from "@/components/ui/textarea"
+
+
 
 interface FormData {
     name: string

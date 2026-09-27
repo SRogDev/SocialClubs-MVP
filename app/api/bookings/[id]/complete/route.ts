@@ -5,10 +5,12 @@
  * Can be called by the creator after the videocall ends,
  * or automatically by the cron job after the scheduled time passes.
  */
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { releaseEscrowToCreator } from '@/services/stripeService'
-import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 export async function POST(
     request: NextRequest,

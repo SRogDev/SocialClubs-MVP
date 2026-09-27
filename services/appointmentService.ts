@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
-import type { Appointment } from '@/types/appointment';
 import type {
     CreateAppointmentSlotInput,
     UpdateAppointmentSlotInput,
 } from '@/schemas/appointmentSchema';
+import type { Appointment } from '@/types/appointment';
 
 // ====================================
 // APPOINTMENT SERVICE (REPOSITORY)

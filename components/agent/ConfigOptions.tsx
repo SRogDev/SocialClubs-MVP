@@ -1,14 +1,17 @@
 'use client'
 
-import { UseFormReturn } from 'react-hook-form'
 import { Plus, X } from 'lucide-react'
-import { AgentConfig, toneOptions } from '@/schemas/agentSchema'
+import type { UseFormReturn } from 'react-hook-form'
+
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
-import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { toneOptions } from '@/schemas/agentSchema'
+import type { AgentConfig} from '@/schemas/agentSchema';
+
 import { ConfigLine } from './ConfigLine'
 
 interface ConfigOptionsProps {

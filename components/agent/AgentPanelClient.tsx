@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MainConfig } from '@/components/agent/MainConfig'
-import { MainChat } from '@/components/agent/MainChat'
-import { AgentTabsTransition } from '@/components/agent/AgentTabsTransition'
 import { Bot, Settings } from 'lucide-react'
+import { useState } from 'react'
+
+import { AgentTabsTransition } from '@/components/agent/AgentTabsTransition'
+import { MainChat } from '@/components/agent/MainChat'
+import { MainConfig } from '@/components/agent/MainConfig'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface AgentPanelClientProps {
     clubId: string

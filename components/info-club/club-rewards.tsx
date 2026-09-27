@@ -1,5 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { CardContent } from "@/components/ui/card"
+import GlassCard from "@/components/ui/glass-card"
 
 type Reward = {
     id: string
@@ -50,4 +51,6 @@ export default function ClubRewards({ rewards, color }: ClubRewardsProps) {
                     ))}
                 </div>
             </CardContent>
-        </Card>
+        </GlassCard>
+    )
+}

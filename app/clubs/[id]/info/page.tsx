@@ -1,16 +1,17 @@
-import { notFound } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { notFound } from "next/navigation"
+
+import ClubDescription from "@/components/info-club/club-description"
+import ClubEditButton from "@/components/info-club/club-edit-button"
+import ClubHeader from "@/components/info-club/club-header"
+import ClubInteractiveWrapper from "@/components/info-club/club-interactive-wrapper"
+import ClubStats from "@/components/info-club/club-stats"
+import ClubTags from "@/components/info-club/club-tags"
+import ClubVisitorCTA from "@/components/info-club/ClubVisitorCTA"
+import InviteLinkCard from "@/components/info-club/invite-link-card"
 import { createClient } from "@/lib/supabase/server"
 import { getClubById, isUserClubMember } from "@/services/clubService"
-import ClubHeader from "@/components/info-club/club-header"
-import ClubEditButton from "@/components/info-club/club-edit-button"
-import ClubInteractiveWrapper from "@/components/info-club/club-interactive-wrapper"
-import ClubDescription from "@/components/info-club/club-description"
-import InviteLinkCard from "@/components/info-club/invite-link-card"
-import ClubTags from "@/components/info-club/club-tags"
-import ClubStats from "@/components/info-club/club-stats"
-import ClubVisitorCTA from "@/components/info-club/ClubVisitorCTA"
 
 interface PageProps {
   params: Promise<{ id: string }>

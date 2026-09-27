@@ -1,15 +1,18 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { agentConfigSchema, type AgentConfig } from '@/schemas/agentSchema'
-import { ConfigOptions } from './ConfigOptions'
-import { Button } from '@/components/ui/button'
-import { useState } from 'react'
-import { saveAgentConfigAction } from '@/app/actions/agentActions'
-import { useToast } from '@/hooks/use-toast'
 import { Loader2 } from 'lucide-react'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+
+import { saveAgentConfigAction } from '@/app/actions/agentActions'
+import { Button } from '@/components/ui/button'
+import { useToast } from '@/hooks/use-toast'
+import { agentConfigSchema, type AgentConfig } from '@/schemas/agentSchema'
 import { vibrate } from '@/utils/pwa'
+
+import { ConfigOptions } from './ConfigOptions'
+
 
 interface MainConfigProps {
     clubId: string

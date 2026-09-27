@@ -1,19 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { ArrowLeft, ArrowRight, Check } from "lucide-react"
-import { TemplateSelection } from "./template-selection"
-import { BasicInfoStep } from "./basic-info-step"
-import { ChannelsStep } from "./channels-step"
-import { GamificationStep } from "./gamification-step"
-import { AgentStep } from "./agent-step"
-import { useClubCreate } from "@/hooks/use-club-actions"
-import { compressImage } from "@/app/utils/compressImage"
-import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+
+import { compressImage } from "@/app/utils/compressImage"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import {
     Dialog,
     DialogContent,
@@ -22,6 +15,15 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
+import { Progress } from "@/components/ui/progress"
+import { useClubCreate } from "@/hooks/use-club-actions"
+import { useToast } from "@/hooks/use-toast"
+
+import { AgentStep } from "./agent-step"
+import { BasicInfoStep } from "./basic-info-step"
+import { ChannelsStep } from "./channels-step"
+import { GamificationStep } from "./gamification-step"
+import { TemplateSelection } from "./template-selection"
 
 interface Channel {
     id: string

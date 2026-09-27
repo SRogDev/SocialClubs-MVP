@@ -1,17 +1,18 @@
 "use client"
 
+import { Send, MessageCircle } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import useSWR from "swr"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+
+import { addCommentAction } from "@/app/actions/postActions"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Send, MessageCircle } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { cn } from "@/lib/utils"
-import { createClient } from "@/lib/supabase/client"
-import { addCommentAction } from "@/app/actions/postActions"
+import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
+import { createClient } from "@/lib/supabase/client"
+import { cn } from "@/lib/utils"
 
 /* ─── Types ────────────────────────────────────────────────────── */
 

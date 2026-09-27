@@ -10,14 +10,15 @@
  *   401 → bad signature (QStash will NOT retry — signature failures are permanent)
  *   500 → transient error (QStash retries up to 3 times with exponential backoff)
  */
-import { NextRequest, NextResponse } from 'next/server'
 import { Receiver } from '@upstash/qstash'
-import { awardPoints } from '@/services/gamificationService'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { invalidateLeaderboardCache } from '@/lib/leaderboard-cache'
 import type { GamificationJobPayload } from '@/lib/qstash'
+import { awardPoints } from '@/services/gamificationService'
 
 // Node.js runtime — awardPoints uses createClient() which calls cookies()
-export const runtime = 'nodejs'
 
 function getReceiver() {
     if (!process.env.QSTASH_CURRENT_SIGNING_KEY) {

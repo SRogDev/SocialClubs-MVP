@@ -1,6 +1,7 @@
+import type Stripe from 'stripe';
+
 import { stripe, calculatePlatformFee, PLATFORM_FEE_PERCENT, ANNUAL_BILLING_MONTHS } from '@/lib/stripe';
 import { createClient } from '@/lib/supabase/server';
-import Stripe from 'stripe';
 
 // ============================================================================
 // STRIPE CONNECT - Creator Account Management

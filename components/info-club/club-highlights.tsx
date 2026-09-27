@@ -1,5 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { CardContent } from "@/components/ui/card"
+import GlassCard from "@/components/ui/glass-card"
 
 type Highlight = {
     id: string
@@ -42,4 +43,6 @@ export default function ClubHighlights({ highlights, color }: ClubHighlightsProp
                     ))}
                 </div>
             </CardContent>
-        </Card>
+        </GlassCard>
+    )
+}

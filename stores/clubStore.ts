@@ -3,6 +3,7 @@
  * Manages club state, active club selection, and filtering
  */
 import { create } from 'zustand'
+
 import type { Club } from '@/types/club'
 
 interface ClubStore {

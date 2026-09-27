@@ -1,23 +1,26 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { Image } from '@imagekit/next'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
+import { motion } from 'framer-motion'
 import { AlertTriangle, Edit, Coins, Flame } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
+import { useState, useEffect } from 'react'
+
 import SubscriptionSection from '@/components/club/subscription-section'
-import SocialCoinModal from '@/components/Zphase/social-coin-modal'
-import GlassCard from '@/components/ui/glass-card'
 import CreateClubLink from '@/components/create-club-link'
 import SuperlikeModal from '@/components/post/superlike-modal'
 import EditProfileModal from '@/components/profile/edit-profile-modal'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import GlassCard from '@/components/ui/glass-card'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+
+import SocialCoinModal from '@/components/Zphase/social-coin-modal'
 import { SpotlightCard } from '@/components/ui/spotlight'
-import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+
 
 interface ProfileData {
     name: string

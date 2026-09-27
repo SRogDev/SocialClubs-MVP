@@ -12,6 +12,7 @@
  *     .catch(err => console.error('[action] QStash enqueue failed:', err))
  */
 import { Client } from '@upstash/qstash'
+
 import type { GamificationActionType } from '@/types/gamification'
 
 if (!process.env.QSTASH_TOKEN) {

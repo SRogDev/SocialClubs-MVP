@@ -1,5 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { CardContent } from "@/components/ui/card"
+import GlassCard from "@/components/ui/glass-card"
 
 type ClubTagsProps = {
     tags: string[]
@@ -26,7 +27,7 @@ export default function ClubTags({ tags, color }: ClubTagsProps) {
                             className="rounded-full transition-all hover:scale-105 bg-transparent"
                             style={{
                                 borderColor: color,
-                                color: color,
+                                color,
                                 backgroundColor: `${color}10`,
                             }}
                         >
@@ -35,4 +36,6 @@ export default function ClubTags({ tags, color }: ClubTagsProps) {
                     ))}
                 </div>
             </CardContent>
-        </Card>
+        </GlassCard>
+    )
+}

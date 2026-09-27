@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useToast } from '@/hooks/use-toast';
 import type { CreateAppointmentSlotInput, UpdateAppointmentSlotInput } from '@/schemas/appointmentSchema';
 

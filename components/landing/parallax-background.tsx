@@ -1,7 +1,7 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+import { useRef, useEffect } from 'react'
 
 interface Blob {
   id: number

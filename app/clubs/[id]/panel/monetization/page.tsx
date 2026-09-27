@@ -1,12 +1,13 @@
-import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { EarningsOverview } from '@/components/monetization/EarningsOverview';
-import { TransactionHistory } from '@/components/monetization/TransactionHistory';
-import { RevenueMetrics } from '@/components/monetization/RevenueMetrics';
+import { Suspense } from 'react';
+
 import { ConnectDashboardButton } from '@/components/monetization/ConnectDashboardButton';
-import { Skeleton } from '@/components/ui/skeleton';
+import { EarningsOverview } from '@/components/monetization/EarningsOverview';
+import { RevenueMetrics } from '@/components/monetization/RevenueMetrics';
+import { TransactionHistory } from '@/components/monetization/TransactionHistory';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { createClient } from '@/lib/supabase/server';
 
 interface MonetizationPageProps {
     params: { id: string };

@@ -1,17 +1,19 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Send, MessageCircle, Lock, Sparkles } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
 import { ChatMessageItem } from '@/components/chats/chat-message'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useChatScroll } from '@/hooks/use-chat-scroll'
 import {
     type ChatMessage,
     useRealtimeChat,
 } from '@/hooks/use-realtime-chat'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Send, MessageCircle, Lock, Sparkles } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '@/lib/utils'
+
 
 interface RealtimeChatProps {
     roomName: string

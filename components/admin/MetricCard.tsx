@@ -1,10 +1,12 @@
 'use client'
 
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
+import type { LucideIcon} from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { useEffect, useRef } from 'react'
-import { LucideIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SpotlightCard } from '@/components/ui/spotlight'
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 interface MetricCardProps {

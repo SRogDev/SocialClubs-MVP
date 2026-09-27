@@ -1,4 +1,5 @@
 import useSWR from 'swr'
+
 import type { ResolvedWidgetData } from '@/types/widget'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())

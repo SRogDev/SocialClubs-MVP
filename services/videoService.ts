@@ -3,6 +3,7 @@
  */
 
 import Mux from '@mux/mux-node'
+
 import { createClient } from '@/lib/supabase/server'
 import type { MuxVideoMetadata } from '@/schemas/videoSchema'
 

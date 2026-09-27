@@ -1,12 +1,14 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import PostHeader from "./post-header";
-import PostActions from "./post-actions";
-import type { Post } from "@/types/post";
+
 import ProgressAnimated from "@/components/progress-animated";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import type { Post } from "@/types/post";
+
+import PostActions from "./post-actions";
+import PostHeader from "./post-header";
 
 interface PostPollProps {
   post: Post;

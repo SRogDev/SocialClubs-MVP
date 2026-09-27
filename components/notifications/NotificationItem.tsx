@@ -1,12 +1,13 @@
 'use client'
 
-import { useCallback, useTransition } from 'react'
-import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Trash2 } from 'lucide-react'
+import Link from 'next/link'
+import { useCallback, useTransition } from 'react'
+
+import { markNotificationReadAction, deleteNotificationAction } from '@/app/actions/notificationActions'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { markNotificationReadAction, deleteNotificationAction } from '@/app/actions/notificationActions'
 import type { Notification } from '@/types/notification'
 
 interface NotificationItemProps {

@@ -4,8 +4,8 @@
  * to improve SEO and rich snippets in search results
  */
 
-import type { Club } from '@/types/club'
 import { siteConfig } from '@/lib/seo-config'
+import type { Club } from '@/types/club'
 
 interface ClubJsonLd {
     '@context': string

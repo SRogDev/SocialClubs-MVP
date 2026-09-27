@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
-import { getClubByLink } from '@/services/clubService';
+
 import { createClient } from '@/lib/supabase/server';
+import { getClubByLink } from '@/services/clubService';
 
 interface PageProps {
     params: Promise<{ clubLink: string }>;

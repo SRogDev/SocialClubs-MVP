@@ -1,12 +1,14 @@
 'use client'
 
+import { Crown, Shield, Users, DollarSign } from 'lucide-react'
 import Link from 'next/link'
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import type { ClubWithDetails } from '@/services/adminService'
+
 import { StatusBadge } from './StatusBadge'
-import { Crown, Shield, Users, DollarSign } from 'lucide-react'
-import { ClubWithDetails } from '@/services/adminService'
 
 interface ClubAdminCardProps {
     club: ClubWithDetails

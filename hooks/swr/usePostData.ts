@@ -11,6 +11,7 @@
  */
 
 import useSWR, { type SWRConfiguration } from 'swr'
+
 import type { Post, PostStats, PostComment, PostInteraction } from '@/types/post'
 
 const fetcher = async (url: string) => {

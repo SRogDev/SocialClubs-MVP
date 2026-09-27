@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
 
 // Cleanup after each test
 afterEach(() => {
@@ -8,13 +7,13 @@ afterEach(() => {
 });
 
 // Mock Next.js router
-vi.mock('next/navigation', () => ({
+jest.mock('next/navigation', () => ({
     useRouter() {
         return {
-            push: vi.fn(),
-            replace: vi.fn(),
-            prefetch: vi.fn(),
-            back: vi.fn(),
+            push: jest.fn(),
+            replace: jest.fn(),
+            prefetch: jest.fn(),
+            back: jest.fn(),
             pathname: '/',
             query: {},
             asPath: '/',
@@ -31,15 +30,15 @@ vi.mock('next/navigation', () => ({
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: vi.fn().mockImplementation((query) => ({
+    value: jest.fn().mockImplementation((query) => ({
         matches: false,
         media: query,
         onchange: null,
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-        dispatchEvent: vi.fn(),
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
     })),
 });
 
@@ -65,7 +64,7 @@ global.ResizeObserver = class ResizeObserver {
 // Mock Vibration API
 Object.defineProperty(navigator, 'vibrate', {
     writable: true,
-    value: vi.fn(),
+    value: jest.fn(),
 });
 
 // Suppress console errors in tests (optional)

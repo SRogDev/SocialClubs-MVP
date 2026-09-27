@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Flame } from "lucide-react"
+import { useState } from "react"
+
 import SuperlikeModal from "@/components/post/superlike-modal"
+import { Button } from "@/components/ui/button"
 
 interface SuperlikesSectionProps {
     superlikes: number

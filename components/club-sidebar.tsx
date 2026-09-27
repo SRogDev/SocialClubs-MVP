@@ -1,10 +1,10 @@
 "use client"
 
+import { Layout, Users, Zap, Calendar, Joystick, BarChart2, Megaphone } from "lucide-react"
 import type React from "react"
 
-import { cn } from "@/lib/utils"
-import { Layout, Users, Zap, Calendar, Joystick, BarChart2, Megaphone } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 type SidebarProps = {
   /** currently selected tab */

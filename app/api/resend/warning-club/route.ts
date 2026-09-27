@@ -1,10 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { Resend } from 'resend'
 import { render } from '@react-email/render'
-import { createClient } from '@/lib/supabase/server'
-import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
-import { getClubCreatorEmail } from '@/services/adminService'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+import { Resend } from 'resend'
+
 import WarningClubEmail from '@/components/emails/warning-club-template'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
+import { createClient } from '@/lib/supabase/server'
+import { getClubCreatorEmail } from '@/services/adminService'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 

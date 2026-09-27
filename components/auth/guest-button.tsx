@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { signInAsGuest } from '@/services/auth/guestService';
 import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+import { signInAsGuest } from '@/app/actions/guestActions';
+import { Button } from '@/components/ui/button';
+
 
 export function GuestButton() {
     const [isLoading, setIsLoading] = useState(false);

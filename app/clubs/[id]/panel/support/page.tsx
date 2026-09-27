@@ -1,6 +1,7 @@
+import { MessageCircle, Clock, Mail } from 'lucide-react'
+
 import { CrispChat } from '@/components/club-panel/CrispChat'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { MessageCircle, Clock, Mail } from 'lucide-react'
 
 interface SupportPageProps {
     params: Promise<{ id: string }>

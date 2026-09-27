@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+
 import { SpotlightCard } from '@/components/ui/spotlight'
 
 interface ChartWrapperProps {

@@ -1,8 +1,10 @@
 'use client'
 
-import { MetricCard } from './MetricCard'
 import { Users, Building2, CreditCard, Activity, TrendingUp, Clock, Repeat, FileText, UserPlus } from 'lucide-react'
+
 import type { PlatformMetrics } from '@/services/adminService'
+
+import { MetricCard } from './MetricCard'
 
 interface DashboardMetricsProps {
     metrics: PlatformMetrics

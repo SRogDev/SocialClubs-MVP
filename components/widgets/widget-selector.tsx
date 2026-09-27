@@ -7,11 +7,12 @@
  * On selection → opens WidgetModal with the chosen template.
  */
 
-import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     Gift, Timer, MessageCircleQuestion, Puzzle, type LucideIcon,
 } from 'lucide-react'
+import { useState } from 'react'
+
 import { Button } from '@/components/ui/button'
 import WidgetModal from '@/components/widgets/widget-modal'
 import { PLATFORM_WIDGETS, type WidgetRegistryEntry } from '@/lib/widget-templates'

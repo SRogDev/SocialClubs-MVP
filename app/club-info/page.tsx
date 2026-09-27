@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
-import { useSearchParams } from "next/navigation"
-import { CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { ArrowLeft, Edit, Coins, Check, Copy, Users, TrendingUp } from "lucide-react"
 import Link from "next/link"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
+import { useSearchParams } from "next/navigation"
+import { Suspense, useState } from "react"
+
+import AvatarWithBadge from "@/components/ui/avatar-with-badge"
+import { Button } from "@/components/ui/button"
+import { CardContent } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -16,11 +16,12 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { useToast } from "@/hooks/use-toast"
-import { DotsLoader } from "@/components/ui/spinner"
 import GlassCard from "@/components/ui/glass-card"
-import AvatarWithBadge from "@/components/ui/avatar-with-badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { DotsLoader } from "@/components/ui/spinner"
+import { Switch } from "@/components/ui/switch"
+import { useToast } from "@/hooks/use-toast"
 import type { Club } from "@/types/club"
 
 const mockClub: Club = {
@@ -54,7 +55,7 @@ const mockUser = {
   socialCoins: 120,
 }
 
-export default function ClubInfoPage() {
+function ClubInfoContent() {
   const searchParams = useSearchParams()
   const clubId = searchParams.get("id") || "1"
 
@@ -360,5 +361,14 @@ export default function ClubInfoPage() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+// useSearchParams() requires a Suspense boundary for static prerendering.
+export default function ClubInfoPage() {
+  return (
+    <Suspense fallback={<div className="container py-6" aria-hidden="true" />}>
+      <ClubInfoContent />
+    </Suspense>
   )
 }

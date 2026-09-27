@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { getUpcomingBookings } from '@/services/bookingService';
 import { createDailyRoom, expireOldRooms } from '@/services/videocallService';
 
@@ -10,7 +12,7 @@ import { createDailyRoom, expireOldRooms } from '@/services/videocallService';
  * 3. Expire old rooms that have passed their expiration time
  *
  * Called by Vercel Cron (configured in vercel.json)
- * Schedule: */5 * * * * (every 5 minutes)
+ * Schedule: every 5 minutes (cron expression "star-slash-5 star star star star")
  */
 export async function GET(request: NextRequest) {
     try {

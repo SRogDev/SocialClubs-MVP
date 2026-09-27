@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { ExternalLink, Loader2, CheckCircle2 } from 'lucide-react';
+import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+
 import { ConnectButton } from './ConnectButton';
 
 interface ConnectDashboardButtonProps {

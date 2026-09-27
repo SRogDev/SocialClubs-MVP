@@ -1,5 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, DollarSign, Calendar, TrendingUp } from 'lucide-react';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface RevenueMetricsProps {
     mrr: number; // Monthly Recurring Revenue en centavos

@@ -6,10 +6,11 @@
  */
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { updateUserProfile } from '@/services/userService'
-import { updateProfileSchema, type UpdateProfileInput } from '@/schemas/profileSchema'
+
 import { uploadToImageKit, IK_FOLDERS } from '@/lib/imagekit'
+import { createClient } from '@/lib/supabase/server'
+import { updateProfileSchema, type UpdateProfileInput } from '@/schemas/profileSchema'
+import { updateUserProfile } from '@/services/userService'
 import type { User } from '@/types/user'
 
 /**

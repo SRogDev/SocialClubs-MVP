@@ -1,5 +1,7 @@
 import Link from "next/link"
+
 import type { Club } from "@/types/club"
+
 import { FeedClubCard } from "./feed-club-card"
 
 interface FeedClubsProps {

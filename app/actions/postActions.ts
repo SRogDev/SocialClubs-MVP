@@ -6,15 +6,11 @@
  */
 
 import { revalidatePath } from 'next/cache'
+
+import { invalidatePostStatsCache } from '@/lib/post-stats-cache'
+import { enqueueGamificationEvent } from '@/lib/qstash'
+import { checkLikeRateLimit, checkCommentRateLimit } from '@/lib/rate-limit-redis'
 import { createClient } from '@/lib/supabase/server'
-import {
-    createPost,
-    updatePost,
-    deletePost,
-    addComment,
-    addPostInteraction,
-    removePostInteraction,
-} from '@/services/postService'
 import {
     createPostSchema,
     updatePostSchema,
@@ -23,10 +19,15 @@ import {
     type UpdatePostInput,
     type CommentInput,
 } from '@/schemas/postSchema'
+import {
+    createPost,
+    updatePost,
+    deletePost,
+    addComment,
+    addPostInteraction,
+    removePostInteraction,
+} from '@/services/postService'
 import type { Post, PostComment } from '@/types/post'
-import { checkLikeRateLimit, checkCommentRateLimit } from '@/lib/rate-limit-redis'
-import { invalidatePostStatsCache } from '@/lib/post-stats-cache'
-import { enqueueGamificationEvent } from '@/lib/qstash'
 
 /**
  * Create a new post

@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+
+import type { ClubWithDetails } from '@/services/adminService'
+
 import { ClubAdminCard } from './ClubAdminCard'
 import { ClubsFilters } from './ClubsFilters'
-import type { ClubWithDetails } from '@/services/adminService'
 
 interface ClubsGridProps {
     clubs: ClubWithDetails[]

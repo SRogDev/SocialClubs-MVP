@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+
 import { CookieBanner } from '@/components/shared/cookie-banner';
 
 // Mock localStorage

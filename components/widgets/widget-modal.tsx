@@ -9,17 +9,18 @@
  */
 
 import { useState } from 'react'
+
+import { publishWidgetAction } from '@/app/actions/widgetActions'
+import { Button }    from '@/components/ui/button'
 import {
     Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
-import { Button }    from '@/components/ui/button'
 import { Input }     from '@/components/ui/input'
-import { Textarea }  from '@/components/ui/textarea'
 import { Label }     from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { useToast }  from '@/hooks/use-toast'
-import { publishWidgetAction } from '@/app/actions/widgetActions'
+import { Textarea }  from '@/components/ui/textarea'
 import WidgetPost from '@/components/widgets/widget-post'
+import { useToast }  from '@/hooks/use-toast'
 import type { WidgetRegistryEntry } from '@/lib/widget-templates'
 import type { ResolvedWidgetData } from '@/types/widget'
 

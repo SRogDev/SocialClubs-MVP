@@ -1,5 +1,7 @@
 import Link from "next/link"
+
 import type { Club } from "@/types/club"
+
 import { FeaturedClubCard } from "./featured-club-card"
 
 interface FeaturedClubsProps {

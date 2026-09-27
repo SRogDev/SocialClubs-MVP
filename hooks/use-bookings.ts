@@ -1,6 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
+
 import type { BookingWithAppointment } from '@/types/appointment';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());

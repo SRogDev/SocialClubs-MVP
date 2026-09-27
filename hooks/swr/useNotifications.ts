@@ -8,6 +8,7 @@
 
 import useSWR from 'swr'
 import useSWRInfinite from 'swr/infinite'
+
 import type { Notification } from '@/types/notification'
 
 // ---------------------------------------------------------------------------

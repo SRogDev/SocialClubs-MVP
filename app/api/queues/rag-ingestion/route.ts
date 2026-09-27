@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { Receiver } from '@upstash/qstash'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
+import { redis } from '@/lib/redis'
 import { ragIngestionJobSchema } from '@/schemas/ragSchema'
 import { processRagIngestion } from '@/services/ragService'
-import { redis } from '@/lib/redis'
 
-export const runtime = 'nodejs'
 
 function getReceiver() {
     if (!process.env.QSTASH_CURRENT_SIGNING_KEY) {

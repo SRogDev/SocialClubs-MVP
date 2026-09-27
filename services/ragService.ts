@@ -1,7 +1,7 @@
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { pineconeRagProvider } from '@/services/pineconeRagProvider'
 import { extractTextFromRagSource } from '@/services/ragExtractionService'
-import { createAdminClient } from '@/lib/supabase/admin'
 
 export interface RagChunk {
     id: string

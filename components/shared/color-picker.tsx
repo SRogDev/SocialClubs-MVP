@@ -1,8 +1,9 @@
 "use client"
 
-import type React from "react"
 import { Palette } from "lucide-react"
+import type React from "react"
 import { useState, useRef, useEffect } from "react"
+
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
@@ -94,7 +95,7 @@ export default function ColorPicker({ color, onChange, label = "Color del club" 
 
     const toHex = (c: number) => {
       const hex = Math.round(c * 255).toString(16)
-      return hex.length === 1 ? "0" + hex : hex
+      return hex.length === 1 ? `0${  hex}` : hex
     }
 
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`

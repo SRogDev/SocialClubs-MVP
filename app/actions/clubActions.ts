@@ -6,9 +6,10 @@
  */
 
 import { revalidatePath } from 'next/cache'
+
 import { createClient } from '@/lib/supabase/server'
-import { updateClub, joinClub, leaveClub } from '@/services/clubService'
 import { updateClubSchema, type UpdateClubInput } from '@/schemas/clubSchema'
+import { updateClub, joinClub, leaveClub } from '@/services/clubService'
 import type { Club } from '@/types/club'
 
 /**

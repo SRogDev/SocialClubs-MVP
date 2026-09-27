@@ -1,10 +1,11 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ArrowLeft, Settings, Info } from "lucide-react"
 import { useRouter } from "next/navigation"
+
 import { ClubLevelBadge } from "@/components/shared/ClubLevelBadge"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import type { Club } from "@/types/club"
 
 interface ClubHeaderProps {

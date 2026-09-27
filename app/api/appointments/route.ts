@@ -1,15 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { rateLimit, RATE_LIMITS, addRateLimitHeaders } from '@/lib/rate-limit';
+import { createClient } from '@/lib/supabase/server';
+import {
+    createAppointmentSlotSchema,
+    getAvailableSlotsSchema,
+} from '@/schemas/appointmentSchema';
 import {
     createAppointmentSlot,
     getClubAppointments,
     getAvailableSlots,
 } from '@/services/appointmentService';
-import {
-    createAppointmentSlotSchema,
-    getAvailableSlotsSchema,
-} from '@/schemas/appointmentSchema';
 
 /**
  * GET /api/appointments

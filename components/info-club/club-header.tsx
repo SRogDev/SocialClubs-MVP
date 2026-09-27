@@ -1,6 +1,7 @@
+import { Crown, Shield } from "lucide-react"
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Crown, Shield } from "lucide-react"
 
 type ClubHeaderProps = {
     club: {

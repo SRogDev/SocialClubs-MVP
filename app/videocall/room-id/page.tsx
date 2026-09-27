@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
+
+import { DailyVideoContainer } from '@/components/videocall/daily-video-container';
 import { createClient } from '@/lib/supabase/server';
 import { getRoomById } from '@/services/videocallService';
-import { DailyVideoContainer } from '@/components/videocall/daily-video-container';
 
 interface VideocallPageProps {
     params: {

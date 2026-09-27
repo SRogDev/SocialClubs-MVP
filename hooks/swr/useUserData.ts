@@ -7,6 +7,7 @@
  */
 
 import useSWR, { type SWRConfiguration } from 'swr'
+
 import type { User, UserPoints, UserClubMembership } from '@/types/user'
 
 const fetcher = async (url: string) => {

@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+
+import { rateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 import { createConnectAccount, createConnectAccountLink } from '@/services/stripeService';
-import { rateLimit } from '@/lib/rate-limit';
 
 const limiter = rateLimit({
     interval: 60 * 1000, // 1 minuto

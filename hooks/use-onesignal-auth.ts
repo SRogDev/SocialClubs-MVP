@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import OneSignal from 'react-onesignal';
+
 import { createClient } from '@/lib/supabase/client';
 
 /**

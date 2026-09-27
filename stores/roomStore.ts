@@ -1,7 +1,8 @@
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { create } from 'zustand';
+
 import { createClient } from '@/lib/supabase/client';
 import type { VideocallRoom } from '@/types/appointment';
-import type { RealtimeChannel } from '@supabase/supabase-js';
 
 // ====================================
 // ROOM STORE (Zustand + Realtime)

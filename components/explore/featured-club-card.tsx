@@ -1,10 +1,11 @@
 'use client'
 
-import { Card3D } from '@/components/ui/card-3d'
-import { Badge } from '@/components/ui/badge'
-import { Users } from 'lucide-react'
-import { motion } from 'framer-motion'
 import { Image } from '@imagekit/next'
+import { motion } from 'framer-motion'
+import { Users } from 'lucide-react'
+
+import { Badge } from '@/components/ui/badge'
+import { Card3D } from '@/components/ui/card-3d'
 import type { Club } from '@/types/club'
 
 interface FeaturedClubCardProps {

@@ -5,8 +5,8 @@
  * Las notificaciones se trabajarán en el futuro
  */
 
-import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 
 type NotificationsToggleProps = {
     enabled: boolean

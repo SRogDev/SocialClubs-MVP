@@ -1,10 +1,9 @@
 import { Suspense } from "react"
 
+import { ExploreSpotlightWrapper } from "@/components/explore/explore-spotlight-wrapper"
 import FeaturedClubs from "@/components/explore/featured-clubs"
 import FeedClubs from "@/components/explore/feed-clubs"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ExploreSpotlightWrapper } from "@/components/explore/explore-spotlight-wrapper"
-
 import { getFeaturedClubs, getAllClubs } from "@/services/exploreService"
 
 function FeaturedClubsSkeleton() {

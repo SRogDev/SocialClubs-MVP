@@ -1,21 +1,28 @@
-import { useEffect, useRef, useState } from "react";
-import { Textarea } from "../ui/textarea";
-import { Button } from "../ui/button";
-import { RiGeminiLine } from "react-icons/ri";
-import { Spinner } from "./ui/spinner";
+import { DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 import { BarChart2, Image, PuzzleIcon, SendIcon, Video } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { ImAttachment } from "react-icons/im";
+import { RiGeminiLine } from "react-icons/ri";
+
+import { Spinner } from "@/components/ui/spinner";
+import WidgetSelector from "@/components/widgets/widget-selector";
+import useOptions from "@/hooks/use-options";
+
+import PollForm from "../post/poll-form";
+import PreviewImage from "../post/preview-image";
+import { Button } from "../ui/button";
+
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import PollForm from "../post/poll-form";
-import PreviewImage from "../post/preview-image";
-import { DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
-import useOptions from "@/hooks/use-options";
-import WidgetSelector from "@/components/widgets/widget-selector";
+
+
+
+import { Textarea } from "../ui/textarea";
 
 interface ChatContentCreationBarProps {
   clubId: string;
@@ -33,7 +40,7 @@ function ChatContentCreationBar({ clubId, userId }: ChatContentCreationBarProps)
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height =
-        textareaRef.current.scrollHeight + "px";
+        `${textareaRef.current.scrollHeight  }px`;
     }
   }, [message]);
 

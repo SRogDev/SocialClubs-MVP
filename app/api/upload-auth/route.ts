@@ -5,10 +5,12 @@
  * Generates short-lived upload credentials for client-side ImageKit uploads.
  * Must be authenticated — only logged-in users can upload.
  */
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { generateUploadAuthParams } from '@/lib/imagekit'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
     const limited = await rateLimit(request, RATE_LIMITS.MUTATION)

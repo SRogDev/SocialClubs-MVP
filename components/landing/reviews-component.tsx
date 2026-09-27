@@ -1,9 +1,10 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react"
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Card, CardContent } from "@/components/ui/card"
 
 const reviews = [
   {

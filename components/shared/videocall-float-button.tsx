@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Video } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useRoomStore } from '@/stores/roomStore';
-import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
+import { useEffect } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { createClient } from '@/lib/supabase/client';
+import { useRoomStore } from '@/stores/roomStore';
 import { vibrate } from '@/utils/pwa';
 
 /**

@@ -1,8 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
-import { notFound, redirect } from 'next/navigation'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AppealButton } from '@/components/admin/AppealButton'
 import { Ban } from 'lucide-react'
+import { notFound, redirect } from 'next/navigation'
+
+import { AppealButton } from '@/components/admin/AppealButton'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { createClient } from '@/lib/supabase/server'
+
 
 interface ClubBannedPageProps {
     params: Promise<{ id: string }>

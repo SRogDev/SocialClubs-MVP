@@ -1,11 +1,11 @@
-import { getPlatformMetrics } from '@/services/adminService'
+import { ChartWrapper } from '@/components/admin/chart-wrapper'
+import { DashboardExportButton } from '@/components/admin/DashboardExportButton'
 import { DashboardMetrics } from '@/components/admin/DashboardMetrics'
 import { RevenueChart } from '@/components/admin/RevenueChart'
-import { UserGrowthChart } from '@/components/admin/UserGrowthChart'
 import { TopClubsChart } from '@/components/admin/TopClubsChart'
-import { DashboardExportButton } from '@/components/admin/DashboardExportButton'
-import { ChartWrapper } from '@/components/admin/chart-wrapper'
+import { UserGrowthChart } from '@/components/admin/UserGrowthChart'
 import chartData from '@/mock-data/admin-charts.json'
+import { getPlatformMetrics } from '@/services/adminService'
 
 /**
  * Admin Dashboard Principal (Global)

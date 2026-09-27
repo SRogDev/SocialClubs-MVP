@@ -1,9 +1,10 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+
 import { createClient } from '@/lib/supabase/server'
-import { setAgentConfig, getAgentByClubId, getAgentSkills } from '@/services/agentService'
 import { agentConfigSchema, type AgentConfig } from '@/schemas/agentSchema'
+import { setAgentConfig, getAgentByClubId, getAgentSkills } from '@/services/agentService'
 
 /**
  * Fetch agent metadata (name + skills) for MainChat

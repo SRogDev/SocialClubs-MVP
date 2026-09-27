@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
-import type { Booking, BookingWithAppointment } from '@/types/appointment';
 import type { CreateBookingInput, CancelBookingInput, GetBookingsInput } from '@/schemas/appointmentSchema';
+import type { Booking, BookingWithAppointment } from '@/types/appointment';
+
 import { getAppointmentById } from './appointmentService';
 
 // ====================================

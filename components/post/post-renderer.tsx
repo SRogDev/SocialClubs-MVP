@@ -1,9 +1,11 @@
-import PostText from "./post-text"
-import PostImage from "./post-image"
-import PostVideo from "./post-video"
-import PostAudio from "./post-audio"
-import PostPoll from "./post-poll"
 import type { Post } from "@/types/post"
+
+import PostAudio from "./post-audio"
+import PostImage from "./post-image"
+import PostPoll from "./post-poll"
+import PostText from "./post-text"
+import PostVideo from "./post-video"
+
 
 interface PostRendererProps {
   post: Post

@@ -1,5 +1,5 @@
-import { adminService } from '@/services'
 import { ClubsGrid } from '@/components/admin/ClubsGrid'
+import { adminService } from '@/services'
 
 /**
  * Página de Club Gestión (Server Component)

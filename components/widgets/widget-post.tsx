@@ -12,17 +12,18 @@
  *   <WidgetPost previewData={mockData} userId={null} />   ← modal preview
  */
 
-import { useState, useEffect } from 'react'
 import { format, formatDistanceToNow } from 'date-fns'
 import {
     Gift, Timer, MessageCircleQuestion, Puzzle, Clock, Users, Star,
     Zap, Trophy, Calendar, Sparkles, Heart, Globe, Bell, type LucideIcon,
 } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import { useState, useEffect } from 'react'
+
+import { interactWithWidgetAction } from '@/app/actions/widgetActions'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { useWidgetData } from '@/hooks/swr/useWidgetData'
-import { interactWithWidgetAction } from '@/app/actions/widgetActions'
 import type {
     ResolvedWidgetData,
     PostSection,

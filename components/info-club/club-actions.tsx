@@ -1,7 +1,8 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
 import { Coins } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
 
 type ClubActionsProps = {
     socialCoins: number

@@ -1,9 +1,10 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Copy, Share2 } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { type Club } from "@/types/club"
 
@@ -25,7 +26,7 @@ export default function InviteLinkCard({ club, color }: InviteLinkCardProps) {
     }
 
     const shareInviteLink = async () => {
-        if (navigator.share) {
+        if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
             try {
                 await navigator.share({
                     title: `Únete a ${club.name}`,
@@ -56,7 +57,7 @@ export default function InviteLinkCard({ club, color }: InviteLinkCardProps) {
                     <Button variant="outline" size="sm" onClick={copyInviteLink}>
                         <Copy size={16} />
                     </Button>
-                    {navigator.share && (
+                    {typeof navigator !== "undefined" && typeof navigator.share === "function" && (
                         <Button variant="outline" size="sm" onClick={shareInviteLink}>
                             <Share2 size={16} />
                         </Button>
@@ -67,3 +68,5 @@ export default function InviteLinkCard({ club, color }: InviteLinkCardProps) {
                 </p>
             </CardContent>
         </Card>
+    )
+}

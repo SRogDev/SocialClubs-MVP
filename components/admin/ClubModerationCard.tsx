@@ -1,12 +1,9 @@
 'use client'
 
-import { ClubAdminCard } from './ClubAdminCard'
-import { ReportTypeBadge } from './ReportTypeBadge'
-import { Button } from '@/components/ui/button'
-import { warnCreatorAction, banClubAction } from '@/app/actions/adminActions'
 import { AlertCircle, Ban } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
 import { useState } from 'react'
+
+import { warnCreatorAction, banClubAction } from '@/app/actions/adminActions'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -18,7 +15,12 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { useToast } from '@/hooks/use-toast'
 import type { ClubWithReports } from '@/services/adminService'
+
+import { ClubAdminCard } from './ClubAdminCard'
+import { ReportTypeBadge } from './ReportTypeBadge'
 
 interface ClubModerationCardProps {
     club: ClubWithReports

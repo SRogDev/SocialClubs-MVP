@@ -8,9 +8,11 @@
  * Flujo: SWR Hook → fetch('/api/notifications') → Este route → notificationService → Supabase
  */
 
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { rateLimit, RATE_LIMITS, addRateLimitHeaders } from '@/lib/rate-limit'
+import { createClient } from '@/lib/supabase/server'
 import { notificationQuerySchema } from '@/schemas/notificationSchema'
 import {
     getNotificationsByUserId,

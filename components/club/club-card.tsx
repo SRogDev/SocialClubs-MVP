@@ -1,6 +1,7 @@
-import Link from "next/link"
 import { ImageIcon, Video, MessageSquare } from "lucide-react"
-import AvatarWithBadge from "@/ui/avatar-with-badge"
+import Link from "next/link"
+
+import AvatarWithBadge from "@/components/ui/avatar-with-badge"
 import type { Club } from "@/types/club"
 
 interface ClubCardProps {

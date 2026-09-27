@@ -1,7 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import {
     LayoutDashboard,
     Building2,
@@ -11,6 +9,9 @@ import {
     ChevronLeft,
     ChevronRight,
 } from 'lucide-react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
 import { Button } from '@/components/ui/button'
 import {
     Sidebar,

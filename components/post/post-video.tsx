@@ -1,13 +1,15 @@
 'use client'
 
 import { Image } from '@imagekit/next'
-import { Card } from "@/components/ui/card"
-import { Loader2, AlertCircle } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import MuxPlayer from '@mux/mux-player-react'
-import PostHeader from "./post-header"
-import PostActions from "./post-actions"
+import { Loader2, AlertCircle } from "lucide-react"
+
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Card } from "@/components/ui/card"
 import type { EnrichedPost } from "@/types/post"
+
+import PostActions from "./post-actions"
+import PostHeader from "./post-header"
 
 interface PostVideoProps {
   post: EnrichedPost

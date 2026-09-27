@@ -5,10 +5,12 @@
  * The platform keeps the 10% fee.
  * Can be triggered by the user (cancellation) or automatically (no-show).
  */
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { createBookingRefund } from '@/services/stripeService'
-import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 export async function POST(
     request: NextRequest,

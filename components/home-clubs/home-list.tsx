@@ -1,5 +1,6 @@
-import { memo, useMemo } from 'react'
 import { motion } from 'framer-motion'
+import { memo, useMemo } from 'react'
+
 import ClubCard from './club-card'
 
 interface ClubDisplayData {
@@ -20,7 +21,7 @@ interface HomeListProps {
     clubs: ClubDisplayData[]
 }
 
-const HomeList = memo(function HomeList({ clubs }: HomeListProps) {
+const HomeList = memo(({ clubs }: HomeListProps) => {
     const items = useMemo(() => clubs, [clubs])
     return (
         <div className="space-y-3">

@@ -1,5 +1,5 @@
-import { adminService } from '@/services'
 import { ClubModerationCard } from '@/components/admin/ClubModerationCard'
+import { adminService } from '@/services'
 
 /**
  * Página de Moderación (Server Component)

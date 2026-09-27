@@ -1,15 +1,16 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { useState } from "react"
+
+import { updateClubAction } from "@/app/actions"
+import DeleteClubButton from "@/components/club-panel/delete-club-button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import DeleteClubButton from "@/components/club-panel/delete-club-button"
-import { updateClubAction } from "@/app/actions"
-import { useRouter } from "next/navigation"
 import { vibrate, VibrationPatterns } from "@/utils/pwa"
 
 type Club = {

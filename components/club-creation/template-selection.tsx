@@ -1,8 +1,9 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
 import { Plus } from "lucide-react"
+
 import clubTemplates from "@/club-templates.json"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface Template {
     id: string

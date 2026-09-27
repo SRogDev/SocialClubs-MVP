@@ -3,8 +3,8 @@
  * Following TDD and Given-When-Then pattern
  */
 
-import { generateUniqueClubLink, getClubByLink } from '@/services/clubService'
 import { createClient } from '@/lib/supabase/server'
+import { generateUniqueClubLink, getClubByLink } from '@/services/clubService'
 
 // Mock Supabase
 jest.mock('@/lib/supabase/server', () => ({

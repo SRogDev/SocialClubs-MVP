@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+
 import GamificationSection from "@/components/club-panel/gamification-section";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function GamificacionPage({ params }: { params: { id: string } }) {
     const supabase = await createClient();

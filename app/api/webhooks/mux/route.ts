@@ -3,11 +3,13 @@
  * Handles events from Mux: video.asset.ready, video.asset.errored, etc.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
 import Mux from '@mux/mux-node'
 import { revalidatePath } from 'next/cache'
-import { updatePostVideoMetadata, getMuxThumbnailUrl } from '@/services/videoService'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+
 import { muxWebhookSchema } from '@/schemas/videoSchema'
+import { updatePostVideoMetadata, getMuxThumbnailUrl } from '@/services/videoService'
 
 const mux = new Mux({
     tokenId: process.env.MUX_TOKEN_ID!,

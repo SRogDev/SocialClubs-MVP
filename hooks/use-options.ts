@@ -1,5 +1,6 @@
-import { PostTypes } from "@/types/post";
 import { useRef, useState } from "react";
+
+import type { PostTypes } from "@/types/post";
 
 function useOptions() {
   const [showContentModal, setShowContentModal] = useState(false);

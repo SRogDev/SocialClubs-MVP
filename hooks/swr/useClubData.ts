@@ -7,6 +7,7 @@
  */
 
 import useSWR, { type SWRConfiguration } from 'swr'
+
 import type { Club, ClubStats } from '@/types/club'
 import type { User } from '@/types/user'
 

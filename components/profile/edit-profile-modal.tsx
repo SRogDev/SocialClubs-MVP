@@ -1,17 +1,17 @@
 "use client"
 
+import { Camera } from "lucide-react"
+import { useRouter } from "next/navigation"
 import type React from "react"
-
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+
+import { updateProfileAction, uploadProfileImageAction } from "@/app/actions"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Camera } from "lucide-react"
-import { updateProfileAction, uploadProfileImageAction } from "@/app/actions"
-import { useRouter } from "next/navigation"
 import { vibrate } from "@/utils/pwa"
 
 interface Profile {

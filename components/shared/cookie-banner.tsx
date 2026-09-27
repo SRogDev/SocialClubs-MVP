@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Cookie } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
 import { Button } from '@/components/ui/button';
 
 const COOKIE_ACCEPTED_KEY = 'cookiesAccepted';

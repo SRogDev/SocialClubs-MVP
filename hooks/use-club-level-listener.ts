@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useCallback, useState } from 'react'
+
 import { createClient } from '@/lib/supabase/client'
 import type { LevelUpMetadata } from '@/types/notification'
 

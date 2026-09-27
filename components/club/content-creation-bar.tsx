@@ -1,9 +1,10 @@
 "use client"
 
+import { MessageSquare, ImageIcon, Video, FileAudio, BarChart2, PuzzleIcon } from "lucide-react"
 import { useState } from "react"
+
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { MessageSquare, ImageIcon, Video, FileAudio, BarChart2, PuzzleIcon } from "lucide-react"
 
 interface ContentCreationBarProps {
   clubColor?: string

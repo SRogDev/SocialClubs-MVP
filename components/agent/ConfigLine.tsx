@@ -1,7 +1,7 @@
 'use client'
 
-import { Settings } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { Settings } from 'lucide-react'
 
 interface ConfigLineProps {
     title: string

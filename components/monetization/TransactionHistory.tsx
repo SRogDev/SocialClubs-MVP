@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/badge';
 import {
     Card,
     CardContent,
@@ -13,8 +14,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Payment } from '@/types/database';
+
+import type { Payment } from '@/types/database';
 
 interface TransactionHistoryProps {
     transactions: Payment[];

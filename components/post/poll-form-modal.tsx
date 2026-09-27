@@ -1,6 +1,7 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import type { Post } from "@/types/post";
+
 import PollForm from "./poll-form";
-import { Post } from "@/types/post";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 
 function PollFormModal({
   showContentModal,

@@ -1,14 +1,17 @@
-import type React from "react"
 import type { Metadata } from "next"
 import { Manrope } from "next/font/google"
+import type React from "react"
+
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { CookieBanner } from "@/components/shared/cookie-banner"
-import { VideocallFloatingButton } from "@/components/shared/videocall-float-button"
-import { OneSignalProvider } from "@/components/shared/onesignal-provider"
 import { AppShell } from "@/components/shared/app-shell"
-import { ImageKitProvider } from "@imagekit/next"
+import { CookieBanner } from "@/components/shared/cookie-banner"
 import { RootErrorBoundary } from "@/components/shared/error-boundary"
+import { OneSignalProvider } from "@/components/shared/onesignal-provider"
+import { VideocallFloatingButton } from "@/components/shared/videocall-float-button"
+import { ThemeProvider } from "@/components/theme-provider"
+
+import { ImageKitProvider } from "@imagekit/next"
+
 
 const manrope = Manrope({
   subsets: ["latin"],

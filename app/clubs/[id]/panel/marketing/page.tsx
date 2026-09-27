@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+
 import MarketingSection from "@/components/club-panel/marketing-section";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function MarketingPage({ params }: { params: { id: string } }) {
     const supabase = await createClient();

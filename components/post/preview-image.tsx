@@ -1,12 +1,14 @@
+import { Image } from "@imagekit/next";
 import { ImageIcon, Image as Imagen, SendIcon } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { Button } from "../ui/button";
-import { Image } from "@imagekit/next";
+
+import { Spinner } from "@/components/ui/spinner";
 import useActions from "@/hooks/use-actions";
-import { Spinner } from "./ui/spinner";
 import useOptions from "@/hooks/use-options";
-import { Textarea } from "../ui/textarea";
+
 import ImageUploadButton from "../image-upload-button";
+import { Button } from "../ui/button";
+import { Textarea } from "../ui/textarea";
 
 interface PreviewImageProps {
   name?: string;
@@ -49,7 +51,7 @@ function PreviewImage({
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))  } ${  sizes[i]}`;
   };
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -58,7 +60,7 @@ function PreviewImage({
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height =
-        textareaRef.current.scrollHeight + "px";
+        `${textareaRef.current.scrollHeight  }px`;
     }
   }, [caption]);
 

@@ -1,10 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+
+import { enqueueRagIngestion } from '@/lib/rag-queue'
 import { rateLimit, RATE_LIMITS, addRateLimitHeaders } from '@/lib/rate-limit'
+import { createClient } from '@/lib/supabase/server'
 import { runClubSqlTool, retrieveClubKnowledgeTool } from '@/services/agentToolsService'
 import { createRagSource, deleteRagSource } from '@/services/ragService'
-import { enqueueRagIngestion } from '@/lib/rag-queue'
 
 const mcpRequestSchema = z.object({
     method: z.enum(['panel.read', 'agent.chat.context', 'rag.manage.upload', 'rag.manage.delete', 'rag.manage.reindex']),

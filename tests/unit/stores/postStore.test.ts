@@ -2,8 +2,10 @@
  * Unit tests for Post Store (TDD)
  */
 import { renderHook, act } from '@testing-library/react'
-import { usePostStore } from '@/stores/postStore'
+
 import type { Post, PostInteraction } from '@/types/post'
+
+import { usePostStore } from '@/stores/postStore'
 
 describe('usePostStore', () => {
     beforeEach(() => {

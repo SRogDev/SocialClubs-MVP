@@ -1,4 +1,5 @@
-import { Card, CardContent } from "@/components/ui/card"
+import { CardContent } from "@/components/ui/card"
+import GlassCard from "@/components/ui/glass-card"
 
 type ClubDescriptionProps = {
     description: string
@@ -35,4 +36,6 @@ export default function ClubDescription({ description, members, createdAt, color
                     </div>
                 </div>
             </CardContent>
-        </Card>
+        </GlassCard>
+    )
+}

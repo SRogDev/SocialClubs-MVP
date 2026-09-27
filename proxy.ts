@@ -1,6 +1,7 @@
-import { updateSession } from "@/lib/supabase/proxy";
-import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { type NextRequest, NextResponse } from "next/server";
+
+import { updateSession } from "@/lib/supabase/proxy";
 
 /**
  * Content Security Policy (CSP) y seguridad
@@ -49,7 +50,7 @@ function setSecurityHeaders(response: NextResponse): NextResponse {
 }
 
 export async function proxy(request: NextRequest) {
-  let response = await updateSession(request);
+  const response = await updateSession(request);
 
   // Verificaciones de admin y acceso a clubs
   const pathname = request.nextUrl.pathname;

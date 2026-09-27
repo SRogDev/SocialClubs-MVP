@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { rateLimit, RATE_LIMITS, addRateLimitHeaders } from '@/lib/rate-limit';
-import { createDailyRoom } from '@/services/videocallService';
+import { createClient } from '@/lib/supabase/server';
 import { createVideocallRoomSchema } from '@/schemas/appointmentSchema';
+import { createDailyRoom } from '@/services/videocallService';
 
 /**
  * POST /api/videocall/create-room

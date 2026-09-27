@@ -1,14 +1,18 @@
 'use client'
 
-import { useChat } from 'ai/react'
-import { ChatLine } from './ChatLine'
+import { useChat } from '@ai-sdk/react'
+import { DefaultChatTransport } from 'ai'
+import type { UIMessage } from 'ai'
+import { motion } from 'framer-motion'
+import { Sparkles } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Streamdown } from 'streamdown'
+
 import { Message, MessageContent } from '@/components/ai-elements/message'
 import { PromptInput } from '@/components/ai-elements/prompt-input'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useEffect, useRef } from 'react'
-import { Streamdown } from 'streamdown'
-import { motion } from 'framer-motion'
-import { Sparkles } from 'lucide-react'
+
+import { ChatLine } from './ChatLine'
 
 /* ─── Thinking Dots ──────────────────────────────────────────── */
 function ThinkingDots() {
@@ -40,13 +44,23 @@ interface MainChatProps {
 
 export function MainChat({ clubId, agentName, agentSkills = [], onBackToConfig }: MainChatProps) {
     const scrollRef = useRef<HTMLDivElement>(null)
+    const [input, setInput] = useState('')
 
-    const { messages, input, handleInputChange, handleSubmit, isLoading, append } = useChat({
-        api: '/api/agent/chat',
-        body: {
-            clubId,
-        },
+    const { messages, sendMessage, status } = useChat({
+        transport: new DefaultChatTransport({
+            api: '/api/agent/chat',
+            body: { clubId },
+        }),
     })
+
+    const isLoading = status === 'submitted' || status === 'streaming'
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!input.trim() || isLoading) return
+        sendMessage({ text: input })
+        setInput('')
+    }
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
@@ -56,7 +70,8 @@ export function MainChat({ clubId, agentName, agentSkills = [], onBackToConfig }
     }, [messages, isLoading])
 
     const handleStarterPrompt = (prompt: string) => {
-        append({ role: 'user', content: prompt })
+        if (isLoading) return
+        sendMessage({ text: prompt })
     }
 
     // Derive starter prompts from skills, fallback to generic ones
@@ -101,10 +116,14 @@ export function MainChat({ clubId, agentName, agentSkills = [], onBackToConfig }
                             </div>
                         </motion.div>
                     ) : (
-                        messages.map((message) => (
+                        messages.map((message: UIMessage) => (
                             <Message key={message.id} from={message.role}>
                                 <MessageContent>
-                                    <Streamdown text={message.content} />
+                                    {message.parts.map((part, i) =>
+                                        part.type === 'text' ? (
+                                            <Streamdown key={`${message.id}-${i}`} text={part.text} />
+                                        ) : null,
+                                    )}
                                 </MessageContent>
                             </Message>
                         ))
@@ -125,7 +144,7 @@ export function MainChat({ clubId, agentName, agentSkills = [], onBackToConfig }
                 <form onSubmit={handleSubmit}>
                     <PromptInput
                         value={input}
-                        onChange={handleInputChange}
+                        onChange={(e) => setInput(e.target.value)}
                         disabled={isLoading}
                         placeholder="Escribe tu mensaje..."
                     />

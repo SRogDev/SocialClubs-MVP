@@ -1,16 +1,14 @@
-import AvatarWithBadge from "@/ui/avatar-with-badge";
-import { MoreHorizontal, PencilIcon, TrashIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@radix-ui/react-dropdown-menu";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import useActions from "@/hooks/use-actions";
+import { MoreHorizontal, PencilIcon, TrashIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+
+import PollFormModal from "@/components/post/poll-form-modal";
+import PreviewImage from "@/components/post/preview-image";
+import AvatarWithBadge from "@/components/ui/avatar-with-badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,10 +16,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import PreviewImage from "@/components/post/preview-image";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import useActions from "@/hooks/use-actions";
 import useOptions from "@/hooks/use-options";
 import { usePostStore } from "@/stores/post";
-import PollFormModal from "@/components/post/poll-form-modal";
 
 interface PostHeaderProps {
   user: {

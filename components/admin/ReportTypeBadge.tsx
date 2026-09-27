@@ -1,6 +1,7 @@
 'use client'
 
 import { AlertCircle, Skull, DollarSign, Mail } from 'lucide-react'
+
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 

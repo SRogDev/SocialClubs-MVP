@@ -8,9 +8,9 @@
  * Actualmente solo existe POST /api/clubs
  */
 
-import { useClubs } from "@/hooks/swr"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useClubs } from "@/hooks/swr"
 
 export default function ClubListExample() {
     const { clubs, isLoading, isError } = useClubs()

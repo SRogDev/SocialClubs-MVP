@@ -5,15 +5,16 @@
 
 'use client'
 
+import { Upload, X, Video as VideoIcon, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { useState, useRef } from 'react'
+
+import { createVideoUploadAction, cancelVideoUploadAction } from '@/app/actions/videoActions'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
-import { Card } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Upload, X, Video as VideoIcon, AlertCircle, CheckCircle2 } from 'lucide-react'
-import { createVideoUploadAction, cancelVideoUploadAction } from '@/app/actions/videoActions'
 import { VIDEO_CONSTRAINTS } from '@/schemas/videoSchema'
 
 interface VideoUploadProps {

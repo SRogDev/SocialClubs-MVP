@@ -1,11 +1,13 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { FloatingDock } from './floating-dock'
-import { DesktopSidebar } from './desktop-sidebar'
+
 import { LevelUpCelebration } from '@/components/notifications/LevelUpCelebration'
-import { useClubLevelListener } from '@/hooks/use-club-level-listener'
 import { useCurrentUser } from '@/hooks/swr'
+import { useClubLevelListener } from '@/hooks/use-club-level-listener'
+
+import { DesktopSidebar } from './desktop-sidebar'
+import { FloatingDock } from './floating-dock'
 
 // Routes where the navigation (dock + sidebar) should NOT appear
 const HIDDEN_NAV_ROUTES = ['/', '/auth', '/landing', '/videocall', '/admin']
@@ -23,7 +25,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { levelUpData, dismiss } = useClubLevelListener(userId)
 
   const hideNav = HIDDEN_NAV_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + '/')
+    (route) => pathname === route || pathname.startsWith(`${route  }/`)
   )
 
   if (hideNav) {

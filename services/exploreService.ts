@@ -3,8 +3,8 @@
  */
 
 import { cache } from 'react'
-import { createClient } from '@/lib/supabase/server'
 
+import { createClient } from '@/lib/supabase/server'
 import mockClubs from '@/mock-data/clubs-mock-explore.json'
 import type { Club } from '@/types/club'
 

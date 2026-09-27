@@ -1,7 +1,9 @@
 "use client"
 
 import { useState } from "react"
+
 import { useToast } from "@/hooks/use-toast"
+
 import ClubActions from "./club-actions"
 import NotificationsToggle from "./notifications-toggle"
 import TipDialog from "./tip-dialog"

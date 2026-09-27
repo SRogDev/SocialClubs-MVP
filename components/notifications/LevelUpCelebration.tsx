@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles } from 'lucide-react'
+import { useEffect, useState } from 'react'
+
 import type { LevelUpMetadata } from '@/types/notification'
 
 interface LevelUpCelebrationProps {

@@ -3,10 +3,11 @@
  */
 
 import { cache } from 'react'
+
 import { createClient } from '@/lib/supabase/server'
 import { updateProfileSchema, type UpdateProfileInput } from '@/schemas/profileSchema'
-import type { User, UserPoints, UserClubMembership } from '@/types/user'
 import type { Club } from '@/types/club'
+import type { User, UserPoints, UserClubMembership } from '@/types/user'
 
 /**
  * Get user profile by ID

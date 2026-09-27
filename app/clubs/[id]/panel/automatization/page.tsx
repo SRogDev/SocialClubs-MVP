@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+
 import AutomationSection from "@/components/club-panel/automation-section";
+import { createClient } from "@/lib/supabase/server";
 
 // Mock data — replace with real fetch later
 const mockChannels = [

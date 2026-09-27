@@ -1,8 +1,5 @@
 'use client'
 
-import { useRef, useState } from 'react'
-import { usePathname } from 'next/navigation'
-import Link from 'next/link'
 import {
   motion,
   useMotionValue,
@@ -11,8 +8,12 @@ import {
   AnimatePresence,
 } from 'framer-motion'
 import { Home, Compass, User, Bell, LayoutDashboard } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useRef, useState } from 'react'
+
 import { useUnreadNotificationCount } from '@/hooks/swr/useNotifications'
+import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
   { href: '/clubs', icon: Home, label: 'Inicio' },

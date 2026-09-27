@@ -1,5 +1,6 @@
 import useSWR from 'swr';
-import { ClubBalance, Payment } from '@/types/database';
+
+import type { ClubBalance, Payment } from '@/types/database';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 

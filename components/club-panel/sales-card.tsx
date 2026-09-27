@@ -1,6 +1,7 @@
 "use client";
 
 import { X, Sparkles, TrendingUp, Users, Zap, Award } from "lucide-react";
+
 import { SalesButton } from "./sales-button";
 
 interface SalesCardProps {
