@@ -500,4 +500,129 @@ export const adminService = {
     getClubCreatorEmail,
     getMarketingStats,
     exportMetricsCSV,
+    getRevenueSeries,
+    getUserGrowthSeries,
+    getTopClubsByEngagement,
+}
+
+export interface RevenuePoint {
+    date: string
+    revenue: number
+}
+
+export interface GrowthPoint {
+    date: string
+    users: number
+}
+
+export interface TopClubPoint {
+    name: string
+    engagement: number
+}
+
+const fmtDay = (d: Date) =>
+    d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
+
+/**
+ * Revenue per day for the last `days` days, from completed payments.
+ * Returns an honest (possibly empty) series — no mock data.
+ */
+export async function getRevenueSeries(days = 30): Promise<RevenuePoint[]> {
+    const supabase = await createClient()
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+
+    const { data, error } = await supabase
+        .from('payments')
+        .select('amount, created_at')
+        .eq('status', 'completed')
+        .gte('created_at', since.toISOString())
+
+    if (error) {
+        console.error('Error fetching revenue series:', error)
+        throw error
+    }
+
+    const buckets = new Map<string, number>()
+    for (let i = 0; i < days; i++) {
+        const d = new Date(Date.now() - (days - 1 - i) * 24 * 60 * 60 * 1000)
+        buckets.set(d.toISOString().slice(0, 10), 0)
+    }
+    for (const p of data || []) {
+        const key = new Date(p.created_at as string).toISOString().slice(0, 10)
+        if (buckets.has(key)) {
+            // amount is stored in cents — chart shows dollars
+            buckets.set(key, (buckets.get(key) || 0) + (p.amount || 0) / 100)
+        }
+    }
+    return [...buckets.entries()].map(([iso, revenue]) => ({
+        date: fmtDay(new Date(iso + 'T00:00:00')),
+        revenue: Math.round(revenue * 100) / 100,
+    }))
+}
+
+/**
+ * Cumulative user count per day for the last `days` days.
+ * Returns an honest (possibly empty) series — no mock data.
+ */
+export async function getUserGrowthSeries(days = 30): Promise<GrowthPoint[]> {
+    const supabase = await createClient()
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+
+    const { count: base, error: baseError } = await supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true })
+        .lt('created_at', since.toISOString())
+
+    if (baseError) {
+        console.error('Error fetching user base count:', baseError)
+        throw baseError
+    }
+
+    const { data, error } = await supabase
+        .from('users')
+        .select('created_at')
+        .gte('created_at', since.toISOString())
+
+    if (error) {
+        console.error('Error fetching user growth series:', error)
+        throw error
+    }
+
+    const perDay = new Map<string, number>()
+    for (const u of data || []) {
+        const key = new Date(u.created_at as string).toISOString().slice(0, 10)
+        perDay.set(key, (perDay.get(key) || 0) + 1)
+    }
+
+    let cumulative = base || 0
+    return Array.from({ length: days }, (_, i) => {
+        const d = new Date(Date.now() - (days - 1 - i) * 24 * 60 * 60 * 1000)
+        const key = d.toISOString().slice(0, 10)
+        cumulative += perDay.get(key) || 0
+        return { date: fmtDay(d), users: cumulative }
+    })
+}
+
+/**
+ * Top clubs by member count. `engagement` is the member total — a real,
+ * explainable metric, not a fabricated score.
+ */
+export async function getTopClubsByEngagement(limit = 5): Promise<TopClubPoint[]> {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('clubs')
+        .select('name, total_members')
+        .order('total_members', { ascending: false })
+        .limit(limit)
+
+    if (error) {
+        console.error('Error fetching top clubs:', error)
+        throw error
+    }
+
+    return (data || []).map((c) => ({
+        name: c.name || 'Sin nombre',
+        engagement: c.total_members || 0,
+    }))
 }

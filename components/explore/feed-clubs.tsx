@@ -13,16 +13,22 @@ export default function FeedClubs({ clubs }: FeedClubsProps) {
         <section className="mb-8">
             <h2 className="text-2xl font-bold mb-6 px-4">Explorar Más Clubes</h2>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 px-4">
-                {clubs.map((club, index) => (
-                    <Link
-                        key={club.id}
-                        href={`/clubs/${club.id}`}
-                    >
-                        <FeedClubCard club={club} index={index} />
-                    </Link>
-                ))}
-            </div>
+            {clubs.length === 0 ? (
+                <p className="px-4 text-muted-foreground">
+                    Aún no hay clubes para explorar. ¡Crea el primero!
+                </p>
+            ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 px-4">
+                    {clubs.map((club, index) => (
+                        <Link
+                            key={club.id}
+                            href={`/clubs/${club.id}`}
+                        >
+                            <FeedClubCard club={club} index={index} />
+                        </Link>
+                    ))}
+                </div>
+            )}
         </section>
     )
 }
