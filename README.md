@@ -1,33 +1,47 @@
 # SocialClubs
 
-**Private community platform rethought for the AI era** — standalone-first, Polygrow-enhanced.
+**Your private paid membership club.** SocialClubs lets creators and micro-influencers monetize their community with a private club of their own: paid memberships, exclusive content, video calls, events, and direct connection with their most loyal followers — LatAm-first.
 
-SocialClubs is being rebuilt around a simple thesis: online communities deserve better than 2010s forum software, and they shouldn't need to rebuild agent infrastructure to get AI-native features. Use it standalone — or let community data flow into Polygrow as business information.
+## What it is
 
-## What it is / what it is not
+If you have an audience, you have a business waiting to happen. SocialClubs gives every creator their own private space where followers become paying members:
 
-- **Standalone-first:** a complete community product on its own — clubs, events, video calls, media.
-- **Polygrow-enhanced via clean seams:** APIs, events, and MCP — community data feeds Polygrow as the business-information core. No agent infrastructure rebuilt inside.
-- **Not** a generic social network; **not** a course platform.
+- **Paid memberships** — recurring subscriptions via Stripe (one-time plans today, tiers next)
+- **Exclusive content** — posts, media, and updates only members can see
+- **Video calls & events** — live sessions with your inner circle (Daily + Mux)
+- **Community** — channels, comments, polls, leaderboards, gamification
+- **Creator dashboard** — earnings, members, and growth metrics
+
+## What it is not
+
+- Not a generic social network — every club is private and paid.
+- Not a course platform — it's an ongoing membership relationship.
+- No AI-agent gimmicks — the product is the club, not a chatbot.
 
 ## Status
 
-- **Repo made public (2026-09-26).**
-- **A major reform is being planned** — the direction is locked: standalone-first, Polygrow-enhanced via clean seams; the old club-agent architecture will be removed. The current code is the **pre-reform MVP**.
-- **Next:** write the reform plan, then rebuild per the locked strategy.
+- **Public repo.** Under active development toward the first paid launch.
+- **Monetization:** Stripe Connect + subscriptions are implemented; end-to-end real-money verification is the next milestone (see `docs/STRIPE_SETUP.md`).
+- **Live demo:** coming soon.
 
 ## Stack
 
-Next.js 16.3.6 (App Router) · React 19 · TypeScript · Tailwind · Zod (shared client/server schemas) · React Hook Form · SWR · Supabase · Daily (video calls) · Mux (video) · Stripe · Upstash (Redis, rate limiting, queues) · PostHog · Sentry · PWA (service worker, installable, haptics)
+Next.js 16.3.6 (App Router) · React 19 · TypeScript · Tailwind · Zod (shared client/server schemas) · React Hook Form · SWR · Supabase (Postgres + Auth + Storage) · Stripe · Daily (video calls) · Mux (video) · Upstash (Redis, rate limiting, QStash queues) · PostHog · Sentry · PWA (service worker, installable)
 
 ## Quickstart
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 npm run dev   # http://localhost:3000
 ```
 
-Configure service keys (Supabase, etc.) per `.env.example` for full functionality.
+1. Create a Supabase project and apply `database.sql` + `supabase/migrations/`.
+2. Copy `.env.example` to `.env.local` and fill in the keys (Supabase, Stripe, Daily, Mux, Upstash…).
+3. See `docs/STRIPE_SETUP.md` for the payments setup and live-verification checklist.
+
+## Screenshots
+
+_Coming soon — the landing and product tour are being repositioned for creators (Spanish-first, LatAm)._
 
 ## Structure
 
@@ -46,4 +60,4 @@ UI/business-logic separation: components present, `services/` decides. Zod valid
 
 ## License
 
-No license file yet.
+MIT — see [LICENSE](LICENSE).

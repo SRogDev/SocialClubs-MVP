@@ -380,6 +380,37 @@ Ver documento completo: [`docs/stripe-edge-cases.md`](./docs/stripe-edge-cases.m
 
 ---
 
-**Última actualización**: 2026-01-04  
-**Versión**: 1.0.0  
+---
+
+## ✅ Live-verification checklist (real money — run by Roger)
+
+The Stripe integration was built and tested with **test keys only**. Before the first public launch, run this end-to-end verification with **live keys**. Do it once, carefully, with a real card you control.
+
+### Preparation
+1. In the Stripe Dashboard, switch to **Live mode** and copy: `sk_live_...`, `pk_live_...`.
+2. Add the production webhook endpoint `https://<your-domain>/api/webhooks/stripe` in **Live mode** (Developers → Webhooks), selecting the same events listed above. Copy the live `whsec_...`.
+3. Set the three live values as env vars in production (Vercel → Environment Variables). Redeploy.
+4. Complete a **Connect onboarding** with a real creator account (can be your own) and confirm `charges_enabled = true` in the Dashboard.
+
+### The $1 test
+5. Create a **$1/month test membership plan** for a test club (`/clubs/[id]/panel/monetization`).
+6. As a *different* user (or incognito), subscribe with a **real card**. Use a card you own.
+7. Verify in the app: membership shows as **active**, member-only content unlocks.
+8. Verify in Supabase: a row exists in `users_memberships` with `status = active`, and a row in `payments` with `status = completed`.
+9. Verify in Stripe Dashboard (Live): the subscription exists, the invoice is paid, and the Connect transfer to the creator's account is visible (minus the 10% platform fee).
+10. Open the **Customer Portal** from the app and **cancel** the subscription. Verify `users_memberships.status` flips to cancelled/inactive after the webhook arrives.
+11. (Optional but recommended) Wait for the first renewal or simulate it: confirm `invoice.paid` extends the membership instead of creating a duplicate.
+12. Delete the $1 test plan and refund the test charge from the Dashboard.
+
+### What "done" looks like
+- [ ] Real card charged $1, membership activated in app + DB
+- [ ] Creator received the transfer (minus platform fee) in their Connect account
+- [ ] Cancellation via portal reflected in app + DB
+- [ ] No duplicate memberships on renewal
+- [ ] Webhook deliveries all `200` in the Dashboard (no retries)
+
+**Do not skip this.** Test mode does not verify Connect payouts, live webhook signing, or real card behavior.
+
+**Última actualización**: 2026-10-06
+**Versión**: 1.1.0
 **Maintainer**: SocialClubs Dev Team
