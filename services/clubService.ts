@@ -7,6 +7,7 @@ import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { createClubSchema, updateClubSchema, type CreateClubInput, type UpdateClubInput } from '@/schemas/clubSchema'
 import type { Club, ClubStats } from '@/types/club'
+import type { User } from '@/types/user'
 
 /**
  * Generate a unique random club link
@@ -388,3 +389,23 @@ export async function leaveClub(userId: string, clubId: string): Promise<void> {
         throw new Error('Failed to leave club')
     }
 }
+
+/**
+ * Get club members with their user data
+ */
+export const getClubMembers = cache(async (clubId: string): Promise<User[]> => {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('users_clubs')
+        .select('users(*)')
+        .eq('club_id', clubId)
+
+    if (error) {
+        console.error('Error fetching club members:', error)
+        throw new Error('Failed to fetch club members')
+    }
+
+    // Extract users from the joined data
+    return data?.map((item: any) => item.users).filter(Boolean) || []
+})

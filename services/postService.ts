@@ -352,3 +352,58 @@ export const getUserPostInteractions = cache(async (userId: string, postIds: str
 
     return data || []
 })
+
+/**
+ * Get posts authored by a user, newest first.
+ * NOTE: the `posts` table has no `user_id` column — the author is matched
+ * through the `content` jsonb payload (`content->>user_id`). Posts whose
+ * content doesn't carry a user_id won't be returned.
+ */
+export const getUserPosts = cache(async (userId: string): Promise<Post[]> => {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('posts')
+        .select('*')
+        .filter('content->>user_id', 'eq', userId)
+        .order('created_at', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching user posts:', error)
+        throw new Error('Failed to fetch user posts')
+    }
+
+    return data || []
+})
+
+/**
+ * Get trending posts ordered by engagement (likes + comments from post_stats).
+ * The `posts` table has no engagement columns, so stats are joined and the
+ * score computed in-memory; falls back to newest-first when stats are missing.
+ */
+export const getTrendingPosts = cache(async (limit = 20): Promise<Post[]> => {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('posts')
+        .select('*, post_stats(likes, comments)')
+        .order('created_at', { ascending: false })
+        .limit(limit * 3)
+
+    if (error) {
+        console.error('Error fetching trending posts:', error)
+        throw new Error('Failed to fetch trending posts')
+    }
+
+    const engagementScore = (post: any): number => {
+        const stats = post.post_stats?.[0] ?? post.post_stats
+        return (stats?.likes ?? 0) + (stats?.comments ?? 0)
+    }
+
+    const sorted = [...(data || [])].sort(
+        (a, b) => engagementScore(b) - engagementScore(a)
+    )
+
+    // Strip the joined stats to keep the Post[] shape
+    return sorted.slice(0, limit).map(({ post_stats, ...post }: any) => post)
+})
