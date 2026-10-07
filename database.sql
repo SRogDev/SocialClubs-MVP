@@ -387,29 +387,8 @@ CREATE TABLE product_metrics (
 );
 
 -- ====================================
--- AI AGENTS & WIDGETS
+-- WIDGETS
 -- ====================================
-
--- Club AI agents
-CREATE TABLE club_agents (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  club_id uuid NOT NULL REFERENCES clubs(id),
-  system_prompt text,
-  base_context text,
-  temperature numeric DEFAULT 0.7,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
-);
-
--- Agent messages history
-CREATE TABLE agent_messages (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  agent_id uuid REFERENCES club_agents(id),
-  role text,
-  content jsonb,
-  tool_used text,
-  created_at timestamptz DEFAULT now()
-);
 
 -- Widgets catalog
 CREATE TABLE widgets (

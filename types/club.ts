@@ -47,13 +47,3 @@ export interface ClubBadge {
     title: string | null
     verification: string | null
 }
-
-export interface ClubAgent {
-    id: string
-    club_id: string
-    system_prompt: string | null
-    base_context: string | null
-    temperature: number | null
-    created_at: string
-    updated_at: string
-}

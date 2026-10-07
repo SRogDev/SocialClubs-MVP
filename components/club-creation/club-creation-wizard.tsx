@@ -19,7 +19,6 @@ import { Progress } from "@/components/ui/progress"
 import { useClubCreate } from "@/hooks/use-club-actions"
 import { useToast } from "@/hooks/use-toast"
 
-import { AgentStep } from "./agent-step"
 import { BasicInfoStep } from "./basic-info-step"
 import { ChannelsStep } from "./channels-step"
 import { GamificationStep } from "./gamification-step"
@@ -44,22 +43,6 @@ interface Template {
         pointsForPost: number
         pointsForReferral: number
     }
-    agent: {
-        personality: {
-            role: string
-            tone: string
-            temperature: number
-        }
-        context: {
-            baseKnowledge?: string
-            boundaryRules: string[]
-        }
-        skills: {
-            name: string
-            action: string
-            accessSubscriptionId?: string
-        }[]
-    }
 }
 
 interface FormData {
@@ -73,15 +56,13 @@ interface FormData {
         pointsForPost: number
         pointsForReferral: number
     }
-    agent: Template['agent']
 }
 
 const steps = [
     { title: "Seleccionar Plantilla", description: "Elige una plantilla o crea personalizado" },
     { title: "Información Básica", description: "Nombre, descripción y configuración básica" },
     { title: "Canales", description: "Configura los canales y precios" },
-    { title: "Gamificación", description: "Sistema de puntos y recompensas" },
-    { title: "Asistente IA", description: "Configura el agente inteligente" }
+    { title: "Gamificación", description: "Sistema de puntos y recompensas" }
 ]
 
 export function ClubCreationWizard() {
@@ -98,18 +79,6 @@ export function ClubCreationWizard() {
         gamification: {
             pointsForPost: 10,
             pointsForReferral: 50
-        },
-        agent: {
-            personality: {
-                role: "",
-                tone: "didactico",
-                temperature: 0.7
-            },
-            context: {
-                baseKnowledge: "",
-                boundaryRules: []
-            },
-            skills: []
         }
     })
 
@@ -131,8 +100,7 @@ export function ClubCreationWizard() {
                 isPrivate: template.isPrivate,
                 welcomeMessage: template.welcomeMessage,
                 channels: template.channels.map(ch => ({ ...ch, id: Date.now().toString() + Math.random() })),
-                gamification: template.gamification,
-                agent: template.agent
+                gamification: template.gamification
             })
         } else {
             // Custom: reset to empty
@@ -146,18 +114,6 @@ export function ClubCreationWizard() {
                 gamification: {
                     pointsForPost: 10,
                     pointsForReferral: 50
-                },
-                agent: {
-                    personality: {
-                        role: "",
-                        tone: "didactico",
-                        temperature: 0.7
-                    },
-                    context: {
-                        baseKnowledge: "",
-                        boundaryRules: []
-                    },
-                    skills: []
                 }
             })
         }
@@ -185,10 +141,6 @@ export function ClubCreationWizard() {
             ...prev,
             gamification: { ...prev.gamification, [field]: value }
         }))
-    }
-
-    const handleAgentChange = (agent: FormData['agent']) => {
-        setFormData(prev => ({ ...prev, agent }))
     }
 
     useEffect(() => {
@@ -361,13 +313,6 @@ export function ClubCreationWizard() {
                         onGamificationChange={handleGamificationChange}
                     />
                 )
-            case 4:
-                return (
-                    <AgentStep
-                        agent={formData.agent}
-                        onAgentChange={handleAgentChange}
-                    />
-                )
             default:
                 return null
         }
@@ -432,7 +377,7 @@ export function ClubCreationWizard() {
                         <DialogHeader>
                             <DialogTitle>¡Club creado exitosamente!</DialogTitle>
                             <DialogDescription>
-                                Tu club ha sido creado correctamente. Ahora puedes configurar los canales, gamificación y agente desde el panel de administración.
+                                Tu club ha sido creado correctamente. Ahora puedes configurar los canales y la gamificación desde el panel de administración.
                             </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
