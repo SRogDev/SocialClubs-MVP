@@ -5,7 +5,6 @@
 import { cache } from 'react'
 
 import { createClient } from '@/lib/supabase/server'
-import mockClubs from '@/mock-data/clubs-mock-explore.json'
 import type { Club } from '@/types/club'
 
 /**
@@ -31,7 +30,8 @@ export const getFeaturedClubs = cache(async (): Promise<Club[]> => {
 
 /**
  * Get all clubs for explore feed
- * Returns up to 45 clubs, using mocks to fill if needed
+ * Returns up to 45 real clubs, newest first. No mock data — an empty
+ * result is honest and the UI renders an empty state.
  * @returns Promise<Club[]>
  */
 export const getAllClubs = cache(async (): Promise<Club[]> => {
@@ -48,15 +48,5 @@ export const getAllClubs = cache(async (): Promise<Club[]> => {
         throw new Error('Failed to fetch all clubs')
     }
 
-    const realClubs = data || []
-    const realCount = realClubs.length
-
-    // Si hay menos de 45 clubs reales, completar con mocks
-    if (realCount < 45) {
-        const mocksNeeded = 45 - realCount
-        const mocksToAdd = mockClubs.slice(0, mocksNeeded) as Club[]
-        return [...realClubs, ...mocksToAdd]
-    }
-
-    return realClubs
+    return data || []
 })

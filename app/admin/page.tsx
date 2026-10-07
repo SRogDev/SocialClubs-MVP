@@ -4,16 +4,26 @@ import { DashboardMetrics } from '@/components/admin/DashboardMetrics'
 import { RevenueChart } from '@/components/admin/RevenueChart'
 import { TopClubsChart } from '@/components/admin/TopClubsChart'
 import { UserGrowthChart } from '@/components/admin/UserGrowthChart'
-import chartData from '@/mock-data/admin-charts.json'
-import { getPlatformMetrics } from '@/services/adminService'
+import {
+    getPlatformMetrics,
+    getRevenueSeries,
+    getTopClubsByEngagement,
+    getUserGrowthSeries,
+} from '@/services/adminService'
 
 /**
  * Admin Dashboard Principal (Global)
- * Server Component que muestra métricas principales de la plataforma
+ * Server Component que muestra métricas principales de la plataforma.
+ * Todos los datos son reales — sin mocks.
  */
 export default async function AdminDashboard() {
     // Obtener métricas desde el servidor
-    const metrics = await getPlatformMetrics()
+    const [metrics, revenueData, userGrowthData, topClubsData] = await Promise.all([
+        getPlatformMetrics(),
+        getRevenueSeries(),
+        getUserGrowthSeries(),
+        getTopClubsByEngagement(),
+    ])
 
     return (
         <div className="flex flex-col gap-6">
@@ -34,16 +44,16 @@ export default async function AdminDashboard() {
             {/* Gráficos */}
             <div className="grid gap-6 md:grid-cols-2">
                 <ChartWrapper index={0}>
-                    <RevenueChart data={chartData.revenueData} />
+                    <RevenueChart data={revenueData} />
                 </ChartWrapper>
                 <ChartWrapper index={1}>
-                    <UserGrowthChart data={chartData.userGrowthData} />
+                    <UserGrowthChart data={userGrowthData} />
                 </ChartWrapper>
             </div>
 
             <div className="grid gap-6">
                 <ChartWrapper index={2}>
-                    <TopClubsChart data={chartData.topClubsData} />
+                    <TopClubsChart data={topClubsData} />
                 </ChartWrapper>
             </div>
         </div>
