@@ -7,7 +7,6 @@ import { Footer } from '@/components/landing/footer'
 import { HeroSection } from '@/components/landing/hero-section'
 import { ParallaxBackground } from '@/components/landing/parallax-background'
 import { RoadMapComponent } from '@/components/landing/roadmap-component'
-import { TestimonialsSection } from '@/components/landing/testimonials-section'
 
 export default function Page() {
   return (
@@ -17,7 +16,6 @@ export default function Page() {
         <AboutSection />
         <ClubScrollSectionLazy />
         <EcosystemSection />
-        <TestimonialsSection />
         <RoadMapComponent />
         <ClosingSection />
         <FAQComponent />
