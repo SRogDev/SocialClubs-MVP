@@ -1,6 +1,6 @@
 "use client"
 
-import { Rocket, TestTube, Gamepad2, ShoppingCart, User, Brain, Network, Shield } from "lucide-react"
+import { Rocket, TestTube, Gamepad2, Video, CreditCard } from "lucide-react"
 import { useRef } from "react"
 
 import { Badge } from "@/components/ui/badge"
@@ -8,60 +8,34 @@ import { Card, CardContent } from "@/components/ui/card"
 
 const roadmapPhases = [
   {
-    title: "Prelanzamiento",
-    description: "Registro de clubes Anticipadamente con recompensas por Acceso Anticipado",
+    title: "Acceso anticipado",
+    description: "Primeros clubes de creadores abriendo sus puertas. Suscripciones mensuales y contenido exclusivo funcionando.",
     status: "current",
     icon: <Rocket className="h-5 w-5" />,
-   
   },
   {
-    title: "Beta",
-    description: "Lanzamiento de la Red Social ,Desarrollo continuo de features, pruebas del producto y optimización de escalabilidad...",
+    title: "Monetización completa",
+    description: "Videollamadas pagadas, niveles de membresía y panel de ingresos para cada creador.",
     status: "upcoming",
-    icon: <TestTube className="h-5 w-5" />,
-   
+    icon: <CreditCard className="h-5 w-5" />,
   },
   {
-    title: "Flow",
-    description: "Mecánicas de gamificación avanzadas,Open Widget Protocol ,Club Stories...",
+    title: "Eventos en vivo",
+    description: "Eventos exclusivos para miembros: transmisiones, encuentros y experiencias solo para tu club.",
     status: "upcoming",
+    icon: <Video className="h-5 w-5" />,
+  },
+  {
+    title: "Comunidad avanzada",
+    description: "Gamificación, recompensas y herramientas para mantener a tus miembros activos mes a mes.",
+    status: "future",
     icon: <Gamepad2 className="h-5 w-5" />,
-   
   },
   {
-    title: "Comercio Social",
-    description: "Tiendas Nativas ,live video, virtual,Rueda , subdominios...",
+    title: "Escala",
+    description: "Pruebas de producto, optimización y soporte para clubes de miles de miembros.",
     status: "future",
-    icon: <ShoppingCart className="h-5 w-5" />,
-    
-  },
-  {
-    title: "Personalización",
-    description: "Eventos,subastas nfts ,Asistente de Club,emogis ,stickers y  gift unicos para clubs... ",
-    status: "future",
-    icon: <User className="h-5 w-5" />,
-   
-  },
-  {
-    title: " Matching",
-    description: " Sponsor- clubs matchmaking, networking matchmaking , dating matchmaking ,logística para productos físicos y más automatización... ",
-    status: "future",
-    icon: <Brain className="h-5 w-5" />,
-    
-  },
-  {
-    title: "Ecosistema",
-    description: "Mini apps para Clubs ,Bots , Editor Creativo , Plataforma de Devs y más descubrimiento...",
-    status: "future",
-    icon: <Network className="h-5 w-5" />,
-   
-  },
-  {
-    title: "Descentralización",
-    description: " Blockchain propia , token nativo ,  economía propia de clubes ,servicio de pagos nativo y recompensas especiales...  ",
-    status: "future",
-    icon: <Shield className="h-5 w-5" />,
-   
+    icon: <TestTube className="h-5 w-5" />,
   },
 ]
 
@@ -94,7 +68,7 @@ export function RoadMapComponent() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-8 md:mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-2 md:mb-4 text-foreground">Roadmap</h2>
-          <h3 className="text-lg md:text-2xl font-semibold text-primary">Fase 1: La Red Social de las Comunidades</h3>
+          <h3 className="text-lg md:text-2xl font-semibold text-primary">El camino de tu club</h3>
         </div>
 
         {/* Horizontal Timeline */}
@@ -128,7 +102,7 @@ export function RoadMapComponent() {
                         <h4 className="font-semibold text-lg text-foreground">{phase.title}</h4>
                         {getStatusBadge(phase.status)}
                       </div>
-                     
+
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">{phase.description}</p>

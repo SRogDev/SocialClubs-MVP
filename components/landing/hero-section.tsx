@@ -209,7 +209,7 @@ export function HeroSection() {
                      px-4 py-1.5 rounded-full text-sm font-medium mb-8"
         >
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          La plataforma de comunidades del futuro
+          Para creadores e influencers
         </motion.div>
 
         {/* Main heading */}
@@ -220,11 +220,11 @@ export function HeroSection() {
           className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-none tracking-tight"
         >
           <TextGenerate
-            text="Todo el Poder"
+            text="Tu club privado"
             className="block bg-gradient-to-r from-primary via-orange-400 to-yellow-400 bg-clip-text text-transparent"
           />
           <TextGenerate
-            text="para Crear"
+            text="de membresía"
             className="block text-foreground"
           />
         </motion.h1>
@@ -236,8 +236,8 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 1.4 }}
           className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
         >
-          Crea tu club privado, gamifica tu comunidad, monetiza tu conocimiento
-          y conecta con tus miembros en un solo lugar.
+          Convierte tus seguidores en ingresos recurrentes: contenido exclusivo,
+          videollamadas y eventos para tus fans más leales. Sin algoritmos de por medio.
         </motion.p>
 
         {/* CTAs */}
@@ -256,7 +256,7 @@ export function HeroSection() {
                 boxShadow: '0 0 24px hsl(20 100% 50% / 0.5), 0 4px 12px rgba(0,0,0,0.15)',
               }}
             >
-              <span className="relative z-10">Crea tu Club Gratis</span>
+              <span className="relative z-10">Crea tu club gratis</span>
               {/* Shimmer */}
               <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700
                                bg-gradient-to-r from-transparent via-white/20 to-transparent" />
@@ -274,13 +274,14 @@ export function HeroSection() {
         </motion.div>
 
         {/* Social proof */}
+        {/* Social proof — honest: early access, no invented numbers */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 2 }}
           className="mt-8 text-sm text-muted-foreground"
         >
-          +2,000 creadores ya construyen su comunidad aquí
+          Acceso anticipado — los primeros clubes están abriendo sus puertas
         </motion.p>
       </div>
     </section>

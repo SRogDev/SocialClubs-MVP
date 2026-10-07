@@ -2,50 +2,39 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 const faqs = [
   {
-    question: "¿Cómo monetizo en la plataforma?",
+    question: "¿Cómo gano dinero con mi club?",
     answer:
-      "Mediante suscripciones de tus usuarios, videollamadas pagas y propinas",
+      "Tus miembros pagan una suscripción mensual por acceder a tu club. También puedes cobrar por videollamadas privadas. Los pagos se procesan con Stripe y llegan a tu cuenta.",
   },
   {
-    question: "¿Cómo garantizan la privacidad y seguridad de los usuarios?",
+    question: "¿Cuánto cuesta crear un club?",
     answer:
-      "Cumplimos con GDPR , no recolectamos datos personales usuario , solo de clubs y a diferencia de otras redes puedes eliminar tu cuenta y asi borrar todo rastro de ti en la plataforma ",
+      "Crear tu club es gratis. Solo pagas una comisión sobre lo que ganes cuando tus miembros se suscriben.",
   },
   {
-    question: "¿Hay algún costo para crear un Club?",
+    question: "¿Necesito tener muchos seguidores para empezar?",
     answer:
-      "NO, crear un club es completamente gratis",
+      "No. Los clubes funcionan mejor con comunidades pequeñas y leales: 50 miembros pagando una suscripción valen más que 10.000 seguidores que no compran nada.",
   },
   {
-    question: "¿Hay límite en el número de miembros?",
+    question: "¿Qué tipo de contenido puedo ofrecer?",
     answer:
-      "No, SocialClubs está diseñado para escalar desde pequeñas comunidades hasta grandes organizaciones con miles de miembros.",
+      "Publicaciones exclusivas, fotos y videos solo para miembros, videollamadas en vivo, eventos y conversaciones directas con tu comunidad más cercana.",
   },
   {
-    question: "¿Como funciona el sistema de gamificacion?",
+    question: "¿Mis seguidores necesitan instalar algo?",
     answer:
-      "Tú decides como se ganan puntos en tu club y para qué sirven",
-  },
-   {
-    question: "¿Qué gana mi club al subir de nivel?",
-    answer:
-      "Al subir de nivel ganas más reconocimiento , más herramientas sin pagar extra y acceso beta a nuevas funcionalidades",
-  },
-   {
-    question: "¿Qué es un widget?",
-    answer:
-      "Un elemento interactivo flexible para aumentar la interaccion en tu club más allá de fotos , audio y video",
+      "No. Todo funciona en el navegador y la app es instalable como PWA en el teléfono.",
   },
   {
-    question: "¿Es fácil migrar mi comunidad existente?",
+    question: "¿Cómo reciben mis miembros el acceso?",
     answer:
-      "Sí, proporcionamos herramientas y soporte para facilitar la migración desde otras plataformas de manera sencilla y rápida.",
+      "Al suscribirse, entran automáticamente a tu club privado. Si cancelan, pierden el acceso al contenido exclusivo.",
   },
-
   {
-    question: "¿Qué soporte técnico ofrecen?",
+    question: "¿Puedo migrar mi comunidad de otra plataforma?",
     answer:
-      "Ofrecemos soporte técnico 24/7, documentación completa, tutoriales y un equipo dedicado para ayudarte en todo momento.",
+      "Sí. Puedes invitar a tus seguidores con un enlace directo a tu club y empezar a construir tu base de miembros desde el día uno.",
   },
 ]
 
