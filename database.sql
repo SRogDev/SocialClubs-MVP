@@ -598,6 +598,23 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
+-- Table: club_reports (moderation reports on clubs, reviewed by admins)
+CREATE TABLE IF NOT EXISTS public.club_reports (
+    id               UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+    club_id          UUID        NOT NULL REFERENCES public.clubs(id) ON DELETE CASCADE,
+    reporter_id      UUID        REFERENCES public.users(id) ON DELETE SET NULL,
+    type             TEXT        NOT NULL
+                     CHECK (type IN ('sexual_content', 'extreme_violence', 'scam', 'spam')),
+    status           TEXT        NOT NULL DEFAULT 'pending'
+                     CHECK (status IN ('pending', 'reviewed', 'dismissed', 'actioned')),
+    description      TEXT,
+    created_at       TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at       TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_club_reports_club_id ON public.club_reports(club_id);
+CREATE INDEX IF NOT EXISTS idx_club_reports_status ON public.club_reports(status) WHERE status = 'pending';
+
 -- Trigger: Update club_reports.updated_at
 CREATE OR REPLACE FUNCTION update_club_reports_updated_at()
 RETURNS trigger AS $$

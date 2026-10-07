@@ -10,6 +10,47 @@ import { rateLimit, RATE_LIMITS, addRateLimitHeaders } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { deleteClub, getClubById } from '@/services/clubService'
 
+/**
+ * GET /api/clubs/[id]
+ * Returns a single club by ID
+ */
+export async function GET(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        // Apply rate limiting
+        const rateLimitResult = await rateLimit(request, RATE_LIMITS.QUERY)
+        if (rateLimitResult) return rateLimitResult
+
+        const { id } = await params
+
+        if (!id) {
+            return NextResponse.json(
+                { error: 'Bad request', message: 'Club ID is required' },
+                { status: 400 }
+            )
+        }
+
+        const club = await getClubById(id)
+
+        if (!club) {
+            return NextResponse.json({ error: 'Not found' }, { status: 404 })
+        }
+
+        return NextResponse.json({ data: club })
+    } catch (error) {
+        console.error('Error in GET /api/clubs/[id]:', error)
+        return NextResponse.json(
+            {
+                error: 'Internal server error',
+                message: error instanceof Error ? error.message : 'Failed to fetch club'
+            },
+            { status: 500 }
+        )
+    }
+}
+
 export async function DELETE(
     request: NextRequest,
     context: RouteContext<'/api/clubs/[id]'>

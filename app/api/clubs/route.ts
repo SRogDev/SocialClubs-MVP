@@ -9,7 +9,32 @@ import { NextResponse } from 'next/server'
 import { rateLimit, RATE_LIMITS, addRateLimitHeaders } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import { createClubSchema } from '@/schemas/clubSchema'
-import { createClub } from '@/services/clubService'
+import { createClub, getClubs } from '@/services/clubService'
+
+/**
+ * GET /api/clubs
+ * Returns all clubs, newest first
+ */
+export async function GET(request: NextRequest) {
+    try {
+        // Apply rate limiting
+        const rateLimitResult = await rateLimit(request, RATE_LIMITS.QUERY)
+        if (rateLimitResult) return rateLimitResult
+
+        const clubs = await getClubs()
+
+        return NextResponse.json({ data: clubs })
+    } catch (error) {
+        console.error('Error in GET /api/clubs:', error)
+        return NextResponse.json(
+            {
+                error: 'Internal server error',
+                message: error instanceof Error ? error.message : 'Failed to fetch clubs'
+            },
+            { status: 500 }
+        )
+    }
+}
 
 export async function POST(request: NextRequest) {
     try {
