@@ -14,7 +14,6 @@ interface Template {
     welcomeMessage: string
     channels: any[]
     gamification: any
-    agent: any
 }
 
 interface TemplateSelectionProps {

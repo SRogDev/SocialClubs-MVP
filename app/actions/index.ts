@@ -35,11 +35,6 @@ export {
     sendMarketingEmailAction,
 } from './adminActions'
 
-// Agent Actions
-export {
-    saveAgentConfigAction,
-} from './agentActions'
-
 // Notification Actions
 export {
     markNotificationReadAction,

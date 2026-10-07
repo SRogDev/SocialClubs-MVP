@@ -1,4 +1,4 @@
-import { Layout, Users, Zap, Calendar, Joystick, BarChart2, Megaphone, HeadphonesIcon, Bot } from "lucide-react"
+import { Layout, Users, Zap, Calendar, Joystick, BarChart2, Megaphone, HeadphonesIcon } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import Link from "next/link"
 
@@ -26,7 +26,6 @@ export default function ClubPanelSidebar({ clubId, activeSection, clubName }: Si
         { value: "agenda", label: "Agenda", icon: Calendar },
         { value: "gamificacion", label: "Gamificación", icon: Joystick },
         { value: "analiticas", label: "Analíticas", icon: BarChart2 },
-        { value: "agent", label: "AI Agent", icon: Bot },
         { value: "marketing", label: "Marketing", icon: Megaphone },
         { value: "support", label: "Soporte", icon: HeadphonesIcon },
     ]

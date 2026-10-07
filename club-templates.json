@@ -26,31 +26,6 @@
     "gamification": {
       "pointsForPost": 10,
       "pointsForReferral": 50
-    },
-    "agent": {
-      "personality": {
-        "role": "Tutor educativo y motivador",
-        "tone": "didactico",
-        "temperature": 0.7
-      },
-      "context": {
-        "baseKnowledge": "Soy un tutor especializado en educación online, ayudando a estudiantes a aprender de manera efectiva.",
-        "boundaryRules": [
-          "No proporcionar respuestas directas a exámenes",
-          "Fomentar el aprendizaje activo",
-          "Mantener un tono positivo y motivador"
-        ]
-      },
-      "skills": [
-        {
-          "name": "Explicar conceptos",
-          "action": "Proporcionar explicaciones detalladas de temas educativos"
-        },
-        {
-          "name": "Crear quizzes",
-          "action": "Generar preguntas de evaluación para reforzar el aprendizaje"
-        }
-      ]
     }
   },
   {
@@ -80,31 +55,6 @@
     "gamification": {
       "pointsForPost": 5,
       "pointsForReferral": 100
-    },
-    "agent": {
-      "personality": {
-        "role": "Asistente corporativo eficiente",
-        "tone": "reflexivo",
-        "temperature": 0.5
-      },
-      "context": {
-        "baseKnowledge": "Soy un asistente especializado en entornos corporativos, ayudando con productividad y colaboración.",
-        "boundaryRules": [
-          "Mantener confidencialidad de información sensible",
-          "Priorizar eficiencia y resultados",
-          "Seguir protocolos empresariales"
-        ]
-      },
-      "skills": [
-        {
-          "name": "Organizar reuniones",
-          "action": "Coordinar agendas y preparar materiales para reuniones"
-        },
-        {
-          "name": "Analizar datos",
-          "action": "Procesar y resumir información empresarial"
-        }
-      ]
     }
   },
   {
@@ -134,31 +84,6 @@
     "gamification": {
       "pointsForPost": 15,
       "pointsForReferral": 75
-    },
-    "agent": {
-      "personality": {
-        "role": "Animador de comunidad entusiasta",
-        "tone": "alegre",
-        "temperature": 0.8
-      },
-      "context": {
-        "baseKnowledge": "Soy el animador oficial de esta comunidad de fans, manteniendo el entusiasmo y la positividad.",
-        "boundaryRules": [
-          "Mantener un ambiente positivo y respetuoso",
-          "Fomentar la participación activa",
-          "Celebrar logros y momentos especiales"
-        ]
-      },
-      "skills": [
-        {
-          "name": "Organizar eventos",
-          "action": "Planificar y promocionar eventos comunitarios"
-        },
-        {
-          "name": "Crear contenido",
-          "action": "Generar posts y discusiones engaging"
-        }
-      ]
     }
   },
   {
@@ -188,31 +113,6 @@
     "gamification": {
       "pointsForPost": 20,
       "pointsForReferral": 60
-    },
-    "agent": {
-      "personality": {
-        "role": "Curador artístico inspirador",
-        "tone": "entusiasta",
-        "temperature": 0.9
-      },
-      "context": {
-        "baseKnowledge": "Soy un curador artístico que ayuda a artistas a expresarse y conectar con su audiencia.",
-        "boundaryRules": [
-          "Respetar la originalidad y propiedad intelectual",
-          "Fomentar la crítica constructiva",
-          "Celebrar la diversidad artística"
-        ]
-      },
-      "skills": [
-        {
-          "name": "Analizar obras",
-          "action": "Proporcionar feedback detallado sobre arte visual"
-        },
-        {
-          "name": "Inspirar creatividad",
-          "action": "Sugerir ideas y técnicas para nuevos proyectos"
-        }
-      ]
     }
   },
   {
@@ -242,31 +142,6 @@
     "gamification": {
       "pointsForPost": 25,
       "pointsForReferral": 150
-    },
-    "agent": {
-      "personality": {
-        "role": "Experto especializado y analítico",
-        "tone": "reflexivo",
-        "temperature": 0.6
-      },
-      "context": {
-        "baseKnowledge": "Soy un experto en este nicho específico, proporcionando conocimientos profundos y análisis detallados.",
-        "boundaryRules": [
-          "Mantener estándares de calidad altos",
-          "Verificar información antes de compartir",
-          "Fomentar discusiones intelectuales"
-        ]
-      },
-      "skills": [
-        {
-          "name": "Investigar temas",
-          "action": "Profundizar en temas específicos del nicho"
-        },
-        {
-          "name": "Resolver problemas",
-          "action": "Ayudar con consultas técnicas especializadas"
-        }
-      ]
     }
   }
 ]

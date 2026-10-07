@@ -10,7 +10,7 @@ export * from './notification'
 export * from './payment'
 
 // Export Club types but not Channel (to avoid conflict)
-export type { Club, ClubStats, ClubBadge, ClubAgent } from './club'
+export type { Club, ClubStats, ClubBadge } from './club'
 
 // Export Channel from channel.ts (primary source)
 export type { Channel, ChatMessage, ChannelType } from './channel'
