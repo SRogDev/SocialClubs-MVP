@@ -8,10 +8,15 @@
  *  - dispatchSignal: persists, skips QStash delivery when not configured (dev mode)
  *  - dispatchSignal: publishes { signalId } to the QStash worker when configured
  *  - dispatchSignal: never throws when Supabase env is missing
- *  - SIGNAL_ROUTING: completeness — every v1 signal type routes to a real
- *    agent + a real action, and the composed inputs satisfy the action's schema
- *  - Worker route POST: HMAC-ok -> verifyAndExecute -> signal marked processed;
- *    unknown signal type / already-processed -> no agent run, still 200
+ *  - SIGNAL_ROUTING: completeness — the deterministic table covers the
+ *    remaining signal types (points_milestone): every route points at a
+ *    real agent + a real action, and the composed inputs satisfy the
+ *    action's schema. new_post / member_joined are agent-composed in the
+ *    worker (lib/ai/agents/community-manager.ts) and tested separately.
+ *  - Worker route POST: HMAC-ok -> new_post/member_joined delegate to
+ *    draftSignalResponse; other routed types use verifyAndExecute;
+ *    signal marked processed; unknown signal type / already-processed ->
+ *    no agent run, still 200
  *
  * Storage is faked in-memory via the SignalDb interface — no database needed.
  */
@@ -273,6 +278,25 @@ jest.mock('@/lib/ai/verify', () => {
     };
 });
 
+const mockDraftSignalResponse = jest.fn(
+    async (_signal: unknown, _deps: unknown) => ({
+        status: 'draft' as const,
+        actionId: 'action-1',
+    }),
+);
+const mockDraftOnboarding = jest.fn(
+    async (_input: unknown, _deps: unknown) => ({
+        status: 'draft' as const,
+        actionId: 'action-1',
+    }),
+);
+
+jest.mock('@/lib/ai/agents/community-manager', () => ({
+    draftSignalResponse: (signal: unknown, deps: unknown) =>
+        mockDraftSignalResponse(signal, deps),
+    draftOnboarding: (input: unknown, deps: unknown) => mockDraftOnboarding(input, deps),
+}));
+
 describe('dispatchSignal', () => {
     beforeEach(() => {
         mockQstashState.publishCalls = [];
@@ -348,7 +372,9 @@ function representativeSignal(type: string): AISignalRecord {
 }
 
 describe('SIGNAL_ROUTING', () => {
-    const EXPECTED_TYPES = ['new_post', 'member_joined', 'points_milestone'];
+    // new_post / member_joined are agent-composed in the worker
+    // (draftSignalResponse), not in this deterministic table.
+    const EXPECTED_TYPES = ['points_milestone'];
 
     test('covers every v1 signal type', () => {
         for (const t of EXPECTED_TYPES) {
@@ -422,26 +448,63 @@ describe('POST /api/queues/ai-signals', () => {
         mockGetSignalById.mockClear();
         mockMarkSignalProcessed.mockClear();
         mockVerifyAndExecute.mockClear();
+        mockDraftSignalResponse.mockClear();
+        mockDraftOnboarding.mockClear();
         process.env.INTERNAL_WORKER_SECRET = 'test-secret';
         process.env.QSTASH_CURRENT_SIGNING_KEY = 'current';
         process.env.QSTASH_NEXT_SIGNING_KEY = 'next';
     });
 
-    test('happy path: runs the routed agent action and marks the signal processed', async () => {
+    test('happy path (new_post): delegates to draftSignalResponse and marks the signal processed', async () => {
         const s = storedSignal();
 
         const res = await POST(workerRequest({ signalId: s.id }));
 
         expect(res.status).toBe(200);
+        expect(mockDraftSignalResponse).toHaveBeenCalledTimes(1);
+        expect(mockDraftSignalResponse).toHaveBeenCalledWith(
+            {
+                type: 'new_post',
+                clubId: 'club-1',
+                payload: { postId: 'post-1', authorId: 'user-1' },
+                idempotencyKey: 'ai-signal:sig-1',
+            },
+            expect.anything(),
+        );
+        expect(mockVerifyAndExecute).not.toHaveBeenCalled();
+        expect(mockMarkSignalProcessed).toHaveBeenCalledWith('sig-1', expect.anything());
+        expect(mockSignalStore.signals.get('sig-1')?.processedAt).not.toBeNull();
+    });
+
+    test('member_joined: delegates to draftSignalResponse (which drafts onboarding)', async () => {
+        const s = storedSignal({ type: 'member_joined', payload: { userId: 'user-2' } });
+
+        const res = await POST(workerRequest({ signalId: s.id }));
+
+        expect(res.status).toBe(200);
+        expect(mockDraftSignalResponse).toHaveBeenCalledTimes(1);
+        const signal = mockDraftSignalResponse.mock.calls[0][0] as { type: string };
+        expect(signal.type).toBe('member_joined');
+        expect(mockMarkSignalProcessed).toHaveBeenCalledWith('sig-1', expect.anything());
+    });
+
+    test('points_milestone: falls back to the deterministic SIGNAL_ROUTING path', async () => {
+        const s = storedSignal({
+            type: 'points_milestone',
+            payload: { userId: 'user-3', threshold: 100 },
+        });
+
+        const res = await POST(workerRequest({ signalId: s.id }));
+
+        expect(res.status).toBe(200);
+        expect(mockDraftSignalResponse).not.toHaveBeenCalled();
         expect(mockVerifyAndExecute).toHaveBeenCalledTimes(1);
         const req = mockVerifyAndExecute.mock.calls[0][0];
         expect(req.agentDef.id).toBe('community-manager');
         expect(req.action).toBe('send_message');
         expect(req.ctx.clubId).toBe('club-1');
         expect(req.ctx.idempotencyKey).toBe('ai-signal:sig-1');
-        expect(req.inputs.recipientId).toBe('user-1');
         expect(mockMarkSignalProcessed).toHaveBeenCalledWith('sig-1', expect.anything());
-        expect(mockSignalStore.signals.get('sig-1')?.processedAt).not.toBeNull();
     });
 
     test('unknown signal type: marked processed, agent not run, 200', async () => {
@@ -501,14 +564,14 @@ describe('POST /api/queues/ai-signals', () => {
     });
 
     test('agent pipeline failure: 500 so QStash retries', async () => {
-        mockVerifyAndExecute.mockRejectedValueOnce(new Error('db down'));
+        mockDraftSignalResponse.mockRejectedValueOnce(new Error('model down'));
         const s = storedSignal();
 
         const res = await POST(workerRequest({ signalId: s.id }));
 
         expect(res.status).toBe(500);
-        // Not marked processed: the retry re-runs verifyAndExecute, which is
-        // idempotent via the ai-signal:<id> idempotency key.
+        // Not marked processed: the retry re-runs draftSignalResponse, which
+        // is idempotent via the ai-signal:<id> idempotency key.
         expect(mockMarkSignalProcessed).not.toHaveBeenCalled();
     });
 });

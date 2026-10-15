@@ -12,6 +12,9 @@
  *     and runs the agent's chosen action through verifyAndExecute
  *     (lib/ai/verify.ts) — at proactivity L1 every action lands as a
  *     DRAFT for the AI Inbox; nothing is ever auto-sent from signals.
+ *     `new_post` / `member_joined` skip the table: the worker calls the
+ *     agent-composed drafts in lib/ai/agents/community-manager.ts
+ *     (LLM-composed text, same governance pipeline).
  *
  * Storage is injected via the `SignalDb` interface so unit tests run
  * without a database. `supabaseSignalDb()` builds the real adapter from
@@ -165,8 +168,9 @@ export async function markSignalProcessed(id: string, deps: SignalDeps): Promise
  * v1 composes inputs deterministically (no LLM call per event — cost
  * discipline per ADR-001 §3). The composed draft flows through the full
  * governance pipeline (verifyAndExecute): at proactivity L1 it is stored
- * as a DRAFT for the AI Inbox, never executed. Agent-composed inputs
- * (via invokeAgent) are a later phase.
+ * as a DRAFT for the AI Inbox, never executed. `new_post` and
+ * `member_joined` use agent-composed inputs instead (see
+ * lib/ai/agents/community-manager.ts) — this table covers the rest.
  */
 export interface SignalRoute {
     agentId: string;
@@ -185,34 +189,14 @@ function recipientOf(signal: AISignalRecord): string | undefined {
 }
 
 /**
- * Signal type -> staff agent + action. v1 routes everything to the
- * community-manager's `send_message` (medium risk): schema, permissions,
- * policy, and the L1 draft rule are all enforced by verifyAndExecute.
+ * Signal type -> staff agent + action. v1 keeps `points_milestone` on this
+ * deterministic path (no LLM call per event — cost discipline per
+ * ADR-001 §3). `new_post` and `member_joined` are agent-composed instead:
+ * the worker routes them to `draftSignalResponse` / `draftOnboarding` in
+ * lib/ai/agents/community-manager.ts, which use invokeAgent to draft the
+ * text and then the same verifyAndExecute governance pipeline.
  */
 export const SIGNAL_ROUTING: Record<string, SignalRoute> = {
-    [SIGNAL_NEW_POST]: {
-        agentId: 'community-manager',
-        action: 'send_message',
-        composeInputs: (signal) => ({
-            recipientId: recipientOf(signal),
-            channel: 'dm',
-            body:
-                'Draft: thanks for sharing your post in the club! ' +
-                'Here is a quick note to keep the conversation warm — ' +
-                'edit me before sending.',
-        }),
-    },
-    [SIGNAL_MEMBER_JOINED]: {
-        agentId: 'community-manager',
-        action: 'send_message',
-        composeInputs: (signal) => ({
-            recipientId: recipientOf(signal),
-            channel: 'dm',
-            body:
-                'Draft: welcome to the club! Here is a short intro to help ' +
-                'you get started — edit me before sending.',
-        }),
-    },
     [SIGNAL_POINTS_MILESTONE]: {
         agentId: 'community-manager',
         action: 'send_message',

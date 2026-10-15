@@ -4,10 +4,14 @@
  *
  * Called BY QStash (never directly by the browser).
  * Verifies the QStash HMAC signature, loads the persisted signal from
- * `ai_signals`, routes it to the right staff agent (SIGNAL_ROUTING), and
- * runs the agent's chosen action through the governance pipeline
- * (`verifyAndExecute`). At proactivity L1 every signal action lands as a
- * DRAFT for the AI Inbox — nothing is ever auto-sent from here.
+ * `ai_signals`, routes it to the right staff capability, and runs the
+ * result through the governance pipeline (`verifyAndExecute`).
+ * - `new_post` / `member_joined` -> community-manager agent-composed
+ *   drafts (`draftSignalResponse` in lib/ai/agents/community-manager.ts):
+ *   the model composes the text, then the same governance pipeline runs.
+ * - other types -> the deterministic SIGNAL_ROUTING table.
+ * At proactivity L1 every signal action lands as a DRAFT for the AI
+ * Inbox — nothing is ever auto-sent from here.
  *
  * Return codes:
  *   200 → success or permanently invalid payload (no retry)
@@ -19,13 +23,16 @@ import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server'
 
 import { AGENTS } from '@/lib/ai/agents'
+import { draftSignalResponse } from '@/lib/ai/agents/community-manager'
 import {
     getSignalById,
     markSignalProcessed,
+    SIGNAL_MEMBER_JOINED,
+    SIGNAL_NEW_POST,
     SIGNAL_ROUTING,
     supabaseSignalDb,
 } from '@/lib/ai/signals'
-import { supabaseVerifyDb, verifyAndExecute } from '@/lib/ai/verify'
+import { supabaseVerifyDb, verifyAndExecute, type VerifyResult } from '@/lib/ai/verify'
 import { requireInternalWorker } from '@/lib/authz'
 
 // Node.js runtime — verify.ts uses node:crypto and the service-role client.
@@ -137,35 +144,57 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        // 6. Route to the owning agent
-        const route = SIGNAL_ROUTING[signal.type]
-        const agentDef = route ? AGENTS[route.agentId] : undefined
-        if (!route || !agentDef) {
-            // No route for this signal type (retired or future type) —
-            // mark processed so it never retries forever.
-            console.error(
-                `[AI Signals Worker] No route for signal type "${signal.type}" — marking processed`
+        // 6. Route to the owning capability.
+        // new_post / member_joined -> community-manager agent-composed
+        // drafts via draftSignalResponse (the model composes the text;
+        // member_joined delegates to draftOnboarding inside). Everything
+        // else falls back to the deterministic SIGNAL_ROUTING table.
+        // At proactivity L1 every path lands as a DRAFT for the AI Inbox.
+        const db = supabaseVerifyDb()
+        // Idempotency: a QStash retry after a crash reuses the ai-signal:<id>
+        // key, so verifyAndExecute can never double-apply the action.
+        const idempotencyKey = `ai-signal:${signal.id}`
+        let result: VerifyResult
+        let agentId: string
+
+        if (signal.type === SIGNAL_NEW_POST || signal.type === SIGNAL_MEMBER_JOINED) {
+            agentId = 'community-manager'
+            result = await draftSignalResponse(
+                {
+                    type: signal.type,
+                    clubId: signal.clubId,
+                    payload: signal.payload,
+                    idempotencyKey,
+                },
+                { db },
             )
-            await markSignalProcessed(signal.id, signalDeps)
-            return NextResponse.json({ ok: true, skipped: 'unrouted' })
+        } else {
+            const route = SIGNAL_ROUTING[signal.type]
+            const agentDef = route ? AGENTS[route.agentId] : undefined
+            if (!route || !agentDef) {
+                // No route for this signal type (retired or future type) —
+                // mark processed so it never retries forever.
+                console.error(
+                    `[AI Signals Worker] No route for signal type "${signal.type}" — marking processed`
+                )
+                await markSignalProcessed(signal.id, signalDeps)
+                return NextResponse.json({ ok: true, skipped: 'unrouted' })
+            }
+            agentId = route.agentId
+            result = await verifyAndExecute({
+                agentDef,
+                action: route.action,
+                inputs: route.composeInputs(signal),
+                ctx: { clubId: signal.clubId, idempotencyKey },
+                deps: { db },
+            })
         }
 
-        // 7. Run the agent's chosen action through the governance pipeline.
-        // verifyAndExecute is idempotent via the ai-signal:<id> key, so a
-        // QStash retry after a crash can never double-apply the action.
-        const result = await verifyAndExecute({
-            agentDef,
-            action: route.action,
-            inputs: route.composeInputs(signal),
-            ctx: { clubId: signal.clubId, idempotencyKey: `ai-signal:${signal.id}` },
-            deps: { db: supabaseVerifyDb() },
-        })
-
-        // 8. Mark processed
+        // 7. Mark processed
         await markSignalProcessed(signal.id, signalDeps)
 
         console.log(
-            `[AI Signals Worker] ✓ signal=${signal.id} type=${signal.type} agent=${route.agentId} -> ${result.status}`
+            `[AI Signals Worker] ✓ signal=${signal.id} type=${signal.type} agent=${agentId} -> ${result.status}`
         )
 
         return NextResponse.json({ ok: true, status: result.status })
