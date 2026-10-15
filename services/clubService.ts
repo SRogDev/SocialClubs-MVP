@@ -4,6 +4,7 @@
 
 import { cache } from 'react'
 
+import { dispatchSignal } from '@/lib/ai/signal-dispatch'
 import { requireClubRole } from '@/lib/authz'
 import { createClient } from '@/lib/supabase/server'
 import { createClubSchema, updateClubSchema, type CreateClubInput, type UpdateClubInput } from '@/schemas/clubSchema'
@@ -309,6 +310,14 @@ export async function joinClub(userId: string, clubId: string, role: string = 'm
         console.error('Error joining club:', error)
         throw new Error('Failed to join club')
     }
+
+    // AI signal: member joined (fire-and-forget — never fails the join)
+    dispatchSignal({
+        type: 'member_joined',
+        clubId,
+        payload: { userId, clubId, role },
+        dedupKey: `member_joined:${clubId}:${userId}`,
+    }).catch((err) => console.error('[ai-signals] member_joined dispatch failed:', err))
 }
 
 /**
