@@ -320,22 +320,19 @@ async function runModeration(
     // Violations route through the governance verification pipeline:
     // at L1 this creates a pending_approval in ai_actions (visible in the AI
     // Inbox) — the AI never auto-hides. Failures are logged, never thrown.
-    if (outcome.verdict === 'violation') {
+    if (outcome.verdict === 'violation' && target.targetType === 'post') {
         try {
             const verifyDb = deps.verifyDb ?? supabaseVerifyDb();
             await verifyAndExecute({
                 agentDef: MODERATION_DEF,
                 action: 'hide_post',
                 inputs: {
-                    targetType: target.targetType,
-                    targetId: target.targetId,
-                    reason: classification.reasons.join('; '),
-                    verdict: classification.verdict,
-                    layer: classification.layer,
+                    postId: target.targetId,
+                    reason: classification.reasons.join('; ').slice(0, 500),
                 },
                 ctx: {
                     clubId: target.clubId,
-                    idempotencyKey: `moderation:${target.targetType}:${target.targetId}`,
+                    idempotencyKey: `moderation:post:${target.targetId}`,
                 },
                 deps: { db: verifyDb },
             });
