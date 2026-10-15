@@ -37,7 +37,15 @@ SocialClubs is growing an AI staff layer (Community Manager, Experience Director
 - `models.ts` — tier (`fast`/`smart`/`reviewer`) → model id routing, env-overridable (`AISA_MODEL_FAST`, …). Defaults are documented but **must be verified against AIsa's live model list**.
 - `pricing.ts` — static per-1K-token price estimates (update manually; never fetched at runtime).
 - `cost.ts` — `logUsage()` persists to `ai_usage`; `checkBudget()` reads `ai_budgets` and throws `AI_BUDGET_EXCEEDED` at the monthly cap. Budgets auto-create on first use (default cap from `AI_MONTHLY_BUDGET_USD_DEFAULT`, $5). Migration: `supabase/migrations/20261015000001_ai_runtime.sql`.
-- `flags.ts` — env-based feature flags, all default OFF: `AI_STAFF_ENABLED` (master kill switch) plus `AI_COMMUNITY_MANAGER`, `AI_EXPERIENCE_DIRECTOR`, `AI_CREATOR_COPILOT`, `AI_INBOX`, `AI_MODERATION`, `AI_SENTIENT_UI`, `AI_WIDGETS`. An agent runs only when the master flag **and** its own flag are on.
+- `flags.ts` — env-based feature flags, all default OFF: `AI_STAFF_ENABLED` (master kill switch) plus `AI_COMMUNITY_MANAGER`, `AI_EXPERIENCE_DIRECTOR`, `AI_CREATOR_COPILOT`, `AI_INBOX`, `AI_MODERATION`, `AI_SENTIENT_UI`, `AI_WIDGETS`, `AI_REVIEWER`. An agent runs only when the master flag **and** its own flag are on.
+
+**AI governance — `lib/ai/`** (design: `docs/adr/ADR-002-ai-governance.md`; verification ships *before* autonomy):
+
+- `actions.ts` — `ACTION_REGISTRY`: the 10 v1 actions (`send_message`, `create_post`, `comment_post`, `tag_post`, `hide_post`, `notify_creator`, `create_event`, `grant_temporary_access`, `escalate_to_human`, `pause_agent`). Each declares risk level, required permissions, zod input/output schemas, idempotency and audit flags. Adding a capability = adding an `ActionDef` + policy row + tests — no ad-hoc agent powers. v1 executors are honest stubs (validate + log) except `escalate_to_human` and `notify_creator`, which genuinely persist to `ai_actions`.
+- `proactivity.ts` — permission matrix: per-club proactivity level (1=Advisor → drafts only; 2=Operator → auto low-risk; 3=Autonomous → auto low+medium) × action risk → `draft`|`auto`|`approval`. High/critical always need approval.
+- `policy.ts` — `evaluatePolicy({ clubId, agentId, action })`: loads `club_ai_config` (defaults to L1 when missing), denies unknown actions/agents by default, resolves the mode.
+- `verify.ts` — `verifyAndExecute()`: schema → permission → policy → (medium+: AI reviewer, reviewer tier, max 1 revise loop) → (high/critical or approval mode: pending row for the AI Inbox) → execute → audit. `idempotency_key` is unique: a duplicate key returns the original result without re-executing.
+- `agents.ts` — the three staff `AgentDefinition`s (all start at proactivity L1, tools restricted to mission) plus the tool-less `reviewer` definition. Migration: `supabase/migrations/20261015000002_ai_governance.sql` (`club_ai_config`, `ai_actions`, `ai_action_reviews`).
 
 **Cost discipline:** every LLM call logs tokens + estimated cost per club; per-club monthly caps keep AI spend inside the platform margin (no per-member AI upsell — pricing unchanged). Copy `.env.example` to `.env.local` for the `AISA_*` and `AI_*` variables.
 
@@ -75,8 +83,6 @@ socialclubs/
 ```
 
 UI/business-logic separation: components present, `services/` decides. Zod validates on client and server with the same schemas. Optimistic UI on user interactions.
-
-Service-level authorization: `lib/authz.ts` guards (`requireClubRole`, `requireGlobalAdmin`, `requireInternalWorker`) run inside `services/`, so routes, server actions, and AI workers are all authorized the same way.
 
 ## License
 
