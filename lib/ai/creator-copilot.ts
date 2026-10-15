@@ -15,9 +15,20 @@
  * AUTHORIZATION: these functions do not authorize the caller. Callers
  * (routes) must enforce club owner/admin membership first via
  * `requireClubRole` from lib/authz.ts.
+ *
+ * Memory wiring (Phases 63-66): `draftPost` and `improvePost` load the
+ * agent's learned memories for the club (lib/ai/memory.ts — corrections
+ * distilled from creator feedback) into a prompt "memory" section, so the
+ * copilot does not repeat corrected mistakes. Memory lookup is best-effort
+ * and never blocks a draft.
  */
 import { z } from 'zod';
 
+import {
+    getAgentMemories,
+    summarizeMemoriesForPrompt,
+    type MemoryDeps,
+} from './memory';
 import { invokeAgent, type InvokeDeps, type InvokeResult } from './runtime';
 import type { AgentDefinition } from './types';
 
@@ -72,6 +83,8 @@ export interface ClubContextStore {
 
 export interface CreatorCopilotDeps extends InvokeDeps {
     clubContext?: ClubContextStore;
+    /** Injected memory storage (tests). Defaults to the Supabase adapter. */
+    memory?: MemoryDeps;
 }
 
 const BASE_DEF: Omit<AgentDefinition, 'mission' | 'triggers'> = {
@@ -120,6 +133,24 @@ async function loadContextSummary(
 }
 
 /**
+ * Load the agent's learned memories for the club (Phases 63-66) for the
+ * prompt "memory" section. Best-effort: a memory failure never blocks the
+ * draft — the prompt degrades to the no-memories branch.
+ */
+async function loadMemorySummary(
+    clubId: string,
+    deps: CreatorCopilotDeps,
+): Promise<string> {
+    try {
+        const memories = await getAgentMemories(clubId, 'creator-copilot', deps.memory);
+        return summarizeMemoriesForPrompt(memories);
+    } catch (err) {
+        console.warn('[creator-copilot] memory lookup failed (non-fatal):', err);
+        return summarizeMemoriesForPrompt([]);
+    }
+}
+
+/**
  * Draft a post (title + body + suggested tags) about `topic` for `clubId`.
  * The draft is grounded in the club's name and recent post topics.
  * Returns the draft for the creator to review/publish — never publishes.
@@ -136,6 +167,7 @@ export async function draftPost(
     }
     const resolvedTone = normalizeTone(tone);
     const { name, recentTopics } = await loadContextSummary(clubId, deps);
+    const memorySummary = await loadMemorySummary(clubId, deps);
 
     const def: AgentDefinition = {
         ...BASE_DEF,
@@ -157,6 +189,7 @@ export async function draftPost(
                 tone: resolvedTone,
                 clubName: name,
                 recentTopics,
+                memorySummary,
             },
         },
         deps,
@@ -245,6 +278,7 @@ export async function improvePost(
     if (cleanContent.length === 0) {
         throw new Error('improvePost requires non-empty content.');
     }
+    const memorySummary = await loadMemorySummary(clubId, deps);
     const def: AgentDefinition = {
         ...BASE_DEF,
         mission:
@@ -262,6 +296,7 @@ export async function improvePost(
             payload: {
                 task: 'improve-post',
                 content: cleanContent,
+                memorySummary,
             },
         },
         deps,
