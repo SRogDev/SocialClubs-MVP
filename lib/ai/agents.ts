@@ -26,8 +26,9 @@ export const COMMUNITY_MANAGER: AgentDefinition = {
     mission:
         'Onboard new members, answer FAQs, nudge engagement, and keep the club organized and welcoming.',
     contextSources: ['recent-posts', 'members'],
-    tools: ['send_message', 'tag_post'],
-    permissions: ['read:posts', 'read:members', 'send_message', 'tag_post'],
+    // v0 adds comment_post (engagement drafts on new posts, master plan Phase 7).
+    tools: ['send_message', 'tag_post', 'comment_post'],
+    permissions: ['read:posts', 'read:members', 'send_message', 'tag_post', 'comment_post'],
     triggers: ['member-joined', 'daily-digest', 'new-post'],
     policies: [
         'Start at proactivity level 1 (Advisor): draft actions for the creator, never execute autonomously.',
