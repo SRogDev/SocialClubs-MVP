@@ -4,6 +4,7 @@
 
 import { cache } from 'react'
 
+import { dispatchSignal } from '@/lib/ai/signal-dispatch'
 import { requireClubRole, requirePostAccess } from '@/lib/authz'
 import { createClient } from '@/lib/supabase/server'
 import { createPostSchema, updatePostSchema, commentSchema, postInteractionSchema, type CreatePostInput, type UpdatePostInput, type CommentInput, type PostInteractionInput } from '@/schemas/postSchema'
@@ -154,6 +155,14 @@ export async function createPost(input: CreatePostInput, userId: string): Promis
             comments: 0,
             user_views: 0,
         })
+
+    // AI signal: new post (fire-and-forget — never fails post creation)
+    dispatchSignal({
+        type: 'new_post',
+        clubId: validated.club_id,
+        payload: { postId: post.id, authorId: userId, postType: validated.type },
+        dedupKey: `new_post:${post.id}`,
+    }).catch((err) => console.error('[ai-signals] new_post dispatch failed:', err))
 
     return post
 }
