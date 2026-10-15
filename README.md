@@ -46,6 +46,15 @@ SocialClubs keeps a privacy-first memory of member relationships (`lib/ai/relati
 - Every classification is audited to `moderation_events` (`supabase/migrations/20261015000006_moderation.sql`, RLS service-role only, read via `GET /api/ai/moderation/events?clubId=…` — owner/admin/moderator roles).
 - Wired fire-and-forget into `services/postService.ts` (`createPost`, `addComment`): moderation failures can never break a user action.
 
+**Creator Copilot — `lib/ai/creator-copilot.ts`** (master plan Phases 34–37, 39–40): the creator's AI assistant. **Drafts only — never auto-publishes.**
+
+- `draftPost(topic, clubId, tone?)` — generates a post draft (`title`, `body`, suggested `tags`) via `invokeAgent` (`creator-copilot` agent, `AI_CREATOR_COPILOT` flag). Grounded in the club's real context: `lib/ai/club-context.ts` loads the club name + recent post topics from Supabase (fail-soft; the prompt states missing context explicitly instead of hallucinating). Tones: `friendly` (default), `professional`, `fun`, `inspiring`.
+- `suggestTags(content, clubId)` — deterministic candidates first (`extractTagCandidates`: `#hashtags` + top keyword frequencies, exported and pure), then an AI-assisted refinement pass through the same agent.
+- `improvePost(content, clubId)` — rewrites for clarity and engagement, returning `{ improved, changes[] }`; the original is never modified in place.
+- Every call goes through `invokeAgent`, so the club's monthly AI budget is enforced *before* the model call (`AI_BUDGET_EXCEEDED` → HTTP 402). Publishing is a separate manual action — the module has no postService import and no write path.
+- `POST /api/ai/copilot/draft-post` (`{ clubId, topic, tone? }`) and `POST /api/ai/copilot/improve` (`{ clubId, content }`) — logged-in + club owner/admin via `requireClubRole`, rate-limited (MUTATION).
+- `components/ai/CopilotPanel.tsx` — Spanish-first creator panel: topic input + tone selector → "Generar borrador" → draft card with Usar borrador / Mejorar / Descartar; plus a "Mejorar texto" tool showing the improved version and the change list. Mounted in the club page's creator area: a "Copiloto IA" button on `ContentCreationBar` (visible only when `clubId` is set).
+
 ## Stack
 
 Next.js 16.3.6 (App Router) · React 19 · TypeScript · Tailwind · Zod (shared client/server schemas) · React Hook Form · SWR · Supabase (Postgres + Auth + Storage) · Stripe · Daily (video calls) · Mux (video) · Upstash (Redis, rate limiting, QStash queues) · PostHog · Sentry · PWA (service worker, installable)
