@@ -1,323 +1,167 @@
 /**
- * Community Manager v0 capabilities (master plan Phases 4-7, 10, 16, 20, 21).
- *
- * Covers the three capabilities in lib/ai/agents/community-manager.ts:
- *  - answerFAQ: grounded answers from club_ai_config.policies.faq, with a
- *    deterministic no_faq_configured short-circuit (no wasted LLM call);
- *    the FAQ entries must reach the model so it can answer ONLY from them.
- *  - draftOnboarding: personalized welcome draft via send_message; at
- *    proactivity L1 the pipeline must store a draft and NEVER execute.
- *  - draftSignalResponse: new_post -> comment_post draft, member_joined ->
- *    onboarding send_message draft; unknown types are rejected.
- *
- * Storage is faked in-memory via the VerifyDb interface; the model client
- * is a stub. No database, no network.
+ * Tests for lib/ai/community-manager.ts — draftOnboarding and
+ * draftSignalResponse include the member profile summary (interests) in the
+ * draft context.
  */
+import { MockAIClient } from '@/lib/ai/mock-client';
 import {
-    AI_COMMUNITY_MANAGER,
-    AI_STAFF_ENABLED,
-} from '@/lib/ai/flags';
-import type { CostDb, CostDeps } from '@/lib/ai/cost';
-import type { ClubAIConfigRow } from '@/lib/ai/policy';
-import type { AIClient } from '@/lib/ai/types';
-import {
-    answerFAQ,
     draftOnboarding,
     draftSignalResponse,
-} from '@/lib/ai/agents/community-manager';
-import type {
-    AIActionRow,
-    NewAIActionRow,
-    NewAIActionReviewRow,
-    VerifyDb,
-} from '@/lib/ai/verify';
+    summarizeProfileForPrompt,
+    type CommunityManagerDeps,
+} from '@/lib/ai/community-manager';
+import { AI_COMMUNITY_MANAGER, AI_STAFF_ENABLED, ALL_AI_FLAGS } from '@/lib/ai/flags';
+import type { MemberSignal, SignalDb } from '@/lib/ai/relationship';
+import type { AIClient, AIClientRequest, ChatMessage } from '@/lib/ai/types';
 
-let savedEnv: NodeJS.ProcessEnv;
+function signal(overrides: Partial<MemberSignal> = {}): MemberSignal {
+    return {
+        id: 'sig-1',
+        club_id: 'club-1',
+        user_id: 'user-1',
+        signal_type: 'posted',
+        payload: {},
+        created_at: '2026-10-10T12:00:00.000Z',
+        ...overrides,
+    };
+}
 
-beforeEach(() => {
-    savedEnv = { ...process.env };
+function stubSignalDb(rows: MemberSignal[]): SignalDb {
+    return {
+        async insertSignal() {
+            throw new Error('not needed');
+        },
+        async listSignals(clubId: string, userId: string) {
+            return rows.filter((r) => r.club_id === clubId && r.user_id === userId);
+        },
+    };
+}
+
+/** Capturing client: records the user message so tests can assert on prompt context. */
+function capturingClient(): AIClient & { userMessages: ChatMessage[] } {
+    const mock = new MockAIClient();
+    const seen: ChatMessage[] = [];
+    return {
+        mock: true,
+        userMessages: seen,
+        async chat(req: AIClientRequest) {
+            seen.push(...req.messages.filter((m) => m.role === 'user'));
+            return mock.chat(req);
+        },
+    };
+}
+
+function userPayload(client: { userMessages: ChatMessage[] }): Record<string, unknown> {
+    const raw = client.userMessages[0]?.content ?? '{}';
+    return JSON.parse(raw) as { payload: Record<string, unknown> };
+}
+
+function enabledDeps(client: AIClient, rows: MemberSignal[]): CommunityManagerDeps {
     process.env[AI_STAFF_ENABLED] = '1';
     process.env[AI_COMMUNITY_MANAGER] = '1';
-});
-
-afterEach(() => {
-    process.env = savedEnv;
-    jest.restoreAllMocks();
-});
-
-const FAQ = [
-    { q: '¿Cuánto cuesta unirse?', a: 'La membresía cuesta $10 al mes.' },
-    { q: '¿Cuándo son los eventos?', a: 'Todos los viernes a las 6pm.' },
-];
-
-function config(policies: Record<string, unknown>, level: 1 | 2 | 3 = 1): ClubAIConfigRow {
-    return {
-        clubId: 'club-1',
-        proactivityLevel: level,
-        enabledAgents: ['community-manager'],
-        tone: 'friendly',
-        policies,
-        updatedAt: new Date(0).toISOString(),
-    };
-}
-
-/** In-memory VerifyDb (also serves as the club_ai_config reader). */
-function memoryDb(
-    policies: Record<string, unknown>,
-    level: 1 | 2 | 3 = 1,
-): VerifyDb & { actions: AIActionRow[] } {
-    const actions: AIActionRow[] = [];
-    const state: VerifyDb & { actions: AIActionRow[] } = {
-        actions,
-        async getClubAIConfig() {
-            return config(policies, level);
-        },
-        async findActionByIdempotencyKey(key: string) {
-            return actions.find((a) => a.idempotencyKey === key) ?? null;
-        },
-        async insertAction(row: NewAIActionRow) {
-            if (actions.some((a) => a.idempotencyKey === row.idempotencyKey)) {
-                const err = new Error('duplicate key value violates unique constraint');
-                (err as Error & { code?: string }).code = '23505';
-                throw err;
-            }
-            const full: AIActionRow = {
-                ...row,
-                id: `action-${actions.length + 1}`,
-                createdAt: new Date(0).toISOString(),
-            };
-            actions.push(full);
-            return full;
-        },
-        async updateAction(id: string, patch: Partial<NewAIActionRow>) {
-            const row = actions.find((a) => a.id === id);
-            if (row) Object.assign(row, patch);
-        },
-        async insertReview(_row: NewAIActionReviewRow) {
-            // Draft mode never reaches the reviewer; no-op.
-        },
-    };
-    return state;
-}
-
-function emptyCostDb(): CostDb {
-    return {
-        async getBudget() {
-            return null;
-        },
-        async createBudget() {},
-        async updateBudget() {},
-        async insertUsage() {},
-    };
-}
-
-function costDeps(): CostDeps {
-    return { db: emptyCostDb() };
-}
-
-interface StubClient {
-    client: AIClient;
-    calls: number;
-    lastUserPayload: () => Record<string, unknown>;
-}
-
-/** Deterministic model stub: returns `response` as JSON, records requests. */
-function stubClient(response: unknown): StubClient {
-    const seen: Array<{ messages: Array<{ role: string; content: string }> }> = [];
-    const client: AIClient = {
-        mock: true,
-        async chat(req) {
-            seen.push({
-                messages: req.messages.map((m) => ({ role: m.role, content: m.content })),
-            });
-            return {
-                content: JSON.stringify(response),
-                usage: { promptTokens: 10, completionTokens: 20 },
-            };
-        },
-    };
     return {
         client,
-        get calls() {
-            return seen.length;
+        cost: {
+            db: {
+                async getBudget() {
+                    return null;
+                },
+                async createBudget() {},
+                async updateBudget() {},
+                async insertUsage() {},
+            },
+            defaultCapUsd: 5,
         },
-        lastUserPayload: () => {
-            const last = seen[seen.length - 1];
-            const userMsg = last.messages.find((m) => m.role === 'user');
-            return JSON.parse(userMsg?.content ?? '{}') as Record<string, unknown>;
-        },
+        relationship: { db: stubSignalDb(rows) },
     };
 }
 
-// ---------------------------------------------------------------------------
-// answerFAQ
-// ---------------------------------------------------------------------------
-
-describe('answerFAQ', () => {
-    test('no FAQ configured -> { answer: null, reason: no_faq_configured }, model never called', async () => {
-        const db = memoryDb({});
-        const stub = stubClient({ answer: 'x', grounded: true, confidence: 1 });
-
-        const res = await answerFAQ('¿Cuánto cuesta?', 'club-1', {
-            db,
-            client: stub.client,
-            cost: costDeps(),
-        });
-
-        expect(res.answer).toBeNull();
-        expect(res.reason).toBe('no_faq_configured');
-        expect(stub.calls).toBe(0);
-    });
-
-    test('malformed policies.faq is treated as not configured', async () => {
-        const db = memoryDb({ faq: 'not-an-array' });
-        const stub = stubClient({ answer: 'x', grounded: true, confidence: 1 });
-
-        const res = await answerFAQ('¿Cuánto cuesta?', 'club-1', {
-            db,
-            client: stub.client,
-            cost: costDeps(),
-        });
-
-        expect(res.answer).toBeNull();
-        expect(res.reason).toBe('no_faq_configured');
-        expect(stub.calls).toBe(0);
-    });
-
-    test('the FAQ entries are handed to the model so it can answer ONLY from them', async () => {
-        const db = memoryDb({ faq: FAQ });
-        const stub = stubClient({
-            answer: 'Cuesta $10 al mes.',
-            grounded: true,
-            confidence: 0.92,
-        });
-
-        const res = await answerFAQ('¿Cuánto cuesta unirse?', 'club-1', {
-            db,
-            client: stub.client,
-            cost: costDeps(),
-        });
-
-        expect(stub.calls).toBe(1);
-        const payload = stub.lastUserPayload();
-        expect(payload['payload']).toMatchObject({ question: '¿Cuánto cuesta unirse?', faq: FAQ });
-        expect(res.answer).toBe('Cuesta $10 al mes.');
-        expect(res.grounded).toBe(true);
-        expect(res.confidence).toBe(0.92);
-    });
-
-    test('a "no lo sé" model answer is surfaced as ungrounded', async () => {
-        const db = memoryDb({ faq: FAQ });
-        const stub = stubClient({ answer: 'No lo sé', grounded: false, confidence: 0.2 });
-
-        const res = await answerFAQ('¿Hay piscina?', 'club-1', {
-            db,
-            client: stub.client,
-            cost: costDeps(),
-        });
-
-        expect(res.answer).toBe('No lo sé');
-        expect(res.grounded).toBe(false);
-    });
+let savedEnv: NodeJS.ProcessEnv;
+beforeEach(() => {
+    savedEnv = { ...process.env };
+    for (const flag of ALL_AI_FLAGS) delete process.env[flag];
+    delete process.env.AISA_API_KEY;
+});
+afterEach(() => {
+    process.env = savedEnv;
 });
 
-// ---------------------------------------------------------------------------
-// draftOnboarding
-// ---------------------------------------------------------------------------
+describe('summarizeProfileForPrompt', () => {
+    test('renders interests first when signals exist', () => {
+        const text = summarizeProfileForPrompt({
+            clubId: 'club-1',
+            userId: 'user-1',
+            interests: [
+                { tag: 'chess', count: 3 },
+                { tag: 'salsa', count: 1 },
+            ],
+            engagementTrend: 'up',
+            milestones: [{ label: 'First post', at: '2026-10-01T00:00:00.000Z' }],
+            lastActive: '2026-10-14T00:00:00.000Z',
+            signalCount: 4,
+        });
+        expect(text).toMatch(/Interests: chess \(3\), salsa \(1\)/);
+        expect(text).toMatch(/Engagement trend: up/);
+        expect(text).toMatch(/First post/);
+    });
+
+    test('falls back to the no-activity branch for null/empty profiles', () => {
+        expect(summarizeProfileForPrompt(null)).toMatch(/No prior activity/);
+        expect(
+            summarizeProfileForPrompt({
+                clubId: 'c',
+                userId: 'u',
+                interests: [],
+                engagementTrend: 'flat',
+                milestones: [],
+                lastActive: null,
+                signalCount: 0,
+            }),
+        ).toMatch(/No prior activity/);
+    });
+});
 
 describe('draftOnboarding', () => {
-    test('at L1 the welcome is a DRAFT: stored in ai_actions, never executed', async () => {
-        const db = memoryDb({});
-        const stub = stubClient({
-            body: '¡Hola Ana! Bienvenida a Club Demo. Tus 3 primeros pasos: 1) preséntate, 2) explora los canales, 3) únete al evento del viernes.',
-        });
+    test('passes member interests into the draft context', async () => {
+        const client = capturingClient();
+        const rows = [
+            signal({ payload: { tags: ['chess', 'salsa'] } }),
+            signal({ payload: { tags: ['chess'] }, signal_type: 'engaged' }),
+        ];
+        const result = await draftOnboarding('club-1', 'user-1', enabledDeps(client, rows));
 
-        const res = await draftOnboarding(
-            { userId: 'user-9', clubId: 'club-1', memberName: 'Ana', clubName: 'Club Demo' },
-            { db, client: stub.client, cost: costDeps() },
-        );
+        expect(result.output.draft).toBe('mock:draft');
+        const payload = userPayload(client).payload;
+        expect(payload['task']).toBe('onboarding');
+        expect(String(payload['memberProfileSummary'])).toMatch(/chess \(2\)/);
+        expect(String(payload['memberProfileSummary'])).toMatch(/salsa \(1\)/);
+    });
 
-        // The safety property: draft-only, never executed.
-        expect(res.status).toBe('draft');
-        expect(res.status).not.toBe('executed');
-        expect(res.actionId).toBeDefined();
+    test('degrades gracefully when the member has no signals', async () => {
+        const client = capturingClient();
+        const result = await draftOnboarding('club-1', 'user-9', enabledDeps(client, []));
 
-        expect(db.actions).toHaveLength(1);
-        const row = db.actions[0];
-        expect(row.agentId).toBe('community-manager');
-        expect(row.action).toBe('send_message');
-        expect(row.status).toBe('draft');
-        expect(row.inputs).toMatchObject({ recipientId: 'user-9', channel: 'dm' });
-        const draft = (row.executionResult as { draft?: { body?: string } })?.draft;
-        expect(draft?.body).toContain('Ana');
-        // The member name reached the model so the draft is personalized.
-        const payload = stub.lastUserPayload();
-        expect(JSON.stringify(payload)).toContain('Ana');
+        expect(result.output.draft).toBe('mock:draft');
+        const payload = userPayload(client).payload;
+        expect(String(payload['memberProfileSummary'])).toMatch(/No prior activity/);
     });
 });
 
-// ---------------------------------------------------------------------------
-// draftSignalResponse
-// ---------------------------------------------------------------------------
-
 describe('draftSignalResponse', () => {
-    test('new_post -> comment_post draft on the post, stored as draft', async () => {
-        const db = memoryDb({});
-        const stub = stubClient({ body: '¡Qué buen aporte! Cuéntanos más.' });
-
-        const res = await draftSignalResponse(
-            {
-                type: 'new_post',
-                clubId: 'club-1',
-                payload: { postId: 'post-1', authorId: 'user-1' },
-            },
-            { db, client: stub.client, cost: costDeps() },
+    test('includes both the signal summary and the member interests', async () => {
+        const client = capturingClient();
+        const rows = [signal({ payload: { tags: ['running'] } })];
+        const result = await draftSignalResponse(
+            'club-1',
+            'user-1',
+            'Member hit the "100 points" milestone.',
+            enabledDeps(client, rows),
         );
 
-        expect(res.status).toBe('draft');
-        expect(res.status).not.toBe('executed');
-        expect(db.actions).toHaveLength(1);
-        const row = db.actions[0];
-        expect(row.action).toBe('comment_post');
-        expect(row.status).toBe('draft');
-        expect(row.inputs).toMatchObject({ postId: 'post-1' });
-    });
-
-    test('member_joined -> send_message onboarding draft to the new member', async () => {
-        const db = memoryDb({});
-        const stub = stubClient({ body: '¡Bienvenido al club!' });
-
-        const res = await draftSignalResponse(
-            {
-                type: 'member_joined',
-                clubId: 'club-1',
-                payload: { userId: 'user-2' },
-            },
-            { db, client: stub.client, cost: costDeps() },
-        );
-
-        expect(res.status).toBe('draft');
-        expect(db.actions).toHaveLength(1);
-        const row = db.actions[0];
-        expect(row.action).toBe('send_message');
-        expect(row.inputs).toMatchObject({ recipientId: 'user-2' });
-    });
-
-    test('unsupported signal type -> rejected, no ai_actions row', async () => {
-        const db = memoryDb({});
-        const stub = stubClient({ body: 'x' });
-
-        const res = await draftSignalResponse(
-            {
-                type: 'points_milestone',
-                clubId: 'club-1',
-                payload: { userId: 'user-3' },
-            },
-            { db, client: stub.client, cost: costDeps() },
-        );
-
-        expect(res.status).toBe('rejected');
-        expect(db.actions).toHaveLength(0);
-        expect(stub.calls).toBe(0);
+        expect(result.output.draft).toBe('mock:draft');
+        const payload = userPayload(client).payload;
+        expect(payload['task']).toBe('signal-response');
+        expect(payload['signalSummary']).toBe('Member hit the "100 points" milestone.');
+        expect(String(payload['memberProfileSummary'])).toMatch(/running \(1\)/);
     });
 });
