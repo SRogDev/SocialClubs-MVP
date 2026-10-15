@@ -73,6 +73,18 @@ SocialClubs keeps a privacy-first memory of member relationships (`lib/ai/relati
 
 **Cost model (non-negotiable):** AI costs fit inside the platform margin — the dashboard states this explicitly ("Los costos de IA están incluidos en el margen de la plataforma"). Cost-as-%-of-club-revenue is not computed yet (no per-club revenue data wired); the UI says so honestly instead of inventing a number.
 
+## AI staff analytics + daily briefing
+
+`lib/ai/analytics.ts` (master plan Phases 77–80) — read-side analytics over `ai_actions` / `ai_action_reviews` / `ai_usage` / `ai_signals`, injected via `AnalyticsDb` (unit tests run without a database):
+
+- `getStaffHealth(clubId)` — per-agent status: enabled flag (from `club_ai_config`), last run, success rate (executed ÷ finished), error rate, avg LLM latency from `ai_usage`. Status is `healthy` / `degraded` (error rate > 20%) / `idle` / `disabled`.
+- `getActionStats(clubId, days)` — actions by type and by status, the proposed → approved (human review) → executed funnel, and the human approval rate (`approved ÷ (approved + rejected)`, null when no human decisions).
+- `getEngagementImpact(clubId, days)` — Pearson correlations over 7-day buckets (onboarding actions vs new posts; executed actions vs new members). Every result is explicitly labeled `correlacion` with a caveat — correlation, never causation — and returns null when the data can't support a correlation.
+- `buildBriefing(input)` — pure, deterministic daily-briefing text (no LLM, $0).
+- `GET /api/ai/analytics?clubId=…&days=30` — analytics payload for owner/admin roles (rate-limited, zod-validated).
+- `/clubs/[id]/panel/ai-analytics` — Spanish-first owner dashboard: staff health cards (status dot, success/error rates, last run, latency), action funnel bars, approval-rate bar, actions-by-type bars, engagement correlations, and per-agent "trust explanations" (plain Spanish: what each agent does and its limits). Sidebar link "Analítica IA".
+- `GET /api/cron/ai-briefing` — daily cron (`0 12 * * *` UTC = 08:00 Havana, in `vercel.json`): pending drafts + yesterday's actions + yesterday's spend → deterministic briefing → one `daily_briefing` notification per club per day to the club creator (idempotent, CRON_SECRET-gated).
+
 ## Widget runtime (typed configs only — no codegen)
 
 `lib/ai/widget-configs.ts` + `lib/ai/widgets.ts` + `components/widgets/` (master plan Phases 53–57) — the runtime that lets AI staff publish interactive widgets as posts.
