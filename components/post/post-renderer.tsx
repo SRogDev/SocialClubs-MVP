@@ -1,3 +1,4 @@
+import TypedWidgetPost from "@/components/widgets/typed-widget-post"
 import type { Post } from "@/types/post"
 
 import PostAudio from "./post-audio"
@@ -41,6 +42,13 @@ export default function PostRenderer({
       return <PostAudio {...commonProps} />
     case "poll":
       return <PostPoll {...commonProps} />
+    case "widget":
+      return (
+        <TypedWidgetPost
+          content={post.content}
+          clubId={typeof post.club_id === "string" ? post.club_id : undefined}
+        />
+      )
     default:
       return <PostText {...commonProps} />
   }

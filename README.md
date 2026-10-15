@@ -55,6 +55,21 @@ SocialClubs keeps a privacy-first memory of member relationships (`lib/ai/relati
 - `POST /api/ai/copilot/draft-post` (`{ clubId, topic, tone? }`) and `POST /api/ai/copilot/improve` (`{ clubId, content }`) — logged-in + club owner/admin via `requireClubRole`, rate-limited (MUTATION).
 - `components/ai/CopilotPanel.tsx` — Spanish-first creator panel: topic input + tone selector → "Generar borrador" → draft card with Usar borrador / Mejorar / Descartar; plus a "Mejorar texto" tool showing the improved version and the change list. Mounted in the club page's creator area: a "Copiloto IA" button on `ContentCreationBar` (visible only when `clubId` is set).
 
+## Widget runtime (typed configs only — no codegen)
+
+`lib/ai/widget-configs.ts` + `lib/ai/widgets.ts` + `components/widgets/` (master plan Phases 53–57) — the runtime that lets AI staff publish interactive widgets as posts.
+
+**The v1 rule is absolute: widgets are TYPED CONFIGS, never arbitrary code.** The platform ships exactly five widget types — `poll`, `countdown`, `leaderboard`, `faq`, `rsvp` — each with a zod config schema and one React renderer component. There is no codegen, no `eval`, no runtime type registration: adding a widget type means adding a zod schema + a renderer in a reviewed PR, full stop.
+
+- **Registry** (`WIDGET_TYPES`): per type — zod `configSchema`, renderer component name, Spanish description. `validateWidgetConfig(type, config)` throws on unknown types and schema violations.
+- **Creation:** `createWidgetPost(clubId, type, config, userId)` validates the config, then creates a `type: 'widget'` post with `content: { widget, config }` through `postService.createPost` (zod post schema, moderation queue, gamification). AI staff agents reach it via their workflow steps, which run under the workflow verification layer.
+- **Feed rendering:** `TypedWidgetPost` (wired into `post-card.tsx` and `post-renderer.tsx` for `post.type === 'widget'`) dispatches to the registered renderer only. Unknown widget types and invalid configs render a Spanish fallback card — never a crash. Configs are re-validated defensively at render time because they come from the database.
+- **AI suggestions (drafts only):** `POST /api/ai/widgets/suggest` (`{ clubId, context }`) → `{ type, config, reason }` via `suggestWidget()` (`lib/ai/widget-suggest.ts`, `widgets` agent, `AI_WIDGETS` flag). The drafted config must pass registry validation before it is returned; an invalid draft is a hard `AI_OUTPUT_INVALID` error. Logged-in + owner/admin, rate-limited, budget-enforced before the model call.
+- **Renderers** (`components/widgets/`, Spanish-first): `PollWidget` (vote buttons + animated results bar; v1 votes are optimistic and local — no persistence backend for widget poll votes yet), `CountdownWidget` (live ticking días/hrs/min/seg), `LeaderboardWidget` (top members by points via new `GET /api/clubs/[id]/leaderboard`, reusing `getClubLeaderboard`), `FaqWidget` (accordion), `RsvpWidget` (event card; the RSVP button POSTs to `/api/events/[id]/rsvp` and degrades gracefully to an informational state until the events API lands).
+- **Legacy coexistence:** the generic template-driven `WidgetPost` (`club_widgets` EAV system from `docs/OPEN_WIDGET_PROTOCOL.md`) is untouched — posts carrying `content.club_widget_id` still render through it; posts carrying `content: { widget, config }` use the typed runtime.
+
+**Pre-existing bug fixed in `schemas/postSchema.ts`:** single-argument `z.record(valueType)` is broken in zod 4.3.5 — its compiled parser throws `Cannot read properties of undefined (reading '_zod')` on any non-empty record (verified in CJS and ESM builds). `content` used that form, so `createPostSchema.parse` crashed on every post with non-empty content; it now uses the working two-arg form `z.record(z.string(), z.any())`. The `postTypeSchema` enum already admitted `poll`/`widget` (the delta audit's one-line fix had landed earlier), verified by test.
+
 ## Community automation workflows (AI staff)
 
 `lib/ai/workflows.ts` (master plan Phases 41–45) turns product events into multi-step automations that escalate with club trust. Three workflows:
@@ -78,14 +93,6 @@ How it works:
 - **Idempotency:** steps dedupe on `<idempotencyKey>:<action>` in `ai_actions`; `runWorkflow` pre-checks all planned step keys and replays the recorded outcome without side effects (or a wasted LLM call).
 - Triggers: `member_joined` signals route to `runWorkflow('welcome')` in `POST /api/queues/ai-signals`; `POST /api/queues/ai-workflows` is the QStash worker for direct workflow jobs; `GET /api/cron/ai-digest` (Vercel Cron, Mondays 09:00, `vercel.json`) enqueues the weekly digest per club and scans members with `detectChurnRisk` → enqueues `reengagement` (one per member per week).
 - **Creator control center:** `/clubs/[id]/panel/ai-config` (Spanish-first) — proactivity level selector with plain-language explanations of each level, per-agent toggles, and tone. Writes `club_ai_config` (owner/admin only); L1 is the default for clubs that never opt in.
-
-**Events v2 + Experience Director foundation — `lib/ai/agents/experience-director.ts`** (master plan Phases 46–52): the club's event engine.
-
-- **Data model** (`supabase/migrations/20261015000008_events.sql`, RLS service-role only): `events` (`club_id`, `title`, `description`, `starts_at`/`ends_at` TIMESTAMPTZ, IANA `timezone` for display, `capacity`, `status` draft/published/cancelled) and `event_rsvps` (`UNIQUE(event_id, user_id)` — re-RSVPing updates the row). Phase (`PRE_EVENT`/`LIVE`/`POST_EVENT`/`EXPIRED`, 7-day post window) is **always derived** from timestamps via `eventPhase()` in `types/event.ts` — never stored, so it cannot go stale.
-- **`services/eventService.ts`** — `createEvent`/`updateEvent`/`cancelEvent` (owner/admin via `requireClubRole`, enforced inside the service), `rsvpEvent`/`unrsvpEvent` (any club member; only `going` consumes `capacity` — full events throw), `getEvent` (with `attendee_count` + `my_rsvp`), `listClubEvents`. Input validated with zod (`schemas/eventSchema.ts`).
-- **`lib/ai/agents/experience-director.ts`** — the `experience-director` agent (`AI_EXPERIENCE_DIRECTOR` flag). `suggestEvent(clubId, theme?)` returns a DRAFT event concept (`title`, `description`, `format`, `idealTiming`) grounded in the club's name + recent post topics — never persisted; the creator decides. `handleEventCreated(eventId)` handles the `event_created` signal: drafts the announcement post and saves it to `ai_drafts` as `pending_approval` (idempotent on `event_created:{eventId}`); the AI never auto-publishes. `createEvent` fires this signal fire-and-forget — a draft failure can never break event creation.
-- **API** — `POST`/`GET /api/events` (list `?clubId=`, `?upcoming=1`), `GET`/`PATCH`/`DELETE /api/events/[id]` (DELETE cancels), `POST`/`DELETE /api/events/[id]/rsvp`. Auth + rate-limited; 403 on role violations, 400 on bad input.
-- **UI (Spanish-first)** — `app/clubs/[id]/eventos` (event list with phase badges: Próximo / En vivo / Finalizado; owner/admin get a «Crear evento» dialog), `app/clubs/[id]/eventos/[eventId]` (detail with timezone-aware dates, attendee count, capacity, and an RSVP control: Asistiré / Me interesa / No asistiré / Quitar). Dates render in the event's IANA timezone.
 
 ## Stack
 
