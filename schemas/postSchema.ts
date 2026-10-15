@@ -8,9 +8,15 @@ import { z } from 'zod'
 export const postTypeSchema = z.enum(['text', 'image', 'video', 'audio', 'poll', 'widget'])
 
 // Base post schema
+// NOTE (2026-10-15, widget runtime): single-arg z.record(valueType) is
+// broken in zod 4.3.5 — its compiled parser throws
+// "Cannot read properties of undefined (reading '_zod')" on any non-empty
+// record (verified CJS + ESM). The two-arg form works, so content uses it.
+// Widget posts ALWAYS carry non-empty content ({ widget, config }), so this
+// fix is required for createWidgetPost to validate at all.
 export const postSchema = z.object({
     club_id: z.string().uuid('ID de club inválido'),
-    content: z.record(z.any()),
+    content: z.record(z.string(), z.any()),
     type: postTypeSchema,
 })
 

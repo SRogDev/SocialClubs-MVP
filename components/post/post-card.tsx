@@ -11,6 +11,7 @@ import SuperlikeModal from "@/components/post/superlike-modal"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { TypedWidgetPost } from "@/components/widgets"
 import WidgetPost from "@/components/widgets/widget-post"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
@@ -178,7 +179,8 @@ interface PostCardProps {
     username: string
     avatar: string
   }
-  content: string
+  content: string | Record<string, unknown>
+  club_id?: string | null
   imageUrl?: string
   videoUrl?: string
   audioUrl?: string
@@ -202,6 +204,7 @@ export default function PostCard({
   id,
   user,
   content,
+  club_id,
   imageUrl,
   videoUrl,
   audioUrl,
@@ -314,9 +317,14 @@ export default function PostCard({
         <div className="px-4 pb-4 relative">
           {type === "widget" && clubWidgetId ? (
             <WidgetPost clubWidgetId={clubWidgetId} userId={userId ?? null} />
+          ) : type === "widget" ? (
+            <TypedWidgetPost
+              content={content}
+              clubId={typeof club_id === "string" ? club_id : undefined}
+            />
           ) : (
             <>
-              {content && (
+              {typeof content === "string" && content && (
                 <p className={cn("mb-4", type === "text" && "text-lg leading-relaxed py-4 text-center")}>{content}</p>
               )}
 
@@ -408,7 +416,7 @@ export default function PostCard({
       </CardHeader>
 
       <CardContent className="p-4 relative">
-        {content && <p className="mb-4">{content}</p>}
+        {typeof content === "string" && content && <p className="mb-4">{content}</p>}
         <div className="absolute top-4 right-4 flex items-center text-sm text-muted-foreground">
           <span className="mr-1">{viewsCount}</span>
           <Eye size={16} />
