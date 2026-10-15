@@ -14,6 +14,10 @@
         {
             "path": "/api/cron/ai-digest",
             "schedule": "0 9 * * 1"
+        },
+        {
+            "path": "/api/cron/ai-briefing",
+            "schedule": "0 12 * * *"
         }
     ],
     "env": [
