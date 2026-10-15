@@ -41,6 +41,9 @@ function emptyCostDb(): CostDb {
         async createBudget() {},
         async updateBudget() {},
         async insertUsage() {},
+        async listUsage() {
+            return [];
+        },
     };
 }
 

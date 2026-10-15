@@ -114,6 +114,9 @@ const EMPTY_COST = {
         async createBudget() {},
         async updateBudget() {},
         async insertUsage() {},
+        async listUsage() {
+            return [];
+        },
     },
 };
 

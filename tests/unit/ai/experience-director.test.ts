@@ -62,6 +62,9 @@ function enabledDeps(
                 async createBudget() {},
                 async updateBudget() {},
                 async insertUsage() {},
+                async listUsage() {
+                    return [];
+                },
             },
             defaultCapUsd: 5,
         },

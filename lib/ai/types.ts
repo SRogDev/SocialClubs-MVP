@@ -17,6 +17,7 @@ export type AIErrorCode =
     | 'AISA_RATE_LIMIT'
     | 'AI_BUDGET_EXCEEDED'
     | 'AI_FLAG_DISABLED'
+    | 'AI_INPUT_BLOCKED'
     | 'AI_OUTPUT_INVALID'
     | 'AI_DB_UNAVAILABLE'
     | 'AI_UNKNOWN_ACTION';
