@@ -9,6 +9,8 @@ import {
     assessChurnRisk,
     recordSignal,
     recordSignalSafe,
+    summarizeProfileForPrompt,
+    type MemberProfile,
     type MemberSignal,
     type NewMemberSignal,
     type RelationshipDeps,
@@ -251,5 +253,34 @@ describe('recordSignalSafe', () => {
                 { db: failingDb },
             ),
         ).resolves.toBeUndefined();
+    });
+});
+
+describe('summarizeProfileForPrompt', () => {
+    const profile: MemberProfile = {
+        clubId: 'club-1',
+        userId: 'user-1',
+        interests: [
+            { tag: 'chess', count: 3 },
+            { tag: 'salsa', count: 1 },
+        ],
+        engagementTrend: 'up',
+        milestones: [{ label: 'First post', at: '2026-10-01T00:00:00.000Z' }],
+        lastActive: '2026-10-14T00:00:00.000Z',
+        signalCount: 4,
+    };
+
+    test('renders interests first when signals exist', () => {
+        const text = summarizeProfileForPrompt(profile);
+        expect(text).toMatch(/Interests: chess \(3\), salsa \(1\)/);
+        expect(text).toMatch(/Engagement trend: up/);
+        expect(text).toMatch(/First post/);
+    });
+
+    test('falls back to the no-activity branch for null/empty profiles', () => {
+        expect(summarizeProfileForPrompt(null)).toMatch(/No prior activity/);
+        expect(summarizeProfileForPrompt({ ...profile, signalCount: 0 })).toMatch(
+            /No prior activity/,
+        );
     });
 });
