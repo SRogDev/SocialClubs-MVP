@@ -55,6 +55,10 @@ SocialClubs keeps a privacy-first memory of member relationships (`lib/ai/relati
 - `POST /api/ai/copilot/draft-post` (`{ clubId, topic, tone? }`) and `POST /api/ai/copilot/improve` (`{ clubId, content }`) — logged-in + club owner/admin via `requireClubRole`, rate-limited (MUTATION).
 - `components/ai/CopilotPanel.tsx` — Spanish-first creator panel: topic input + tone selector → "Generar borrador" → draft card with Usar borrador / Mejorar / Descartar; plus a "Mejorar texto" tool showing the improved version and the change list. Mounted in the club page's creator area: a "Copiloto IA" button on `ContentCreationBar` (visible only when `clubId` is set).
 
+## AI safety evals
+
+`tests/eval/` (master plan Phases 67–68) proves the AI staff is safe — evals, not just unit tests. Run with `npm run eval:ai` (deterministic mock only: no cost, no network, no flakiness; exits non-zero on failure). Suites: `faq-grounding` (24 cases — answers come from the club FAQ, never invented), `moderation` (30 texts — clean passes, spam/hate caught, suspicious routed to the AI layer), `jailbreak` (21 cases — adversarial prompts blocked by `lib/ai/input-guards.ts`), `budget` (4 cases — budget checked before every model call). Full contract in `docs/AI-EVALS.md`. **Policy: every new AI feature must ship evals.**
+
 ## Widget runtime (typed configs only — no codegen)
 
 `lib/ai/widget-configs.ts` + `lib/ai/widgets.ts` + `components/widgets/` (master plan Phases 53–57) — the runtime that lets AI staff publish interactive widgets as posts.
@@ -93,36 +97,6 @@ How it works:
 - **Idempotency:** steps dedupe on `<idempotencyKey>:<action>` in `ai_actions`; `runWorkflow` pre-checks all planned step keys and replays the recorded outcome without side effects (or a wasted LLM call).
 - Triggers: `member_joined` signals route to `runWorkflow('welcome')` in `POST /api/queues/ai-signals`; `POST /api/queues/ai-workflows` is the QStash worker for direct workflow jobs; `GET /api/cron/ai-digest` (Vercel Cron, Mondays 09:00, `vercel.json`) enqueues the weekly digest per club and scans members with `detectChurnRisk` → enqueues `reengagement` (one per member per week).
 - **Creator control center:** `/clubs/[id]/panel/ai-config` (Spanish-first) — proactivity level selector with plain-language explanations of each level, per-agent toggles, and tone. Writes `club_ai_config` (owner/admin only); L1 is the default for clubs that never opt in.
-
-## Sentient UI (AI staff)
-
-`lib/ai/ui-recommendations.ts` (master plan Phases 58–62) turns the club's structured signals into dashboard UI — not chat. `buildRecommendations()` is a pure, deterministic engine aggregating `ai_signals` + `member_signals` + `ai_drafts` + `events` into `UIRecommendation` objects (`{ id, clubId, userId?, kind: 'suggest_action'|'highlight'|'nudge'|'insight', title, body, action?, priority 1–5, expiresAt }`):
-
-- churn-risk member → nudge ("Escríbele a X, lleva N días sin actividad") — **staff-only**, so plain members never see who went quiet; bounded to 3;
-- pending drafts → highlight ("Tienes N borradores en la Bandeja IA");
-- recent `member_joined` → welcome `suggest_action`;
-- upcoming event → highlight;
-- quiet club (no activity in 7 days) → insight.
-
-**Every recommendation explains its reason ("porque X")**. `computePulse()` derives the club pulse (active/steady/quiet) from trailing-24h signal counts — no LLM. `getRecommendations()`/`getPulse()` are the async wrappers with an injected `RecommendationDb` (service-role Supabase adapter included; reads go through `requireClubRole` in the routes).
-
-- **API** — `GET /api/ai/recommendations?clubId=…` and `GET /api/ai/pulse?clubId=…`: logged-in + club role (member or above), rate-limited.
-- **UI (Spanish-first)** — `components/ai/SmartPanel.tsx`: top-3 recommendations with kind icons and priority colors, dismissible (dismissals are local-only, stored in `localStorage` — no table), mounted above the club feed alongside AskClub for members. `components/ai/ActivityPulse.tsx`: subtle green/yellow/red dot + label in the club header.
-- **Live updates** — `lib/ai/realtime.ts`: `dispatchSignal` calls `notifyClubAiUpdate(clubId)` after persisting a signal, broadcasting on the `club-ai:{clubId}` realtime channel (clients receive broadcast events, never raw rows — the `ai_signals` service-role-only RLS stays intact). Both widgets also poll every 60s as a fallback.
-
-## AI memory + correction loops (AI staff)
-
-`lib/ai/memory.ts` (master plan Phases 63–66): the AI staff learns from corrections instead of repeating them.
-
-- **Data model** (`supabase/migrations/20261015000009_ai_memory.sql`, RLS service-role only):
-  - `ai_memory` — one row per `(club_id, agent_id, key)`: `value` (JSONB, e.g. `{"preference": "playful, not corporate", "polarity": "avoid"}`), `source` (`correction` | `learned` | `config`), `created_at`/`updated_at`. Upserts replace the value, so repeated corrections converge on one row per category instead of piling up.
-  - `ai_feedback` — append-only log of creator feedback: `action_id` (the reviewed `ai_actions` row), `feedback_type` (`correction` | `praise` | `flag`), `content`, `created_by`.
-- **What is remembered:** preferences and patterns, never raw user PII. `sanitizePII()` redacts emails and phone numbers before anything is persisted — memories store things like "prefers short titles" or "avoid corporate tone", not names or contact details.
-- **How corrections work:** `recordFeedback({ actionId, clubId, agentId, type, content, userId })` logs the feedback row and distills it into a memory via a deterministic heuristic (zero LLM cost): `correction` → memory key `correction-<category>` (categories: tone, length, title, emoji, timing, topic, language, cta, general) with polarity `prefer`/`avoid`; `praise` → `praise-<category>` memory (source `learned`), reinforcing approved styles; `flag` → logged only, never turned into a memory automatically.
-- **Prompt context:** `getAgentMemories(clubId, agentId)` feeds a "memory" section into the prompts of `community-manager` (draftOnboarding, draftSignalResponse), `experience-director` (suggestEvent, event announcements), and `creator-copilot` (draftPost, improvePost). Memory lookup is best-effort — a failure degrades to the no-memories branch and never blocks a draft. FAQ answering is intentionally not wired: it stays strictly grounded in the club FAQ.
-- **AI Inbox wiring:** `approveAction`/`rejectAction` in `lib/ai/inbox.ts` call `recordFeedback` fire-and-forget when the decision carries feedback — reject + feedback → a `correction` memory (the agent won't repeat the mistake); approve + feedback → a `praise` memory. Feedback recording never blocks a review.
-- **Creator curation:** `GET /api/ai/memory?clubId=…&agentId=…` lists what an agent remembers for a club; `DELETE /api/ai/memory?id=…&clubId=…` removes a memory (scoped to the club — it only deletes when the memory belongs to that club). Both require owner/admin via `requireClubRole`. Creators can inspect and delete everything the AI remembers about their club.
-- **Privacy model (non-negotiable):** every memory is scoped to one club AND one agent — memories never leave their club and are never joined across clubs; no cross-club profiling. RLS on both tables is service-role only; all reads/writes go through service-role code that enforces club roles first.
 
 ## Stack
 
