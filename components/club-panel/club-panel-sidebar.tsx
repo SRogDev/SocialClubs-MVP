@@ -1,4 +1,4 @@
-import { Layout, Users, Zap, Calendar, Joystick, BarChart2, Megaphone, HeadphonesIcon, Inbox, Settings2, Wallet } from "lucide-react"
+import { Layout, Users, Zap, Calendar, Joystick, BarChart2, Megaphone, HeadphonesIcon, Inbox, Settings2, Wallet, Activity } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import Link from "next/link"
 
@@ -28,6 +28,7 @@ export default function ClubPanelSidebar({ clubId, activeSection, clubName, pend
         { value: "ai-inbox", label: "Bandeja IA", icon: Inbox, badge: pendingCount },
         { value: "ai-config", label: "Config. IA", icon: Settings2 },
         { value: "ai-cost", label: "Costo IA", icon: Wallet },
+        { value: "ai-analytics", label: "Analítica IA", icon: Activity },
         { value: "agenda", label: "Agenda", icon: Calendar },
         { value: "gamificacion", label: "Gamificación", icon: Joystick },
         { value: "analiticas", label: "Analíticas", icon: BarChart2 },
