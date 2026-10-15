@@ -10,9 +10,10 @@
  * staying grounded on anything that slips through — is covered by the FAQ
  * grounding evals and the agents' system-prompt policies.
  *
- * NOTE (integration pending): this screen is not yet wired into
- * `invokeAgent`. The eval suite pins the blocking behavior now so the wiring
- * PR cannot regress it; see docs/AI-EVALS.md for the follow-up.
+ * NOTE: wired into `invokeAgent` as a pre-model gate (Phases 69-72) —
+ * blocked payloads raise a typed `AI_INPUT_BLOCKED` error and the model
+ * is never called. The eval suite pins the blocking behavior so the
+ * wiring cannot regress it; see docs/AI-EVALS.md.
  */
 export interface InputScreenResult {
     blocked: boolean;
