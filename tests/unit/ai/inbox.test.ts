@@ -357,3 +357,140 @@ describe('listing', () => {
         await expect(getInboxAction('missing', { db })).resolves.toBeNull();
     });
 });
+
+describe('correction feedback loop (Phases 63-66)', () => {
+    function stubMemoryDb() {
+        const upserted: Array<{ clubId: string; agentId: string; key: string; value: unknown; source: string }> = [];
+        const feedback: Array<{ actionId: string | null; type: string; content: string; userId: string }> = [];
+        const db: import('@/lib/ai/memory').MemoryDb = {
+            async upsertMemory(row) {
+                upserted.push({
+                    clubId: row.club_id,
+                    agentId: row.agent_id,
+                    key: row.key,
+                    value: row.value,
+                    source: row.source ?? 'learned',
+                });
+                return {
+                    id: `mem-${upserted.length}`,
+                    club_id: row.club_id,
+                    agent_id: row.agent_id,
+                    key: row.key,
+                    value: row.value,
+                    source: (row.source ?? 'learned') as 'correction' | 'learned' | 'config',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                };
+            },
+            async getMemory() {
+                return null;
+            },
+            async listMemories() {
+                return [];
+            },
+            async deleteMemory() {
+                return false;
+            },
+            async insertFeedback(row) {
+                feedback.push({
+                    actionId: row.action_id ?? null,
+                    type: row.feedback_type,
+                    content: row.content,
+                    userId: row.created_by,
+                });
+                return {
+                    id: `fb-${feedback.length}`,
+                    action_id: row.action_id ?? null,
+                    feedback_type: row.feedback_type,
+                    content: row.content,
+                    created_by: row.created_by,
+                    created_at: new Date().toISOString(),
+                };
+            },
+        };
+        return { db, upserted, feedback };
+    }
+
+    it('reject with feedback distills a correction memory so the agent does not repeat the mistake', async () => {
+        const { db, actions } = makeMemoryDb([makeAction()]);
+        const mem = stubMemoryDb();
+
+        const res = await rejectAction(
+            'action-1',
+            'reviewer-1',
+            { db, memory: { db: mem.db } },
+            'Too long — keep announcements under 100 words.',
+        );
+
+        expect(res.status).toBe('rejected');
+        expect(actions.get('action-1')?.status).toBe('rejected');
+        // The feedback is logged…
+        expect(mem.feedback).toHaveLength(1);
+        expect(mem.feedback[0]).toMatchObject({
+            actionId: 'action-1',
+            type: 'correction',
+            userId: 'reviewer-1',
+        });
+        // …and distilled into a club+agent-scoped correction memory.
+        expect(mem.upserted).toHaveLength(1);
+        expect(mem.upserted[0]).toMatchObject({
+            clubId: 'club-1',
+            agentId: 'community-manager',
+            source: 'correction',
+        });
+        expect(mem.upserted[0].key).toContain('length');
+    });
+
+    it('approve with feedback records praise as a learned memory', async () => {
+        const { db } = makeMemoryDb([makeAction()]);
+        const mem = stubMemoryDb();
+
+        const res = await approveAction(
+            'action-1',
+            'reviewer-1',
+            { db, memory: { db: mem.db } },
+            'Love the short titles.',
+        );
+
+        expect(res.status).toBe('executed');
+        expect(mem.feedback[0]).toMatchObject({ type: 'praise', userId: 'reviewer-1' });
+        expect(mem.upserted).toHaveLength(1);
+        expect(mem.upserted[0]).toMatchObject({
+            clubId: 'club-1',
+            agentId: 'community-manager',
+            source: 'learned',
+        });
+        expect(mem.upserted[0].key).toContain('title');
+    });
+
+    it('no memory is created when the decision has no feedback', async () => {
+        const { db } = makeMemoryDb([makeAction()]);
+        const mem = stubMemoryDb();
+
+        await rejectAction('action-1', 'reviewer-1', { db, memory: { db: mem.db } });
+
+        expect(mem.feedback).toHaveLength(0);
+        expect(mem.upserted).toHaveLength(0);
+    });
+
+    it('a memory failure never breaks the review', async () => {
+        const { db, actions } = makeMemoryDb([makeAction()]);
+        const failing = stubMemoryDb();
+        failing.db.upsertMemory = async () => {
+            throw new Error('memory down');
+        };
+        failing.db.insertFeedback = async () => {
+            throw new Error('memory down');
+        };
+
+        const res = await rejectAction(
+            'action-1',
+            'reviewer-1',
+            { db, memory: { db: failing.db } },
+            'Too formal.',
+        );
+
+        expect(res.status).toBe('rejected');
+        expect(actions.get('action-1')?.status).toBe('rejected');
+    });
+});

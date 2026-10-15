@@ -18,12 +18,23 @@
  * them (route, worker, service) must enforce club membership first via
  * `requireClubRole` — services/eventService.ts does this for event_created.
  *
+ * Memory wiring (Phases 63-66): both entry points load the agent's learned
+ * memories for the club (lib/ai/memory.ts — corrections distilled from
+ * creator feedback) into a prompt "memory" section, so the agent does not
+ * repeat corrected mistakes. Memory lookup is best-effort and never blocks
+ * a draft.
+ *
  * Server-side only — never import from client components.
  */
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 
 import { supabaseClubContext } from '../club-context';
+import {
+    getAgentMemories,
+    summarizeMemoriesForPrompt,
+    type MemoryDeps,
+} from '../memory';
 import { invokeAgent, type InvokeDeps, type InvokeResult } from '../runtime';
 import { AIAgentError, type AgentDefinition } from '../types';
 
@@ -76,6 +87,8 @@ export interface ExperienceDirectorDeps extends InvokeDeps {
     loadEvent?: (eventId: string) => Promise<DirectorEvent | null>;
     /** Injected draft storage (tests). Defaults to inserting into ai_drafts. */
     saveDraft?: (draft: AnnouncementDraftInput) => Promise<{ id: string }>;
+    /** Injected memory storage (tests). Defaults to the Supabase adapter. */
+    memory?: MemoryDeps;
 }
 
 export interface AnnouncementDraftInput {
@@ -183,6 +196,24 @@ async function defaultSaveDraft(draft: AnnouncementDraftInput): Promise<{ id: st
 }
 
 /**
+ * Load the agent's learned memories for the club (Phases 63-66) for the
+ * prompt "memory" section. Best-effort: a memory failure never blocks the
+ * suggestion — the prompt degrades to the no-memories branch.
+ */
+async function loadMemorySummary(
+    clubId: string,
+    deps: ExperienceDirectorDeps,
+): Promise<string> {
+    try {
+        const memories = await getAgentMemories(clubId, 'experience-director', deps.memory);
+        return summarizeMemoriesForPrompt(memories);
+    } catch (err) {
+        console.warn('[experience-director] memory lookup failed (non-fatal):', err);
+        return summarizeMemoriesForPrompt([]);
+    }
+}
+
+/**
  * Suggest an event concept for a club. Returns a DRAFT (never persisted):
  * the creator reviews it before anything is created.
  */
@@ -193,6 +224,7 @@ export async function suggestEvent(
 ): Promise<InvokeResult<EventConcept>> {
     const loadClubContext = deps.loadClubContext ?? defaultLoadClubContext;
     const clubSummary = summarizeClubForPrompt(await loadClubContext(clubId));
+    const memorySummary = await loadMemorySummary(clubId, deps);
     const def: AgentDefinition = {
         ...BASE_DEF,
         mission:
@@ -210,6 +242,7 @@ export async function suggestEvent(
                 task: 'suggest-event',
                 theme: theme ?? null,
                 clubContextSummary: clubSummary,
+                memorySummary,
             },
         },
         deps,
@@ -224,6 +257,7 @@ async function draftAnnouncement(
     event: DirectorEvent,
     deps: ExperienceDirectorDeps,
 ): Promise<InvokeResult<AnnouncementDraft>> {
+    const memorySummary = await loadMemorySummary(event.club_id, deps);
     const def: AgentDefinition = {
         ...BASE_DEF,
         mission:
@@ -246,6 +280,7 @@ async function draftAnnouncement(
                 endsAt: event.ends_at,
                 timezone: event.timezone,
                 capacity: event.capacity,
+                memorySummary,
             },
         },
         deps,
