@@ -12,6 +12,12 @@
  * - reject: records a human `rejected` review (with optional feedback) and
  *   marks the row `rejected`. Rejecting NEVER executes.
  *
+ * Correction feedback loop (Phases 63-66): decisions made WITH feedback are
+ * distilled into agent memories via `recordFeedback` (lib/ai/memory.ts) —
+ * reject + feedback -> a `correction` memory so the agent does not repeat
+ * the mistake; approve + feedback -> a `praise` memory reinforcing the
+ * approved style. Recording is fire-and-forget: it never blocks a review.
+ *
  * Only `pending_approval` and `draft` rows are decidable; anything else
  * (executed, rejected, failed, blocked, …) returns its current state
  * untouched (idempotent).
@@ -25,6 +31,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 import { getAction, type ActionContext } from './actions';
+import { recordFeedbackSafe, type MemoryDeps } from './memory';
 import { AIAgentError } from './types';
 import {
     supabaseVerifyDb,
@@ -66,6 +73,14 @@ export interface InboxDb extends VerifyDb {
 export interface InboxDeps {
     db: InboxDb;
     now?: () => Date;
+    /**
+     * Injected memory storage (tests). Defaults to the Supabase adapter.
+     * Powers the correction feedback loop (Phases 63-66): approve/reject
+     * decisions with feedback are distilled into agent memories via
+     * `recordFeedback`. Never required, never blocking — recording is
+     * fire-and-forget and must not break a review.
+     */
+    memory?: MemoryDeps;
 }
 
 export type InboxErrorCode = 'NOT_FOUND';
@@ -222,6 +237,23 @@ export async function approveAction(
     };
     await db.insertReview(review);
 
+    // Feedback loop (Phases 63-66): approving with feedback records praise
+    // as a learned memory, so the agent's approved styles are reinforced.
+    // Fire-and-forget — never blocks the approval.
+    if (feedback && feedback.trim().length > 0) {
+        await recordFeedbackSafe(
+            {
+                actionId: row.id,
+                clubId: row.clubId,
+                agentId: row.agentId,
+                type: 'praise',
+                content: feedback,
+                userId: reviewerId,
+            },
+            deps.memory,
+        );
+    }
+
     // Execute NOW via the action's executor (verify.ts step-7 logic).
     let def;
     try {
@@ -339,6 +371,24 @@ export async function rejectAction(
             rejectedAt: now().toISOString(),
         },
     });
+
+    // Feedback loop (Phases 63-66): rejecting with feedback records a
+    // correction, distilled into an agent memory so the agent does not
+    // repeat the mistake. Fire-and-forget — never blocks the rejection.
+    if (feedback && feedback.trim().length > 0) {
+        await recordFeedbackSafe(
+            {
+                actionId: row.id,
+                clubId: row.clubId,
+                agentId: row.agentId,
+                type: 'correction',
+                content: feedback,
+                userId: reviewerId,
+            },
+            deps.memory,
+        );
+    }
+
     return {
         actionId: row.id,
         status: 'rejected',
