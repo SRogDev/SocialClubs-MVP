@@ -18,6 +18,8 @@ export const AI_INBOX = 'AI_INBOX';
 export const AI_MODERATION = 'AI_MODERATION';
 export const AI_SENTIENT_UI = 'AI_SENTIENT_UI';
 export const AI_WIDGETS = 'AI_WIDGETS';
+/** Gates the AI reviewer used by the verification pipeline (ADR-002 §3). */
+export const AI_REVIEWER = 'AI_REVIEWER';
 
 export const ALL_AI_FLAGS = [
     AI_STAFF_ENABLED,
@@ -28,6 +30,7 @@ export const ALL_AI_FLAGS = [
     AI_MODERATION,
     AI_SENTIENT_UI,
     AI_WIDGETS,
+    AI_REVIEWER,
 ] as const;
 
 /** Agent definition id -> env flag that gates it. `null` = unknown agent. */
@@ -39,6 +42,7 @@ const AGENT_TO_FLAG: Record<string, string> = {
     moderation: AI_MODERATION,
     'sentient-ui': AI_SENTIENT_UI,
     widgets: AI_WIDGETS,
+    reviewer: AI_REVIEWER,
 };
 
 export function isEnabled(flagName: string): boolean {
