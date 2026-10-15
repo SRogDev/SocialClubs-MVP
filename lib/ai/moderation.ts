@@ -23,6 +23,8 @@
  */
 import { z } from 'zod';
 
+import { verifyAndExecute, supabaseVerifyDb, type VerifyDb } from './verify';
+
 import { isAgentEnabled } from './flags';
 import { invokeAgent, type InvokeDeps } from './runtime';
 import { AIAgentError, type AgentDefinition } from './types';
@@ -138,7 +140,7 @@ const MODERATION_DEF: AgentDefinition = {
         'The verdict feeds a human-review queue — prefer "suspicious" unless ' +
         'the text is clearly hateful, harassing, or unambiguous spam.',
     contextSources: ['post-text'],
-    tools: [],
+    tools: ['hide_post'][],
     permissions: [],
     triggers: ['post-created', 'comment-created'],
     policies: [
@@ -180,6 +182,8 @@ export interface ModerationDeps {
     invoke?: InvokeDeps;
     /** Event persistence (tests). Defaults to the Supabase adapter. */
     store?: ModerationStore;
+    /** Verification pipeline DB (tests). Defaults to the Supabase adapter. */
+    verifyDb?: VerifyDb;
 }
 
 export interface ModerationOutcome {
@@ -312,6 +316,30 @@ async function runModeration(
         reasons: classification.reasons,
         actionTaken,
     };
+
+    // Violations route through the governance verification pipeline:
+    // at L1 this creates a pending_approval in ai_actions (visible in the AI
+    // Inbox) — the AI never auto-hides. Failures are logged, never thrown.
+    if (outcome.verdict === 'violation' && target.targetType === 'post') {
+        try {
+            const verifyDb = deps.verifyDb ?? supabaseVerifyDb();
+            await verifyAndExecute({
+                agentDef: MODERATION_DEF,
+                action: 'hide_post',
+                inputs: {
+                    postId: target.targetId,
+                    reason: classification.reasons.join('; ').slice(0, 500),
+                },
+                ctx: {
+                    clubId: target.clubId,
+                    idempotencyKey: `moderation:post:${target.targetId}`,
+                },
+                deps: { db: verifyDb },
+            });
+        } catch (err) {
+            console.error('[moderation] verifyAndExecute failed (non-fatal):', err);
+        }
+    }
 
     // Audit every classification. Storage failures are logged, never thrown —
     // moderation must not break the user action it annotates.
