@@ -4,6 +4,7 @@
 
 import { cache } from 'react'
 
+import { requireClubRole } from '@/lib/authz'
 import { createClient } from '@/lib/supabase/server'
 import { createClubSchema, updateClubSchema, type CreateClubInput, type UpdateClubInput } from '@/schemas/clubSchema'
 import type { Club, ClubStats } from '@/types/club'
@@ -178,8 +179,11 @@ export async function createClub(input: CreateClubInput, userId: string): Promis
 
 /**
  * Update a club
+ * Requires owner/admin club role (or global admin / club creator).
  */
-export async function updateClub(id: string, input: UpdateClubInput): Promise<Club> {
+export async function updateClub(id: string, input: UpdateClubInput, actorId: string): Promise<Club> {
+    await requireClubRole(actorId, id, ['owner', 'admin'])
+
     // Validate input
     const validated = updateClubSchema.parse(input)
 
@@ -202,8 +206,11 @@ export async function updateClub(id: string, input: UpdateClubInput): Promise<Cl
 
 /**
  * Delete a club
+ * Requires owner club role (or global admin / club creator).
  */
-export async function deleteClub(id: string): Promise<void> {
+export async function deleteClub(id: string, actorId: string): Promise<void> {
+    await requireClubRole(actorId, id, ['owner'])
+
     const supabase = await createClient()
 
     const { error } = await supabase
@@ -325,6 +332,7 @@ export async function isUserBannedFromClub(userId: string, clubId: string): Prom
 
 /**
  * Ban a user from a club (prevents them from rejoining)
+ * Requires owner/admin/moderator club role (or global admin).
  */
 export async function banUserFromClub(
     userId: string,
@@ -332,6 +340,8 @@ export async function banUserFromClub(
     bannedBy: string,
     reason?: string
 ): Promise<void> {
+    await requireClubRole(bannedBy, clubId, ['owner', 'admin', 'moderator'])
+
     const supabase = await createClient()
 
     const { error } = await supabase
@@ -356,8 +366,11 @@ export async function banUserFromClub(
 
 /**
  * Unban a user from a club
+ * Requires owner/admin/moderator club role (or global admin).
  */
-export async function unbanUserFromClub(userId: string, clubId: string): Promise<void> {
+export async function unbanUserFromClub(userId: string, clubId: string, actorId: string): Promise<void> {
+    await requireClubRole(actorId, clubId, ['owner', 'admin', 'moderator'])
+
     const supabase = await createClient()
 
     const { error } = await supabase
