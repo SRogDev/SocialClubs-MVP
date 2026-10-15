@@ -72,11 +72,12 @@ same PR.
   inject facts the FAQ doesn't contain; the prompt policy is the only guard.
   Follow-up: add a grounding verifier over `answerFAQ` output (quoted-phrase
   check against the entries) and pin it here.
-- **Known limitation: input screen not yet wired in.** `screenAgentInput`
-  (lib/ai/input-guards.ts) is pinned by the jailbreak evals but not yet
-  called by `invokeAgent`. Follow-up: wire it as a pre-model gate
-  (fail-closed with `AI_INPUT_BLOCKED`, or fail-open to a flagged review
-  queue — a product decision) and extend these evals to the integrated path.
+- **Resolved (Phases 69–72): input screen wired in.** `screenAgentInput`
+  (lib/ai/input-guards.ts) is now called by `invokeAgent` as a pre-model
+  gate: a blocked payload throws the typed `AI_INPUT_BLOCKED` error (with
+  the safe canned refusal) and the model is never called. Covered by unit
+  tests in `tests/unit/ai/cost-dashboard.test.ts` ("invokeAgent input
+  screening"); the jailbreak evals continue to pin the screen itself.
 - **Mock-determined L2 verdicts.** In `moderation`, the AI-layer verdict for
   `suspicious` texts comes from the canned mock; the eval asserts **routing**
   (`layer === 'ai'`), not the mock's verdict.
