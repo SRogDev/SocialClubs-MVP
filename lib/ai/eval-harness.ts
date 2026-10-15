@@ -12,7 +12,7 @@
  *
  * Policy (see docs/AI-EVALS.md): every new AI feature must ship evals here.
  */
-import type { BudgetRow, CostDb, CostDeps, NewBudgetRow, NewUsageRow } from './cost';
+import type { BudgetRow, CostDb, CostDeps, NewBudgetRow, NewUsageRow, UsageRow } from './cost';
 
 export class EvalAssertionError extends Error {
     constructor(message: string) {
@@ -164,6 +164,10 @@ export function makeInMemoryCostDeps(
         async insertUsage(row: NewUsageRow): Promise<void> {
             events.push('usage:insert');
             usageRows.push(row);
+        },
+        async listUsage(): Promise<UsageRow[]> {
+            events.push('usage:list');
+            return [];
         },
     };
     return { cost: { db }, events, usageRows };

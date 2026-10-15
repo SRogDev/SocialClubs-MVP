@@ -198,6 +198,9 @@ const NO_DB_COST = {
         async createBudget() {},
         async updateBudget() {},
         async insertUsage() {},
+        async listUsage() {
+            return [];
+        },
     },
     defaultCapUsd: 5,
 };

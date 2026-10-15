@@ -49,12 +49,26 @@ export interface NewUsageRow {
     mock: boolean;
 }
 
+/** One persisted usage row read back from `ai_usage` (observability). */
+export interface UsageRow extends NewUsageRow {
+    created_at: string;
+}
+
+/** Filters for reading usage rows. `since`/`until` are ISO timestamps, [since, until). */
+export interface UsageListParams {
+    clubId?: string;
+    since: string;
+    until: string;
+}
+
 /** Minimal storage surface the cost layer needs. */
 export interface CostDb {
     getBudget(clubId: string): Promise<BudgetRow | null>;
     createBudget(row: NewBudgetRow): Promise<void>;
     updateBudget(clubId: string, patch: Partial<BudgetRow>): Promise<void>;
     insertUsage(row: NewUsageRow): Promise<void>;
+    /** Usage rows in [since, until), optionally restricted to one club. */
+    listUsage(params: UsageListParams): Promise<UsageRow[]>;
 }
 
 export interface CostDeps {
@@ -78,7 +92,7 @@ function defaultCapUsd(override?: number): number {
 }
 
 /** Fetch the budget, creating it with the default cap on first use. */
-async function getOrCreateBudget(clubId: string, deps: CostDeps): Promise<BudgetRow> {
+export async function getOrCreateBudget(clubId: string, deps: CostDeps): Promise<BudgetRow> {
     const now = deps.now ? deps.now() : new Date();
     const existing = await deps.db.getBudget(clubId);
     if (existing) {
@@ -204,6 +218,25 @@ export function supabaseCostDb(): CostDb {
                     `Failed to insert ai_usage: ${error.message}`,
                 );
             }
+        },
+        async listUsage(params: UsageListParams): Promise<UsageRow[]> {
+            let query = supabase
+                .from('ai_usage')
+                .select('*')
+                .gte('created_at', params.since)
+                .lt('created_at', params.until)
+                .order('created_at', { ascending: true });
+            if (params.clubId !== undefined) {
+                query = query.eq('club_id', params.clubId);
+            }
+            const { data, error } = await query;
+            if (error) {
+                throw new AIAgentError(
+                    'AI_DB_UNAVAILABLE',
+                    `Failed to read ai_usage: ${error.message}`,
+                );
+            }
+            return (data as UsageRow[]) ?? [];
         },
     };
 }

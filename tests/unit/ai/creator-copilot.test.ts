@@ -47,6 +47,9 @@ function enabledDeps(client: AIClient): CreatorCopilotDeps {
                 async createBudget() {},
                 async updateBudget() {},
                 async insertUsage() {},
+                async listUsage() {
+                    return [];
+                },
             },
             defaultCapUsd: 5,
         },
@@ -156,6 +159,9 @@ describe('draftPost', () => {
                 async createBudget() {},
                 async updateBudget() {},
                 async insertUsage() {},
+                async listUsage() {
+                    return [];
+                },
             },
             defaultCapUsd: 5,
         };

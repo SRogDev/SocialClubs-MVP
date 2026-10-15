@@ -37,6 +37,10 @@ function makeDb(seed?: BudgetRow): FakeDb {
             db.calls.push(`insertUsage:${row.club_id}`);
             db.usages.push(row);
         },
+        async listUsage(params) {
+            db.calls.push(`listUsage:${params.clubId ?? '*'}`);
+            return [];
+        },
     };
     return db;
 }

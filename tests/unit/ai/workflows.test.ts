@@ -153,6 +153,9 @@ const EMPTY_COST: CostDeps = {
         async createBudget() {},
         async updateBudget() {},
         async insertUsage() {},
+        async listUsage() {
+            return [];
+        },
     },
 };
 
