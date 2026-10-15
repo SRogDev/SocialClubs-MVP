@@ -20,6 +20,7 @@ import ChatContentCreationBar from '@/components/chats/chat-content-creation-bar
 import ContentCreationBar from '@/components/club/content-creation-bar'
 import FloatingJoinButton from '@/components/club/floating-join-button'
 import { PwaInstallBanner } from '@/components/club/PwaInstallBanner'
+import { AskClub } from '@/components/ai/AskClub'
 import PostCard from '@/components/post/post-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -260,6 +261,12 @@ export function ClubPageClient({
                 {/* ─── Scrollable content ──────────────────────────────── */}
                 <div className="flex-1 overflow-hidden">
                     <div ref={contentRef} className="h-full overflow-y-auto pb-32">
+                        {/* "Pregunta al club" — Community Manager v0, members only */}
+                        {isMember && (
+                            <div className="mx-auto w-full max-w-2xl px-4 pt-3">
+                                <AskClub clubId={club.id} clubColor={clubColor} />
+                            </div>
+                        )}
                         <Tabs value={effectiveActiveTab} onValueChange={setActiveTab}>
                             {(visibleChannels.length > 0
                                 ? visibleChannels
