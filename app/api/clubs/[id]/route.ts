@@ -103,7 +103,7 @@ export async function DELETE(
         }
 
         // Delete club using service
-        await deleteClub(id)
+        await deleteClub(id, user.id)
 
         // Create response with rate limit headers
         const response = NextResponse.json(
