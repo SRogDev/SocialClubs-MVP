@@ -76,6 +76,8 @@ socialclubs/
 
 UI/business-logic separation: components present, `services/` decides. Zod validates on client and server with the same schemas. Optimistic UI on user interactions.
 
+Service-level authorization: `lib/authz.ts` guards (`requireClubRole`, `requireGlobalAdmin`, `requireInternalWorker`) run inside `services/`, so routes, server actions, and AI workers are all authorized the same way.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
