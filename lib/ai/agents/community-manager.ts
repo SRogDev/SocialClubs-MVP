@@ -24,6 +24,14 @@
  * lookup is best-effort and never blocks a draft; with no signals the
  * prompt says so explicitly instead of inventing interests.
  *
+ * Memory (Phases 63-66): both draft functions also load the agent's learned
+ * memories for the club (../memory — corrections distilled from creator
+ * feedback via recordFeedback) into a prompt "memory" section, so the agent
+ * does not repeat corrected mistakes. Memory lookup is best-effort and
+ * never blocks a draft. answerFAQ is intentionally NOT wired: FAQ answers
+ * are strictly grounded in the club FAQ, and memories must not leak into
+ * that grounding.
+ *
  * Server-side only (imports verify.ts, which uses node:crypto): call it
  * from API routes and the signal worker, never from client components.
  */
@@ -31,6 +39,11 @@ import { z } from 'zod';
 
 import { COMMUNITY_MANAGER } from '../agents';
 import type { CostDeps } from '../cost';
+import {
+    getAgentMemories,
+    summarizeMemoriesForPrompt,
+    type MemoryDeps,
+} from '../memory';
 import { getMemberProfile, summarizeProfileForPrompt, type RelationshipDeps } from '../relationship';
 import { invokeAgent, type InvokeDeps } from '../runtime';
 import type { AIClient, AgentDefinition } from '../types';
@@ -50,6 +63,12 @@ export interface CommunityManagerDeps {
      * club-scoped profile summary — never required, never blocking.
      */
     relationship?: RelationshipDeps;
+    /**
+     * Injected memory storage (tests). Defaults to the Supabase adapter.
+     * Loads the agent's learned memories for the prompt "memory" section
+     * (Phases 63-66) — never required, never blocking.
+     */
+    memory?: MemoryDeps;
 }
 
 function invokeDeps(deps: CommunityManagerDeps): InvokeDeps {
@@ -99,6 +118,25 @@ async function loadProfileSummary(
     } catch (err) {
         console.warn('[community-manager] profile lookup failed (non-fatal):', err);
         return summarizeProfileForPrompt(null);
+    }
+}
+
+/**
+ * Best-effort agent memory summary for the prompt "memory" section
+ * (Phases 63-66). Loads the agent's learned memories for the club —
+ * corrections distilled from creator feedback. NEVER throws: a lookup
+ * failure degrades to the no-memories branch instead of blocking the draft.
+ */
+async function loadMemorySummary(
+    clubId: string,
+    deps: CommunityManagerDeps,
+): Promise<string> {
+    try {
+        const memories = await getAgentMemories(clubId, 'community-manager', deps.memory);
+        return summarizeMemoriesForPrompt(memories);
+    } catch (err) {
+        console.warn('[community-manager] memory lookup failed (non-fatal):', err);
+        return summarizeMemoriesForPrompt([]);
     }
 }
 
@@ -217,6 +255,7 @@ export async function draftOnboarding(
     deps: CommunityManagerDeps,
 ): Promise<VerifyResult> {
     const memberProfileSummary = await loadProfileSummary(input.clubId, input.userId, deps);
+    const memorySummary = await loadMemorySummary(input.clubId, deps);
     const { output } = await invokeAgent<z.infer<typeof OnboardingDraftSchema>>(
         onboardingAgentDef(),
         {
@@ -227,6 +266,7 @@ export async function draftOnboarding(
                 memberName: input.memberName ?? null,
                 clubName: input.clubName ?? null,
                 memberProfileSummary,
+                memorySummary,
             },
         },
         invokeDeps(deps),
@@ -299,6 +339,7 @@ export async function draftSignalResponse(
             authorId ?? undefined,
             deps,
         );
+        const memorySummary = await loadMemorySummary(signal.clubId, deps);
         const { output } = await invokeAgent<z.infer<typeof CommentDraftSchema>>(
             commentAgentDef(),
             {
@@ -311,6 +352,7 @@ export async function draftSignalResponse(
                     postExcerpt:
                         firstStringField(signal.payload, 'postExcerpt', 'excerpt') ?? null,
                     authorProfileSummary,
+                    memorySummary,
                 },
             },
             invokeDeps(deps),
