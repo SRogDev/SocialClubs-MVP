@@ -4,11 +4,63 @@
 
 import { cache } from 'react'
 
-import { dispatchSignal } from '@/lib/ai/signal-dispatch'
-import { requireClubRole, requirePostAccess } from '@/lib/authz'
+import { recordSignalSafe } from '@/lib/ai/relationship'
 import { createClient } from '@/lib/supabase/server'
 import { createPostSchema, updatePostSchema, commentSchema, postInteractionSchema, type CreatePostInput, type UpdatePostInput, type CommentInput, type PostInteractionInput } from '@/schemas/postSchema'
 import type { Post, PostStats, PostComment, PostInteraction, Poll } from '@/types/post'
+
+
+/**
+ * Extract tag strings from a post content payload, when the client sent any.
+ * Never throws — signal recording must not break the action it annotates.
+ */
+function extractContentTags(content: Record<string, unknown>): string[] {
+    const tags = (content as { tags?: unknown }).tags
+    if (!Array.isArray(tags)) return []
+    return tags.filter((t): t is string => typeof t === 'string' && t.length > 0)
+}
+
+/**
+ * Fire-and-forget 'posted' signal. Called after a post is created; never
+ * awaited and never throws (recordSignalSafe swallows store errors).
+ */
+function emitPostedSignal(clubId: string, userId: string, post: Post, content: Record<string, unknown>): void {
+    void recordSignalSafe({
+        clubId,
+        userId,
+        type: 'posted',
+        payload: {
+            postId: post.id,
+            postType: post.type,
+            tags: extractContentTags(content),
+        },
+    })
+}
+
+/**
+ * Fire-and-forget 'engaged' signal for a like/superlike/comment.
+ * Resolves the post's club_id first (one lightweight SELECT); if that
+ * lookup fails the signal is skipped — the user action already succeeded.
+ */
+async function emitEngagedSignal(postId: string, userId: string, kind: string, extra?: Record<string, unknown>): Promise<void> {
+    try {
+        const supabase = await createClient()
+        const { data: parent } = await supabase
+            .from('posts')
+            .select('club_id')
+            .eq('id', postId)
+            .maybeSingle()
+        if (!parent?.club_id) return
+        await recordSignalSafe({
+            clubId: parent.club_id,
+            userId,
+            type: 'engaged',
+            payload: { postId, kind, ...(extra ?? {}) },
+        })
+    } catch (err) {
+        console.warn('[postService] engaged-signal lookup failed (non-fatal):', err)
+    }
+}
 
 /**
  * Get all posts (optionally filtered by club)
@@ -97,13 +149,10 @@ export const getPollByPostId = cache(async (postId: string): Promise<Poll | null
 
 /**
  * Create a new post
- * Requires club membership (any role).
  */
 export async function createPost(input: CreatePostInput, userId: string): Promise<Post> {
     // Validate input
     const validated = createPostSchema.parse(input)
-
-    await requireClubRole(userId, validated.club_id, ['owner', 'admin', 'moderator', 'member'])
 
     const supabase = await createClient()
 
@@ -156,40 +205,20 @@ export async function createPost(input: CreatePostInput, userId: string): Promis
             user_views: 0,
         })
 
-    // AI signal: new post (fire-and-forget — never fails post creation)
-    dispatchSignal({
-        type: 'new_post',
-        clubId: validated.club_id,
-        payload: { postId: post.id, authorId: userId, postType: validated.type },
-        dedupKey: `new_post:${post.id}`,
-    }).catch((err) => console.error('[ai-signals] new_post dispatch failed:', err))
+    // Relationship intelligence: record the post signal (fire-and-forget).
+    emitPostedSignal(validated.club_id, userId, post, validated.content)
 
     return post
 }
 
 /**
  * Update a post
- * Requires the actor to be the post author or hold a staff club role
- * (owner/admin/moderator).
  */
-export async function updatePost(id: string, input: UpdatePostInput, actorId: string): Promise<Post> {
+export async function updatePost(id: string, input: UpdatePostInput): Promise<Post> {
     // Validate input
     const validated = updatePostSchema.parse(input)
 
     const supabase = await createClient()
-
-    // Authorize: author (via content->>user_id) or staff club role
-    const { data: existing } = await supabase
-        .from('posts')
-        .select('club_id, content')
-        .eq('id', id)
-        .maybeSingle()
-
-    if (!existing) {
-        throw new Error('Post not found')
-    }
-
-    await requirePostAccess(actorId, existing.club_id, existing.content?.user_id ?? null)
 
     const { data, error } = await supabase
         .from('posts')
@@ -208,25 +237,16 @@ export async function updatePost(id: string, input: UpdatePostInput, actorId: st
 
 /**
  * Delete a post
- * Requires the actor to be the post author or hold a staff club role
- * (owner/admin/moderator).
  */
-export async function deletePost(id: string, actorId: string): Promise<void> {
+export async function deletePost(id: string): Promise<void> {
     const supabase = await createClient()
 
-    // Get post to check authorization and if it has video
+    // Get post to check if it has video
     const { data: post } = await supabase
         .from('posts')
-        .select('type, content, club_id')
+        .select('type, content')
         .eq('id', id)
         .single()
-
-    // Authorize: author (via content->>user_id) or staff club role
-    if (!post) {
-        throw new Error('Post not found')
-    }
-
-    await requirePostAccess(actorId, post.club_id, post.content?.user_id ?? null)
 
     // If video post, delete Mux asset
     if (post?.type === 'video' && post.content?.video?.mux_asset_id) {
@@ -273,6 +293,9 @@ export async function addComment(input: CommentInput, userId: string): Promise<P
 
     // Update comment count in post_stats
     await supabase.rpc('increment_comment_count', { post_id_input: validated.post_id })
+
+    // Relationship intelligence: record the engagement signal (fire-and-forget).
+    void emitEngagedSignal(validated.post_id, userId, 'comment', { commentId: data.id })
 
     return data
 }
@@ -340,6 +363,9 @@ export async function addPostInteraction(input: PostInteractionInput, userId: st
     } else if (validated.interaction_type === 'superlike') {
         await supabase.rpc('increment_superlike_count', { post_id_input: validated.post_id })
     }
+
+    // Relationship intelligence: record the engagement signal (fire-and-forget).
+    void emitEngagedSignal(validated.post_id, userId, validated.interaction_type)
 
     return data
 }

@@ -18,6 +18,12 @@
  *   the post; member_joined -> onboarding send_message draft. Unknown
  *   signal types are rejected.
  *
+ * Relationship intelligence (Phases 25-28): both draft functions include
+ * the member's club-scoped profile summary (interests first, from
+ * member_signals via ../relationship) in the prompt context. Profile
+ * lookup is best-effort and never blocks a draft; with no signals the
+ * prompt says so explicitly instead of inventing interests.
+ *
  * Server-side only (imports verify.ts, which uses node:crypto): call it
  * from API routes and the signal worker, never from client components.
  */
@@ -25,6 +31,7 @@ import { z } from 'zod';
 
 import { COMMUNITY_MANAGER } from '../agents';
 import type { CostDeps } from '../cost';
+import { getMemberProfile, summarizeProfileForPrompt, type RelationshipDeps } from '../relationship';
 import { invokeAgent, type InvokeDeps } from '../runtime';
 import type { AIClient, AgentDefinition } from '../types';
 import { verifyAndExecute, type VerifyDb, type VerifyResult } from '../verify';
@@ -37,6 +44,12 @@ export interface CommunityManagerDeps {
     /** Injected cost storage (tests). Defaults to the Supabase adapter. */
     cost?: CostDeps;
     now?: () => Date;
+    /**
+     * Injected relationship storage (tests). Defaults to the Supabase
+     * adapter. Used ONLY to personalize drafts with the member's
+     * club-scoped profile summary — never required, never blocking.
+     */
+    relationship?: RelationshipDeps;
 }
 
 function invokeDeps(deps: CommunityManagerDeps): InvokeDeps {
@@ -65,6 +78,28 @@ function firstStringField(
         if (typeof value === 'string' && value.length > 0) return value;
     }
     return undefined;
+}
+
+/**
+ * Best-effort member profile summary for draft personalization
+ * (relationship intelligence, Phases 25-28). Loads the member's
+ * club-scoped signals and renders interests-first context for the prompt.
+ * NEVER throws: a lookup failure degrades to the no-activity branch
+ * instead of blocking the draft.
+ */
+async function loadProfileSummary(
+    clubId: string,
+    userId: string | undefined,
+    deps: CommunityManagerDeps,
+): Promise<string> {
+    if (!userId) return 'No member identified for personalization.';
+    try {
+        const profile = await getMemberProfile(clubId, userId, deps.relationship);
+        return summarizeProfileForPrompt(profile);
+    } catch (err) {
+        console.warn('[community-manager] profile lookup failed (non-fatal):', err);
+        return summarizeProfileForPrompt(null);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -154,12 +189,14 @@ function onboardingAgentDef(): AgentDefinition {
         mission:
             'Write a warm, concise welcome message for a new club member. ' +
             'Personalize it with the member name and club name when provided, ' +
+            'and with the member interests from the profile summary when present, ' +
             'and include exactly 3 concrete first steps to get started.',
         policies: [
             ...COMMUNITY_MANAGER.policies,
             'Write in Spanish.',
             'This message is a DRAFT for the creator to review: keep it ready to send as-is.',
             'Never promise rewards, events, or features not mentioned in the request context.',
+            'Personalize with the interests in the member profile summary when present; never invent interests it does not list.',
         ],
         outputSchema: OnboardingDraftSchema,
     };
@@ -170,11 +207,16 @@ function onboardingAgentDef(): AgentDefinition {
  * pipeline as a `send_message` action. At proactivity L1 the pipeline
  * stores the draft (ai_actions, status 'draft') for the AI Inbox — the
  * message is NEVER sent automatically.
+ *
+ * The member's club-scoped profile summary (interests first) is included
+ * in the prompt context when signals exist; profile lookup is best-effort
+ * and never blocks the draft.
  */
 export async function draftOnboarding(
     input: OnboardingInput,
     deps: CommunityManagerDeps,
 ): Promise<VerifyResult> {
+    const memberProfileSummary = await loadProfileSummary(input.clubId, input.userId, deps);
     const { output } = await invokeAgent<z.infer<typeof OnboardingDraftSchema>>(
         onboardingAgentDef(),
         {
@@ -184,6 +226,7 @@ export async function draftOnboarding(
             payload: {
                 memberName: input.memberName ?? null,
                 clubName: input.clubName ?? null,
+                memberProfileSummary,
             },
         },
         invokeDeps(deps),
@@ -250,6 +293,12 @@ export async function draftSignalResponse(
         if (!postId) {
             return { status: 'rejected', reason: 'new_post signal has no postId in payload' };
         }
+        const authorId = firstStringField(signal.payload, 'authorId', 'userId') ?? null;
+        const authorProfileSummary = await loadProfileSummary(
+            signal.clubId,
+            authorId ?? undefined,
+            deps,
+        );
         const { output } = await invokeAgent<z.infer<typeof CommentDraftSchema>>(
             commentAgentDef(),
             {
@@ -257,10 +306,11 @@ export async function draftSignalResponse(
                 clubId: signal.clubId,
                 payload: {
                     postId,
-                    authorId: firstStringField(signal.payload, 'authorId', 'userId') ?? null,
+                    authorId,
                     postTitle: firstStringField(signal.payload, 'postTitle', 'title') ?? null,
                     postExcerpt:
                         firstStringField(signal.payload, 'postExcerpt', 'excerpt') ?? null,
+                    authorProfileSummary,
                 },
             },
             invokeDeps(deps),

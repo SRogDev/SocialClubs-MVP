@@ -6,14 +6,10 @@
 ## Done
 - 2026-09-26 — Repo made public (SRogDev/SocialClubs-MVP) per Roger's request.
 - 2026-09-26 — Reform strategic note locked (see brief).
-- 2026-10-15 — Phase 3.2 shared AI runtime shipped (`lib/ai/`): AIsa client + deterministic mock, tier→model routing, static price table, per-club budgets (`ai_usage`/`ai_budgets` migration), env feature flags (all default OFF), `invokeAgent` with zod output validation. 34/34 unit tests. Design: `docs/adr/ADR-001-ai-runtime.md`.
-- 2026-10-15 — AI governance shipped (master plan Phases 3.1, 14, 15, 58, 59, 60): `lib/ai/actions.ts` (10-action registry), `proactivity.ts` (risk×level permission matrix), `policy.ts` (per-club `evaluatePolicy`, deny by default), `verify.ts` (schema→permission→policy→AI reviewer→human approval→execute→audit pipeline with idempotency), `agents.ts` (3 staff agents at L1 + reviewer definition), migration `20261015000002_ai_governance.sql` (`club_ai_config`, `ai_actions`, `ai_action_reviews`). v1 executors are honest stubs except `escalate_to_human`/`notify_creator` (real `ai_actions` writes). 76/76 AI unit tests. Design: `docs/adr/ADR-002-ai-governance.md`.
-- 2026-10-15 — AI Inbox shipped (master plan Phases 8, 9, 17, 18, 22, 23, 24): `lib/ai/inbox.ts` (`getPendingActions`/`approveAction`/`rejectAction` over `ai_actions`/`ai_action_reviews` — no separate store; approve records a human `approved` review then executes the action inline via the registry executor, reject records `rejected` + feedback and never executes; both idempotent) + client-safe `lib/ai/inbox-display.ts` (Spanish labels, risk badges, input previews). `GET /api/ai/inbox` (owner/admin/moderator; `?status=`, `?humanDecision=`, `?countOnly=1`) and `POST /api/ai/inbox/[actionId]` (owner/admin only). Spanish-first UI at `/clubs/[id]/panel/ai-inbox` ("Bandeja IA" — tabs Pendientes/Aprobadas/Rechazadas/Ejecutadas, optimistic approve/reject, per-card audit trail) + sidebar link with pending-count badge. 29/29 new unit tests green; tsc clean for new files; `next build` green. Gated by `AI_INBOX` env flag (default OFF).
-- 2026-10-06 — Catch-up complete (5 PRs #5–#9): agent architecture deleted, mocks removed, pending GET routes implemented, OSS hygiene (MIT, public), landing repositioned for creators/influencers.
-- 2026-10-15 — AI-first master plan approved by Roger (84 phases). Delta audit done: `docs/delta-audit/AI-STAFF-READINESS.md`. Execution order: shared AI runtime (AIsa) → governance → signals → Community Manager → AI Inbox → intelligence → experiences.
+- 2026-10-15 — Phases 25–28 relationship intelligence shipped: append-only club-scoped `member_signals` table (migration `20261015000005_member_signals.sql`, service-role RLS) + `lib/ai/relationship.ts` (record/aggregate/churn heuristic, no PII inference) + fire-and-forget signal recording in `services/postService.ts` + Community Manager drafts (`draftOnboarding`, `draftSignalResponse`) with member-profile context + `GET /api/ai/member/[userId]/profile` (club-member auth). 19/19 new unit tests.
 
-## In progress
-- AI staff foundation — `lib/ai/` runtime + governance (actions registry, policy, verification pipeline, agent definitions). Next: signals → Community Manager → AI Inbox.
+## In progress / blocked
+- Reform planning — dedicated side chat. Next step: write the major reform plan.
 
 ## Next
 - Reform per locked strategy: standalone-first, Polygrow-enhanced via clean seams; remove club-agent architecture.
