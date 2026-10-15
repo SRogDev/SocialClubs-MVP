@@ -5,6 +5,7 @@
 
 import { cache } from 'react';
 
+import { requireInternalWorker } from '@/lib/authz';
 import { createClient } from '@/lib/supabase/server';
 import type {
     ClubGamificationAction,
@@ -269,8 +270,14 @@ export async function deleteGamificationReward(rewardId: string): Promise<void> 
 /**
  * Award points to a user in a club
  * This is the core function that will be called by event handlers
+ *
+ * INTERNAL ONLY: `input.internalSecret` must match INTERNAL_WORKER_SECRET.
+ * Throws AuthorizationError otherwise — this check runs before the
+ * best-effort try/catch below so a bad secret is never swallowed.
  */
 export async function awardPoints(input: AwardPointsInput): Promise<void> {
+    requireInternalWorker(input.internalSecret);
+
     const supabase = await createClient();
 
     try {
