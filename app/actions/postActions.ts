@@ -127,7 +127,7 @@ export async function updatePostAction(
         }
 
         // Update post
-        const updatedPost = await updatePost(postId, validated)
+        const updatedPost = await updatePost(postId, validated, user.id)
 
         // Revalidate paths
         revalidatePath(`/clubs/${post.club_id}`)
@@ -184,7 +184,7 @@ export async function deletePostAction(
         }
 
         // Delete post
-        await deletePost(postId)
+        await deletePost(postId, user.id)
 
         // Revalidate paths
         revalidatePath(`/clubs/${post.club_id}`)
