@@ -5,6 +5,7 @@
 import { cache } from 'react'
 
 import { recordSignalSafe } from '@/lib/ai/relationship'
+import { queueCommentModeration, queuePostModeration, extractPostText } from '@/lib/ai/moderation'
 import { createClient } from '@/lib/supabase/server'
 import { createPostSchema, updatePostSchema, commentSchema, postInteractionSchema, type CreatePostInput, type UpdatePostInput, type CommentInput, type PostInteractionInput } from '@/schemas/postSchema'
 import type { Post, PostStats, PostComment, PostInteraction, Poll } from '@/types/post'
@@ -208,6 +209,14 @@ export async function createPost(input: CreatePostInput, userId: string): Promis
     // Relationship intelligence: record the post signal (fire-and-forget).
     emitPostedSignal(validated.club_id, userId, post, validated.content)
 
+    // AI moderation (Phases 29-33): classify the post text fire-and-forget.
+    // Never breaks post creation; the AI never auto-hides at L1.
+    queuePostModeration({
+        clubId: validated.club_id,
+        postId: post.id,
+        text: extractPostText(validated.content),
+    })
+
     return post
 }
 
@@ -297,7 +306,31 @@ export async function addComment(input: CommentInput, userId: string): Promise<P
     // Relationship intelligence: record the engagement signal (fire-and-forget).
     void emitEngagedSignal(validated.post_id, userId, 'comment', { commentId: data.id })
 
+    // AI moderation (Phases 29-33): classify the comment text fire-and-forget.
+    // Resolves the club_id first; never breaks comment creation.
+    void emitModerationCheck(validated.post_id, data.id, validated.content)
+
     return data
+}
+
+/**
+ * Fire-and-forget AI moderation for a comment. Resolves the post's club_id
+ * first (one lightweight SELECT); if that lookup fails the check is skipped
+ * — the user action already succeeded.
+ */
+async function emitModerationCheck(postId: string, commentId: string, text: string): Promise<void> {
+    try {
+        const supabase = await createClient()
+        const { data: parent } = await supabase
+            .from('posts')
+            .select('club_id')
+            .eq('id', postId)
+            .maybeSingle()
+        if (!parent?.club_id) return
+        queueCommentModeration({ clubId: parent.club_id, commentId, text })
+    } catch (err) {
+        console.error('[moderation] emitModerationCheck failed (non-fatal):', err)
+    }
 }
 
 /**
