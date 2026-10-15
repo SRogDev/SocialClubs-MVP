@@ -21,6 +21,8 @@ import ContentCreationBar from '@/components/club/content-creation-bar'
 import FloatingJoinButton from '@/components/club/floating-join-button'
 import { PwaInstallBanner } from '@/components/club/PwaInstallBanner'
 import { AskClub } from '@/components/ai/AskClub'
+import ActivityPulse from '@/components/ai/ActivityPulse'
+import SmartPanel from '@/components/ai/SmartPanel'
 import PostCard from '@/components/post/post-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -192,6 +194,8 @@ export function ClubPageClient({
 
                             {/* Right actions */}
                             <div className="flex items-center gap-1.5 shrink-0">
+                                {/* Sentient UI: club pulse (members only) */}
+                                {isMember && <ActivityPulse clubId={club.id} />}
                                 {isCreator && (
                                     <Button
                                         variant="ghost"
@@ -267,6 +271,8 @@ export function ClubPageClient({
                                 <AskClub clubId={club.id} clubColor={clubColor} />
                             </div>
                         )}
+                        {/* Sentient UI: structured recommendations (members only) */}
+                        {isMember && <SmartPanel clubId={club.id} accent={clubColor} />}
                         <Tabs value={effectiveActiveTab} onValueChange={setActiveTab}>
                             {(visibleChannels.length > 0
                                 ? visibleChannels
