@@ -288,6 +288,30 @@ export function aggregateProfile(
 }
 
 /**
+ * Compact, prompt-safe rendering of a member profile (interests first).
+ * Used by AI staff drafts for personalization. Never invents data: with no
+ * signals it says so explicitly.
+ */
+export function summarizeProfileForPrompt(profile: MemberProfile | null): string {
+    if (!profile || profile.signalCount === 0) {
+        return 'No prior activity recorded for this member in this club. Write a general warm draft.';
+    }
+    const lines: string[] = [];
+    if (profile.interests.length > 0) {
+        lines.push(
+            `Interests: ${profile.interests.map((i) => `${i.tag} (${i.count})`).join(', ')}`,
+        );
+    } else {
+        lines.push('Interests: none recorded yet.');
+    }
+    lines.push(`Engagement trend: ${profile.engagementTrend}.`);
+    if (profile.milestones.length > 0) {
+        lines.push(`Milestones: ${profile.milestones.map((m) => m.label).join(', ')}.`);
+    }
+    return lines.join(' ');
+}
+
+/**
  * Load a member's signals (club-scoped) and aggregate them into a profile.
  *
  * AUTHORIZATION: this function does NOT check that the caller may see the
