@@ -11,10 +11,11 @@
  *  - SIGNAL_ROUTING: completeness — the deterministic table covers the
  *    remaining signal types (points_milestone): every route points at a
  *    real agent + a real action, and the composed inputs satisfy the
- *    action's schema. new_post / member_joined are agent-composed in the
- *    worker (lib/ai/agents/community-manager.ts) and tested separately.
- *  - Worker route POST: HMAC-ok -> new_post/member_joined delegate to
- *    draftSignalResponse; other routed types use verifyAndExecute;
+ *    action's schema. new_post is agent-composed in the worker
+ *    (lib/ai/agents/community-manager.ts); member_joined runs the welcome
+ *    automation workflow (lib/ai/workflows.ts); both tested separately.
+ *  - Worker route POST: HMAC-ok -> new_post delegates to draftSignalResponse,
+ *    member_joined runs the welcome workflow; other routed types use verifyAndExecute;
  *    signal marked processed; unknown signal type / already-processed ->
  *    no agent run, still 200
  *
@@ -297,6 +298,21 @@ jest.mock('@/lib/ai/agents/community-manager', () => ({
     draftOnboarding: (input: unknown, deps: unknown) => mockDraftOnboarding(input, deps),
 }));
 
+const mockRunWorkflow = jest.fn(
+    async (_name: unknown, _ctx: unknown, _deps: unknown) => ({
+        workflow: 'welcome',
+        clubId: 'club-1',
+        status: 'completed' as const,
+        steps: [],
+        idempotentReplay: false,
+    }),
+);
+
+jest.mock('@/lib/ai/workflows', () => ({
+    runWorkflow: (name: unknown, ctx: unknown, deps: unknown) =>
+        mockRunWorkflow(name, ctx, deps),
+}));
+
 describe('dispatchSignal', () => {
     beforeEach(() => {
         mockQstashState.publishCalls = [];
@@ -449,6 +465,7 @@ describe('POST /api/queues/ai-signals', () => {
         mockMarkSignalProcessed.mockClear();
         mockVerifyAndExecute.mockClear();
         mockDraftSignalResponse.mockClear();
+        mockRunWorkflow.mockClear();
         mockDraftOnboarding.mockClear();
         process.env.INTERNAL_WORKER_SECRET = 'test-secret';
         process.env.QSTASH_CURRENT_SIGNING_KEY = 'current';
@@ -476,15 +493,25 @@ describe('POST /api/queues/ai-signals', () => {
         expect(mockSignalStore.signals.get('sig-1')?.processedAt).not.toBeNull();
     });
 
-    test('member_joined: delegates to draftSignalResponse (which drafts onboarding)', async () => {
+    test('member_joined: routes to the welcome automation workflow', async () => {
         const s = storedSignal({ type: 'member_joined', payload: { userId: 'user-2' } });
 
         const res = await POST(workerRequest({ signalId: s.id }));
 
         expect(res.status).toBe(200);
-        expect(mockDraftSignalResponse).toHaveBeenCalledTimes(1);
-        const signal = mockDraftSignalResponse.mock.calls[0][0] as { type: string };
-        expect(signal.type).toBe('member_joined');
+        // The welcome workflow owns member_joined now (Phases 41-45) —
+        // the old draftSignalResponse path is only for new_post.
+        expect(mockDraftSignalResponse).not.toHaveBeenCalled();
+        expect(mockRunWorkflow).toHaveBeenCalledTimes(1);
+        expect(mockRunWorkflow).toHaveBeenCalledWith(
+            'welcome',
+            {
+                clubId: 'club-1',
+                memberId: 'user-2',
+                idempotencyKey: 'ai-signal:sig-1',
+            },
+            expect.anything(),
+        );
         expect(mockMarkSignalProcessed).toHaveBeenCalledWith('sig-1', expect.anything());
     });
 

@@ -55,6 +55,30 @@ SocialClubs keeps a privacy-first memory of member relationships (`lib/ai/relati
 - `POST /api/ai/copilot/draft-post` (`{ clubId, topic, tone? }`) and `POST /api/ai/copilot/improve` (`{ clubId, content }`) — logged-in + club owner/admin via `requireClubRole`, rate-limited (MUTATION).
 - `components/ai/CopilotPanel.tsx` — Spanish-first creator panel: topic input + tone selector → "Generar borrador" → draft card with Usar borrador / Mejorar / Descartar; plus a "Mejorar texto" tool showing the improved version and the change list. Mounted in the club page's creator area: a "Copiloto IA" button on `ContentCreationBar` (visible only when `clubId` is set).
 
+## Community automation workflows (AI staff)
+
+`lib/ai/workflows.ts` (master plan Phases 41–45) turns product events into multi-step automations that escalate with club trust. Three workflows:
+
+- **welcome** — on `member_joined`: `send_welcome` (low risk) + `enroll_challenge` (medium).
+- **reengagement** — when `detectChurnRisk` flags a member: `send_checkin` (low) + `grant_points` (medium, 10 pts via the `ai_incentive` gamification action).
+- **digest** — weekly: `post_digest` (low, deterministic counts — never invented content) + `notify_inactive` (medium).
+
+**The proactivity contract** (no branching on level in the workflow code — the governance pipeline resolves it per step):
+
+| Level | Name | Behavior |
+|---|---|---|
+| 1 | Advisor (default) | Every step lands as a **draft** in the AI Inbox. Nothing is ever auto-sent — no exceptions. |
+| 2 | Operator | Low-risk steps auto-execute; medium steps go to the AI reviewer and wait for human approval on escalate. |
+| 3 | Autonomous | Low + medium steps auto-execute after passing the AI reviewer; high/critical always need approval. |
+
+How it works:
+
+- `runWorkflow(name, ctx, deps)` composes step inputs (LLM-composed welcome/check-in text via `invokeAgent`; deterministic digest from measured 7-day counts) and runs every step through `verifyAndExecute` (`lib/ai/verify.ts`) — schema → agent permissions → club policy → proactivity mode → AI review (medium+) → execute → audit to `ai_actions`. A failed step never aborts its siblings.
+- The six workflow actions are registered in `lib/ai/actions.ts` with calibrated risk (`send_welcome`/`send_checkin`/`post_digest` = low; `notify_inactive`/`grant_points`/`enroll_challenge` = medium) and **real** executors via the delivery seam (`lib/ai/workflow-delivery.ts`): member notifications, club posts, and incentive points. No stubs.
+- **Idempotency:** steps dedupe on `<idempotencyKey>:<action>` in `ai_actions`; `runWorkflow` pre-checks all planned step keys and replays the recorded outcome without side effects (or a wasted LLM call).
+- Triggers: `member_joined` signals route to `runWorkflow('welcome')` in `POST /api/queues/ai-signals`; `POST /api/queues/ai-workflows` is the QStash worker for direct workflow jobs; `GET /api/cron/ai-digest` (Vercel Cron, Mondays 09:00, `vercel.json`) enqueues the weekly digest per club and scans members with `detectChurnRisk` → enqueues `reengagement` (one per member per week).
+- **Creator control center:** `/clubs/[id]/panel/ai-config` (Spanish-first) — proactivity level selector with plain-language explanations of each level, per-agent toggles, and tone. Writes `club_ai_config` (owner/admin only); L1 is the default for clubs that never opt in.
+
 ## Stack
 
 Next.js 16.3.6 (App Router) · React 19 · TypeScript · Tailwind · Zod (shared client/server schemas) · React Hook Form · SWR · Supabase (Postgres + Auth + Storage) · Stripe · Daily (video calls) · Mux (video) · Upstash (Redis, rate limiting, QStash queues) · PostHog · Sentry · PWA (service worker, installable)

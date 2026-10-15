@@ -24,7 +24,15 @@ describe('AI staff agent definitions (ADR-002 §4)', () => {
 
     test('community-manager is restricted to its mission tools', () => {
         expect(AGENTS['community-manager'].tools.sort()).toEqual(
-            ['send_message', 'tag_post', 'comment_post'].sort(),
+            [
+                'send_message',
+                'tag_post',
+                'comment_post',
+                // Community automation workflows (master plan Phases 41-45)
+                'send_welcome',
+                'send_checkin',
+                'post_digest',
+            ].sort(),
         );
         expect(AGENTS['community-manager'].permissions).toEqual(
             expect.arrayContaining(['send_message', 'tag_post', 'comment_post']),

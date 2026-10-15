@@ -140,7 +140,7 @@ const MODERATION_DEF: AgentDefinition = {
         'The verdict feeds a human-review queue — prefer "suspicious" unless ' +
         'the text is clearly hateful, harassing, or unambiguous spam.',
     contextSources: ['post-text'],
-    tools: ['hide_post'][],
+    tools: ['hide_post'],
     permissions: [],
     triggers: ['post-created', 'comment-created'],
     policies: [

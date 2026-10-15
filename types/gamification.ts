@@ -72,7 +72,8 @@ export type GamificationActionType =
     | 'club_left'
     | 'member_invited'
     | 'daily_login'
-    | 'weekly_active';
+    | 'weekly_active'
+    | 'ai_incentive';
 
 /**
  * Event data structure for gamification events

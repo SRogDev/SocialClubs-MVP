@@ -6,9 +6,12 @@
  * Verifies the QStash HMAC signature, loads the persisted signal from
  * `ai_signals`, routes it to the right staff capability, and runs the
  * result through the governance pipeline (`verifyAndExecute`).
- * - `new_post` / `member_joined` -> community-manager agent-composed
- *   drafts (`draftSignalResponse` in lib/ai/agents/community-manager.ts):
- *   the model composes the text, then the same governance pipeline runs.
+ * - `new_post` -> community-manager agent-composed drafts
+ *   (`draftSignalResponse` in lib/ai/agents/community-manager.ts): the model
+ *   composes the text, then the same governance pipeline runs.
+ * - `member_joined` -> the welcome automation workflow
+ *   (`runWorkflow('welcome')` in lib/ai/workflows.ts): send_welcome +
+ *   enroll_challenge, each verified individually by the pipeline.
  * - other types -> the deterministic SIGNAL_ROUTING table.
  * At proactivity L1 every signal action lands as a DRAFT for the AI
  * Inbox — nothing is ever auto-sent from here.
@@ -33,6 +36,7 @@ import {
     supabaseSignalDb,
 } from '@/lib/ai/signals'
 import { supabaseVerifyDb, verifyAndExecute, type VerifyResult } from '@/lib/ai/verify'
+import { runWorkflow } from '@/lib/ai/workflows'
 import { requireInternalWorker } from '@/lib/authz'
 
 // Node.js runtime — verify.ts uses node:crypto and the service-role client.
@@ -145,19 +149,21 @@ export async function POST(request: NextRequest) {
 
     try {
         // 6. Route to the owning capability.
-        // new_post / member_joined -> community-manager agent-composed
-        // drafts via draftSignalResponse (the model composes the text;
-        // member_joined delegates to draftOnboarding inside). Everything
-        // else falls back to the deterministic SIGNAL_ROUTING table.
+        // new_post -> community-manager agent-composed drafts via
+        // draftSignalResponse (the model composes the text).
+        // member_joined -> the welcome automation workflow (Phases 41-45):
+        // send_welcome + enroll_challenge, each step verified individually
+        // by the governance pipeline.
+        // Everything else falls back to the deterministic SIGNAL_ROUTING table.
         // At proactivity L1 every path lands as a DRAFT for the AI Inbox.
         const db = supabaseVerifyDb()
         // Idempotency: a QStash retry after a crash reuses the ai-signal:<id>
         // key, so verifyAndExecute can never double-apply the action.
         const idempotencyKey = `ai-signal:${signal.id}`
-        let result: VerifyResult
+        let result: { status: string; reason?: string }
         let agentId: string
 
-        if (signal.type === SIGNAL_NEW_POST || signal.type === SIGNAL_MEMBER_JOINED) {
+        if (signal.type === SIGNAL_NEW_POST) {
             agentId = 'community-manager'
             result = await draftSignalResponse(
                 {
@@ -168,6 +174,23 @@ export async function POST(request: NextRequest) {
                 },
                 { db },
             )
+        } else if (signal.type === SIGNAL_MEMBER_JOINED) {
+            agentId = 'community-manager'
+            const memberId = (signal.payload as { userId?: unknown }).userId
+            if (typeof memberId !== 'string' || memberId.length === 0) {
+                console.error('[AI Signals Worker] member_joined without userId — marking processed')
+                await markSignalProcessed(signal.id, signalDeps)
+                return NextResponse.json({ ok: true, skipped: 'no-user' })
+            }
+            const wf = await runWorkflow(
+                'welcome',
+                { clubId: signal.clubId, memberId, idempotencyKey },
+                { db },
+            )
+            result = {
+                status: wf.status,
+                reason: `welcome workflow: ${wf.steps.length} step(s), replay=${wf.idempotentReplay}`,
+            }
         } else {
             const route = SIGNAL_ROUTING[signal.type]
             const agentDef = route ? AGENTS[route.agentId] : undefined
