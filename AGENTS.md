@@ -34,9 +34,9 @@ Owner: Roger (SRogDev). Discussion language: Spanish. Implementation plans for c
 - `STATUS.md` — timeline: done / doing / next. Read it before starting work; update it when reality changes.
 
 ## Stack
-- Next.js. Reform in planning (see STATUS.md).
+- Next.js 16. AI-first evolution in progress (see STATUS.md + docs/delta-audit/AI-STAFF-READINESS.md).
 - Reform strategy (locked): standalone-first, Polygrow-enhanced via clean seams (APIs/events/MCP) — "una app de Polygrow para quienes hacen comunidades". Community data feeds Polygrow as the business-information core.
-- Do NOT rebuild agent infra internally — remove the club-agent architecture.
+- AI staff layer is APPROVED (Roger's order 2026-10-15, 84-phase master plan): build the staff/ops layer (Community Manager, Experience Director, Creator Copilot) with verification BEFORE autonomy. This is NOT the deleted chatbot-agent architecture — never rebuild that.
 - Design thread: "repensando las comunidades en la era IA".
 
 ## Repo map

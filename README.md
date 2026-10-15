@@ -16,7 +16,7 @@ If you have an audience, you have a business waiting to happen. SocialClubs give
 
 - Not a generic social network — every club is private and paid.
 - Not a course platform — it's an ongoing membership relationship.
-- No AI-agent gimmicks — the product is the club, not a chatbot.
+- No AI-agent gimmicks — the product is the club, not a chatbot. (An AI *staff* operations layer is now being built per the approved master plan: invisible ops help for creators, verification before autonomy — see `docs/delta-audit/AI-STAFF-READINESS.md`.)
 
 ## Status
 
@@ -48,6 +48,7 @@ _Coming soon — the landing and product tour are being repositioned for creator
 ```
 socialclubs/
 ├── app/            # routes (App Router)
+├── lib/ai/         # AI staff runtime (AIsa client, budgets, flags, governance)
 ├── components/     # feature + shared + ui (shadcn)
 ├── services/       # business logic, CRUD (presenter pattern)
 ├── schemas/        # Zod schemas (client + server)
