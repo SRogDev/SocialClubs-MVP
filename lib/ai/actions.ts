@@ -8,7 +8,10 @@
  *
  * v1 action risk assignments:
  * - low:      tag_post, notify_creator, escalate_to_human (reversible, no member-facing side effect)
+ *             + workflow actions send_welcome, send_checkin, post_digest (single-member or
+ *               deterministic content, fully reversible)
  * - medium:   send_message, create_post, comment_post, hide_post, create_event (member-facing writes)
+ *             + workflow actions notify_inactive, grant_points, enroll_challenge
  * - high:     grant_temporary_access, pause_agent (membership/operations changes)
  * - critical: reserved for membership/payment changes — deliberately NOT in v1.
  *
@@ -21,6 +24,7 @@ import { z } from 'zod';
 
 import { AIAgentError } from './types';
 import type { VerifyDb } from './verify';
+import { delivery } from './workflow-delivery';
 
 export type ActionRisk = 'low' | 'medium' | 'high' | 'critical';
 
@@ -310,6 +314,202 @@ const pauseAgentDef: ActionDef = {
     ),
 };
 
+
+// ---------------------------------------------------------------------------
+// Community automation workflow actions (master plan Phases 41-45).
+//
+// These are the steps of lib/ai/workflows.ts. Unlike the generic
+// send_message/create_post (medium risk), each workflow action is scoped to
+// one templated, single-purpose behavior, so its risk rating is honest:
+// low  = one member, templated content, fully reversible (welcome, check-in,
+//        deterministic weekly digest);
+// medium = multi-member reach or value transfer (mass notify, points,
+//          challenge enrollment).
+// With the proactivity matrix this yields the workflow contract:
+//   L1: everything drafts (AI Inbox) — never auto-sends;
+//   L2: low-risk steps auto-send, medium steps wait for approval;
+//   L3: low+medium steps auto-send.
+// Executors are REAL (notifications / posts / points via the delivery seam
+// in workflow-delivery.ts) — no stubs.
+// ---------------------------------------------------------------------------
+
+const sendWelcomeDef: ActionDef = {
+    name: 'send_welcome',
+    description: 'Send the onboarding welcome message to a new club member.',
+    risk: 'low',
+    permissions: ['send_welcome'],
+    inputSchema: z.object({
+        recipientId: idField,
+        title: z.string().max(200).optional(),
+        body: nonEmpty(4000),
+    }),
+    outputSchema: actionResultSchema,
+    idempotent: true,
+    audit: true,
+    execute: async (inputs, ctx) => {
+        const parsed = sendWelcomeDef.inputSchema.parse(inputs) as {
+            recipientId: string;
+            title?: string;
+            body: string;
+        };
+        await delivery().notifyMember({
+            userId: parsed.recipientId,
+            clubId: ctx.clubId,
+            title: parsed.title ?? '¡Bienvenido/a al club!',
+            body: parsed.body,
+        });
+        return { ok: true, data: { delivered: true, recipientId: parsed.recipientId } };
+    },
+};
+
+const sendCheckinDef: ActionDef = {
+    name: 'send_checkin',
+    description: 'Send a re-engagement nudge to an inactive club member.',
+    risk: 'low',
+    permissions: ['send_checkin'],
+    inputSchema: z.object({
+        recipientId: idField,
+        title: z.string().max(200).optional(),
+        body: nonEmpty(4000),
+    }),
+    outputSchema: actionResultSchema,
+    idempotent: true,
+    audit: true,
+    execute: async (inputs, ctx) => {
+        const parsed = sendCheckinDef.inputSchema.parse(inputs) as {
+            recipientId: string;
+            title?: string;
+            body: string;
+        };
+        await delivery().notifyMember({
+            userId: parsed.recipientId,
+            clubId: ctx.clubId,
+            title: parsed.title ?? 'Te extrañamos en el club',
+            body: parsed.body,
+        });
+        return { ok: true, data: { delivered: true, recipientId: parsed.recipientId } };
+    },
+};
+
+const postDigestDef: ActionDef = {
+    name: 'post_digest',
+    description: 'Publish the deterministic weekly digest to the club feed.',
+    risk: 'low',
+    permissions: ['post_digest'],
+    inputSchema: z.object({
+        title: z.string().max(200).optional(),
+        body: nonEmpty(10000),
+    }),
+    outputSchema: actionResultSchema,
+    idempotent: true,
+    audit: true,
+    execute: async (inputs, ctx) => {
+        const parsed = postDigestDef.inputSchema.parse(inputs) as {
+            title?: string;
+            body: string;
+        };
+        const { postId } = await delivery().postToClub({
+            clubId: ctx.clubId,
+            title: parsed.title ?? 'Resumen semanal del club',
+            body: parsed.body,
+        });
+        return { ok: true, data: { postId } };
+    },
+};
+
+const notifyInactiveDef: ActionDef = {
+    name: 'notify_inactive',
+    description: 'Notify inactive members about the weekly digest (L3 only auto-sends).',
+    risk: 'medium',
+    permissions: ['notify_inactive'],
+    inputSchema: z.object({
+        userIds: z.array(idField).min(1).max(50),
+        title: z.string().max(200).optional(),
+        body: nonEmpty(4000),
+    }),
+    outputSchema: actionResultSchema,
+    idempotent: true,
+    audit: true,
+    execute: async (inputs, ctx) => {
+        const parsed = notifyInactiveDef.inputSchema.parse(inputs) as {
+            userIds: string[];
+            title?: string;
+            body: string;
+        };
+        const title = parsed.title ?? 'Novedades de tu club esta semana';
+        for (const userId of parsed.userIds) {
+            await delivery().notifyMember({ userId, clubId: ctx.clubId, title, body: parsed.body });
+        }
+        return { ok: true, data: { notified: parsed.userIds.length } };
+    },
+};
+
+const grantPointsDef: ActionDef = {
+    name: 'grant_points',
+    description: 'Grant incentive points to a member (re-engagement reward).',
+    risk: 'medium',
+    permissions: ['grant_points'],
+    inputSchema: z.object({
+        userId: idField,
+        points: z.number().int().min(1).max(100),
+        reason: nonEmpty(200),
+    }),
+    outputSchema: actionResultSchema,
+    idempotent: true,
+    audit: true,
+    execute: async (inputs, ctx) => {
+        const parsed = grantPointsDef.inputSchema.parse(inputs) as {
+            userId: string;
+            points: number;
+            reason: string;
+        };
+        await delivery().grantIncentivePoints({
+            userId: parsed.userId,
+            clubId: ctx.clubId,
+            points: parsed.points,
+            reason: parsed.reason,
+        });
+        return { ok: true, data: { userId: parsed.userId, points: parsed.points } };
+    },
+};
+
+const enrollChallengeDef: ActionDef = {
+    name: 'enroll_challenge',
+    description:
+        'Enroll a new member in the onboarding challenge. v1 records the ' +
+        'enrollment (audit row + member notification); challenge progress ' +
+        'tracking arrives with the challenge feature.',
+    risk: 'medium',
+    permissions: ['enroll_challenge'],
+    inputSchema: z.object({
+        userId: idField,
+        challenge: nonEmpty(120),
+    }),
+    outputSchema: actionResultSchema,
+    idempotent: true,
+    audit: true,
+    execute: async (inputs, ctx) => {
+        const parsed = enrollChallengeDef.inputSchema.parse(inputs) as {
+            userId: string;
+            challenge: string;
+        };
+        await delivery().notifyMember({
+            userId: parsed.userId,
+            clubId: ctx.clubId,
+            title: 'Te inscribimos en el reto de bienvenida',
+            body:
+                `¡Empecemos! Te inscribimos en el ${parsed.challenge}: ` +
+                '1) preséntate en el club, 2) reacciona a 3 posts, 3) publica tu primera idea. ' +
+                'Completa los 3 pasos y gana puntos extra.',
+        });
+        return {
+            ok: true,
+            data: { enrolled: true, userId: parsed.userId, challenge: parsed.challenge },
+            note: 'enrollment recorded in ai_actions; challenge progress tracking arrives with the challenge feature',
+        };
+    },
+};
+
 export const ACTION_REGISTRY: Record<string, ActionDef> = {
     send_message: sendMessageDef,
     create_post: createPostDef,
@@ -321,6 +521,16 @@ export const ACTION_REGISTRY: Record<string, ActionDef> = {
     grant_temporary_access: grantTemporaryAccessDef,
     escalate_to_human: escalateToHumanDef,
     pause_agent: pauseAgentDef,
+    // Community automation workflows (master plan Phases 41-45). Risk is
+    // calibrated per action so the proactivity matrix (proactivity.ts)
+    // produces the workflow contract: L1 drafts everything; L2 auto-sends
+    // low-risk steps; L3 auto-sends low+medium steps.
+    send_welcome: sendWelcomeDef,
+    send_checkin: sendCheckinDef,
+    post_digest: postDigestDef,
+    notify_inactive: notifyInactiveDef,
+    grant_points: grantPointsDef,
+    enroll_challenge: enrollChallengeDef,
 };
 
 /** Look up an action definition. Throws on unknown names (deny by default). */

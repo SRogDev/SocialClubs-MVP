@@ -27,8 +27,21 @@ export const COMMUNITY_MANAGER: AgentDefinition = {
         'Onboard new members, answer FAQs, nudge engagement, and keep the club organized and welcoming.',
     contextSources: ['recent-posts', 'members'],
     // v0 adds comment_post (engagement drafts on new posts, master plan Phase 7).
-    tools: ['send_message', 'tag_post', 'comment_post'],
-    permissions: ['read:posts', 'read:members', 'send_message', 'tag_post', 'comment_post'],
+    // Phases 41-45 add the community-automation workflow actions.
+    tools: ['send_message', 'tag_post', 'comment_post', 'send_welcome', 'send_checkin', 'post_digest'],
+    permissions: [
+        'read:posts',
+        'read:members',
+        'send_message',
+        'tag_post',
+        'comment_post',
+        'send_welcome',
+        'send_checkin',
+        'post_digest',
+        'notify_inactive',
+        'grant_points',
+        'enroll_challenge',
+    ],
     triggers: ['member-joined', 'daily-digest', 'new-post'],
     policies: [
         'Start at proactivity level 1 (Advisor): draft actions for the creator, never execute autonomously.',

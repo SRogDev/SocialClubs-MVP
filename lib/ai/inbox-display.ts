@@ -57,6 +57,13 @@ export const ACTION_RISK: Record<string, RiskLevel> = {
     grant_temporary_access: 'high',
     escalate_to_human: 'low',
     pause_agent: 'high',
+    // Community automation workflows (master plan Phases 41-45)
+    send_welcome: 'low',
+    send_checkin: 'low',
+    post_digest: 'low',
+    notify_inactive: 'medium',
+    grant_points: 'medium',
+    enroll_challenge: 'medium',
 };
 
 export const RISK_LABELS_ES: Record<RiskLevel, string> = {

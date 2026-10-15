@@ -59,3 +59,53 @@ export async function enqueueGamificationEvent(
         retries: 3,
     })
 }
+
+// ---------------------------------------------------------------------------
+// AI workflow jobs
+// ---------------------------------------------------------------------------
+
+/**
+ * AI workflow job — delivered to POST /api/queues/ai-workflows.
+ *
+ * The idempotency key is mandatory: the worker dedupes per step on
+ * `<idempotencyKey>:<action>`, so redeliveries never re-execute a run.
+ */
+export type AIWorkflowName = 'welcome' | 'reengagement' | 'digest'
+
+export interface AIWorkflowJobPayload {
+    workflowName: AIWorkflowName
+    clubId: string
+    /** Required for welcome/reengagement; absent for the club-wide digest. */
+    memberId?: string
+    idempotencyKey: string
+    triggeredAt: number // Unix ms — used for ordering and dedup
+}
+
+/**
+ * Enqueue a community-automation workflow run.
+ *
+ * Fire-and-forget from signal workers / cron routes:
+ * enqueueAIWorkflow({...}).catch(err => console.error(...))
+ */
+export async function enqueueAIWorkflow(
+    payload: AIWorkflowJobPayload
+): Promise<void> {
+    const baseUrl =
+        process.env.NEXT_PUBLIC_SITE_URL ??
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+
+    if (!baseUrl) {
+        console.error('[QStash] NEXT_PUBLIC_SITE_URL is not set — cannot enqueue AI workflow')
+        return
+    }
+
+    if (!payload.workflowName || !payload.clubId || !payload.idempotencyKey) {
+        throw new Error('[QStash] AI workflow job requires workflowName, clubId and idempotencyKey')
+    }
+
+    await qstashClient.publishJSON({
+        url: `${baseUrl}/api/queues/ai-workflows`,
+        body: payload,
+        retries: 3,
+    })
+}

@@ -13,12 +13,19 @@ const EXPECTED_ACTIONS = [
     'grant_temporary_access',
     'escalate_to_human',
     'pause_agent',
+    // Community automation workflows (master plan Phases 41-45)
+    'send_welcome',
+    'send_checkin',
+    'post_digest',
+    'notify_inactive',
+    'grant_points',
+    'enroll_challenge',
 ] as const;
 
 const RISKS = ['low', 'medium', 'high', 'critical'] as const;
 
 describe('AI action registry (ADR-002 §1)', () => {
-    test('contains exactly the 10 v1 actions', () => {
+    test('contains exactly the 16 registered actions (10 v1 + 6 workflow)', () => {
         expect(Object.keys(ACTION_REGISTRY).sort()).toEqual([...EXPECTED_ACTIONS].sort());
     });
 
