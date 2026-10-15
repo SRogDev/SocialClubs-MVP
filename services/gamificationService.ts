@@ -5,6 +5,7 @@
 
 import { cache } from 'react';
 
+import { dispatchSignal } from '@/lib/ai/signal-dispatch';
 import { requireInternalWorker } from '@/lib/authz';
 import { createClient } from '@/lib/supabase/server';
 import type {
@@ -268,6 +269,13 @@ export async function deleteGamificationReward(rewardId: string): Promise<void> 
 // ==========================================
 
 /**
+ * Points totals that emit a `points_milestone` AI signal when crossed
+ * upward. One-way only: the dedup key (`points_milestone:<club>:<user>:<m>`)
+ * guarantees one signal per threshold, so milestone spam is impossible.
+ */
+const POINTS_MILESTONES = [100, 500, 1000];
+
+/**
  * Award points to a user in a club
  * This is the core function that will be called by event handlers
  *
@@ -290,6 +298,10 @@ export async function awardPoints(input: AwardPointsInput): Promise<void> {
             );
             return;
         }
+
+        // 1b. Points before this award — best-effort read for milestone
+        // crossing detection (a failed read just disables the signal).
+        const pointsBefore = await getUserPoints(input.userId, input.clubId).catch(() => 0);
 
         // 2. Update user's points in users_clubs table (atomic operation)
         const { error: updateError } = await supabase.rpc('increment_user_points', {
@@ -326,6 +338,29 @@ export async function awardPoints(input: AwardPointsInput): Promise<void> {
         console.log(
             `Awarded ${actionRule.value} points to user ${input.userId} for ${input.actionType}`
         );
+
+        // 2b. AI signal: points milestone crossed (fire-and-forget — never
+        // fails the award). Only upward crossings emit.
+        const pointsAfter = pointsBefore + actionRule.value;
+        const crossedMilestone = POINTS_MILESTONES.find(
+            (m) => pointsBefore < m && pointsAfter >= m
+        );
+        if (crossedMilestone !== undefined) {
+            dispatchSignal({
+                type: 'points_milestone',
+                clubId: input.clubId,
+                payload: {
+                    userId: input.userId,
+                    clubId: input.clubId,
+                    threshold: crossedMilestone,
+                    totalPoints: pointsAfter,
+                    actionType: input.actionType,
+                },
+                dedupKey: `points_milestone:${input.clubId}:${input.userId}:${crossedMilestone}`,
+            }).catch((err) =>
+                console.error('[ai-signals] points_milestone dispatch failed:', err)
+            );
+        }
 
         // 3. TODO: Log transaction in points_history table (to be created)
         // await logPointsTransaction({
