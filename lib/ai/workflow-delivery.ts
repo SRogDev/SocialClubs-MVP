@@ -10,6 +10,7 @@
  */
 import { createClient } from '@supabase/supabase-js';
 
+import { getMemberPreferences, shouldSkipProactiveSend } from './member-control';
 import { AIAgentError } from './types';
 
 export interface DeliveryDeps {
@@ -60,6 +61,22 @@ async function defaultNotifyMember(input: {
     title: string;
     body: string;
 }): Promise<void> {
+    // Member control (Phases 73-76): a member who opted out of proactive
+    // messages never gets workflow sends. Best-effort and fail-open to the
+    // opt-in default — a preference-read failure must not silently drop
+    // messages; it only logs.
+    try {
+        const prefs = await getMemberPreferences(input.userId, input.clubId);
+        if (shouldSkipProactiveSend(prefs)) {
+            console.info(
+                `[ai-workflows] proactive send skipped: member opted out (user=${input.userId}, club=${input.clubId})`,
+            );
+            return;
+        }
+    } catch (err) {
+        console.warn('[ai-workflows] preference check failed (non-fatal, proceeding):', err);
+    }
+
     const supabase = serviceRoleClient();
     const { error } = await supabase.from('notifications').insert({
         user_id: input.userId,
@@ -69,7 +86,8 @@ async function defaultNotifyMember(input: {
         club_id: input.clubId,
         icon: '🤖',
         category: 'engagement',
-        metadata: { source: 'ai-workflow' },
+        // Identity transparency: every workflow notification is AI-attributed.
+        metadata: { source: 'ai-workflow', ai_generated: true },
         read: false,
     });
     if (error) throw new Error(`notifyMember failed: ${error.message}`);

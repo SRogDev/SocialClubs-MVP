@@ -8,13 +8,17 @@
  * Auth: the requester must be logged in AND hold a club role in `clubId`
  * (member or above). Profiles are club-scoped — a requester can only see
  * profiles for clubs they belong to; signals never cross clubs.
+ *
+ * Member control: when the profile's owner opted out of personalization,
+ * the profile comes back EMPTY (same shape as no-activity) — no
+ * personalization leaks through this endpoint.
  */
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { AuthorizationError, requireClubRole } from '@/lib/authz'
-import { getMemberProfile } from '@/lib/ai/relationship'
+import { getMemberProfileWithConsent } from '@/lib/ai/member-control'
 import { AIAgentError } from '@/lib/ai/types'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
@@ -56,10 +60,11 @@ export async function GET(
         const { userId } = await params
 
         // Authorize: requester must belong to the club (any role).
-        // getMemberProfile itself is club-scoped; this is the membership gate.
+        // getMemberProfileWithConsent itself is club-scoped and consent-aware
+        // (personalization opt-out -> empty profile); this is the membership gate.
         await requireClubRole(user.id, clubId, ['owner', 'admin', 'moderator', 'member'])
 
-        const profile = await getMemberProfile(clubId, userId)
+        const profile = await getMemberProfileWithConsent(clubId, userId)
         return NextResponse.json({ data: profile })
     } catch (error) {
         if (error instanceof AuthorizationError) {
