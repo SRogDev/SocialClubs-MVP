@@ -59,6 +59,20 @@ SocialClubs keeps a privacy-first memory of member relationships (`lib/ai/relati
 
 `tests/eval/` (master plan Phases 67–68) proves the AI staff is safe — evals, not just unit tests. Run with `npm run eval:ai` (deterministic mock only: no cost, no network, no flakiness; exits non-zero on failure). Suites: `faq-grounding` (24 cases — answers come from the club FAQ, never invented), `moderation` (30 texts — clean passes, spam/hate caught, suspicious routed to the AI layer), `jailbreak` (21 cases — adversarial prompts blocked by `lib/ai/input-guards.ts`), `budget` (4 cases — budget checked before every model call). Full contract in `docs/AI-EVALS.md`. **Policy: every new AI feature must ship evals.**
 
+## AI cost observability
+
+`lib/ai/cost-dashboard.ts` (master plan Phases 69–72) — read-side analytics over `ai_usage` / `ai_budgets`, so every club owner can see exactly what the AI staff costs:
+
+- `getClubSpend(clubId, month)` — total tokens + cost for the month, broken down by agent and by workflow (action). Backed by a new `CostDb.listUsage({ clubId?, since, until })` reader.
+- `getBudgetStatus(clubId)` — monthly cap vs spent, % used, remaining, and a linear end-of-month projection (pace estimate, not a forecast) with projected overrun. Warning levels: `ok` / `warning` (≥80%) / `critical` (≥100%).
+- `getPlatformSpend(month)` — cross-club aggregate with a per-club top list (platform view, for Roger).
+- `maybeSendBudgetAlert(clubId, deps)` — when a club reaches ≥80% of its monthly cap, sends a one-per-period `budget_warning` notification to the club creator (via the existing `notifications` table; creator + owner/admin members from `clubs.creator` / `users_clubs`). Best effort: alert failures never break the agent call. Wired into `invokeAgent` right after usage logging.
+- `GET /api/ai/cost?clubId=…&month=YYYY-MM` — dashboard data for owner/admin roles (rate-limited, zod-validated).
+- `/clubs/[id]/panel/ai-cost` — Spanish-first owner dashboard: month spend vs budget (progress bar), per-agent and per-action breakdowns, ≥80% warning banner, end-of-month projection. Sidebar link "Costo IA".
+- `screenAgentInput` is now wired into `invokeAgent` (the Phases 67–68 follow-up): the signal payload is screened before the model call; a hit throws the typed `AI_INPUT_BLOCKED` error with the safe canned refusal, and the model is never called.
+
+**Cost model (non-negotiable):** AI costs fit inside the platform margin — the dashboard states this explicitly ("Los costos de IA están incluidos en el margen de la plataforma"). Cost-as-%-of-club-revenue is not computed yet (no per-club revenue data wired); the UI says so honestly instead of inventing a number.
+
 ## Widget runtime (typed configs only — no codegen)
 
 `lib/ai/widget-configs.ts` + `lib/ai/widgets.ts` + `components/widgets/` (master plan Phases 53–57) — the runtime that lets AI staff publish interactive widgets as posts.
