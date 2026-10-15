@@ -65,6 +65,7 @@ async function ProfileData() {
 
   const mappedSubscriptions = (subscriptions || []).map((sub: any) => ({
     id: sub.id?.toString() ?? '',
+    clubId: sub.club_id ?? '',
     clubName: sub.clubs?.name ?? 'Club',
     clubImage: sub.clubs?.logo?.url ?? '/placeholder.svg',
     channelName: '',

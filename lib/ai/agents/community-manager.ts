@@ -45,6 +45,13 @@ import {
     type MemoryDeps,
 } from '../memory';
 import { getMemberProfile, summarizeProfileForPrompt, type RelationshipDeps } from '../relationship';
+import {
+    DEFAULT_MEMBER_PREFERENCES,
+    getMemberPreferences,
+    shouldSkipPersonalization,
+    PERSONALIZATION_OPT_OUT_NOTE,
+    type PreferencesDeps,
+} from '../member-control';
 import { invokeAgent, type InvokeDeps } from '../runtime';
 import type { AIClient, AgentDefinition } from '../types';
 import { verifyAndExecute, type VerifyDb, type VerifyResult } from '../verify';
@@ -69,6 +76,12 @@ export interface CommunityManagerDeps {
      * (Phases 63-66) — never required, never blocking.
      */
     memory?: MemoryDeps;
+    /**
+     * Injected member-control storage (tests). Defaults to the Supabase
+     * adapter. Respects the member's personalization opt-out (Phases
+     * 73-76) — never required, never blocking.
+     */
+    prefs?: PreferencesDeps;
 }
 
 function invokeDeps(deps: CommunityManagerDeps): InvokeDeps {
@@ -112,6 +125,23 @@ async function loadProfileSummary(
     deps: CommunityManagerDeps,
 ): Promise<string> {
     if (!userId) return 'No member identified for personalization.';
+    // Member control (Phases 73-76): an opted-out member gets no
+    // personalization — the prompt degrades to the opt-out branch, not
+    // to "no activity" (those are different facts). A preference-read
+    // failure is NOT a profile failure: it fails open to the opt-in
+    // defaults and the profile lookup below proceeds.
+    let prefs = DEFAULT_MEMBER_PREFERENCES;
+    try {
+        prefs = await getMemberPreferences(userId, clubId, deps.prefs);
+    } catch (err) {
+        console.warn(
+            '[community-manager] preference lookup failed (non-fatal, defaults apply):',
+            err,
+        );
+    }
+    if (shouldSkipPersonalization(prefs)) {
+        return PERSONALIZATION_OPT_OUT_NOTE;
+    }
     try {
         const profile = await getMemberProfile(clubId, userId, deps.relationship);
         return summarizeProfileForPrompt(profile);

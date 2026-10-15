@@ -418,3 +418,43 @@ describe('agent memory context', () => {
         expect(String(inner['memorySummary'])).toMatch(/No learned memories/);
     });
 });
+
+// ---------------------------------------------------------------------------
+// Member control (Phases 73-76)
+// ---------------------------------------------------------------------------
+
+describe('member control', () => {
+    test('personalization opt-out: the draft context carries the opt-out note, no personal data', async () => {
+        const db = memoryDb({});
+        const stub = stubClient({ body: '¡Hola! Bienvenido.' });
+
+        const res = await draftOnboarding(
+            { userId: 'user-9', clubId: 'club-1', memberName: 'Ana', clubName: 'Club Demo' },
+            {
+                db,
+                client: stub.client,
+                cost: costDeps(),
+                prefs: {
+                    db: {
+                        async getPreferences() {
+                            return {
+                                user_id: 'user-9',
+                                club_id: 'club-1',
+                                allow_personalization: false,
+                                allow_proactive_messages: true,
+                                updated_at: '2026-10-15T18:00:00.000Z',
+                            };
+                        },
+                        async upsertPreferences() {
+                            throw new Error('not used');
+                        },
+                    },
+                },
+            },
+        );
+
+        expect(res.status).toBe('draft');
+        const inner = stub.lastUserPayload()['payload'] as Record<string, unknown>;
+        expect(String(inner['memberProfileSummary'])).toContain('opted out');
+    });
+});

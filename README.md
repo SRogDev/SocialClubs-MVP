@@ -112,6 +112,17 @@ How it works:
 - Triggers: `member_joined` signals route to `runWorkflow('welcome')` in `POST /api/queues/ai-signals`; `POST /api/queues/ai-workflows` is the QStash worker for direct workflow jobs; `GET /api/cron/ai-digest` (Vercel Cron, Mondays 09:00, `vercel.json`) enqueues the weekly digest per club and scans members with `detectChurnRisk` → enqueues `reengagement` (one per member per week).
 - **Creator control center:** `/clubs/[id]/panel/ai-config` (Spanish-first) — proactivity level selector with plain-language explanations of each level, per-agent toggles, and tone. Writes `club_ai_config` (owner/admin only); L1 is the default for clubs that never opt in.
 
+## AI security, privacy & member control
+
+The AI staff layer (`lib/ai/`) ships with identity transparency and real member control (master plan Phases 73-76).
+
+- **Identity transparency:** `lib/ai/transparency.ts` — `markAsAIGenerated(content, { agentId, actionId })` attaches machine-readable metadata (`{ ai_generated: true, agent_id, action_id, timestamp }`) to posts/messages; `getAILabel(actionId, locale)` returns the human-readable disclosure — Spanish default ("Este contenido fue generado o asistido por la IA del club"), English on request. Every workflow notification carries `metadata.ai_generated: true`.
+- **Governance audit trail:** `ai_actions` (`supabase/migrations/20261015000002_ai_governance.sql`, RLS service-role only) is the append-only audit log — who (agent), what (action + inputs), policy/review/execution results, idempotency key, timestamps — written by the verification pipeline (`lib/ai/verify.ts`). Inputs are PII-sanitized before read — the log never carries raw emails, phones, or names to a reader. `GET /api/ai/audit?clubId=...` exposes the club's log read-only, owner/admin only — the same log the AI Inbox shows, no separate store.
+- **Member control (opt-out, not opt-in gate):** `ai_member_preferences` (`supabase/migrations/20261015000010_ai_preferences.sql`, PK `(user_id, club_id)`, RLS service-role only) stores two switches per member per club — `allow_personalization` and `allow_proactive_messages`, both default **true**. Members toggle them in their profile (`components/ai/AIPreferences.tsx`, Spanish-first: "Personalización" and "Mensajes proactivos", one card per club) via `GET`/`PUT /api/ai/preferences` (a member can only change their own).
+  - `allowPersonalization=false` → `getMemberProfileWithConsent()` returns an EMPTY profile, and Community Manager drafts degrade to a general warm draft with no personal details — personalization never leaks through the profile API or the draft prompts.
+  - `allowProactiveMessages=false` → the delivery seam (`lib/ai/workflow-delivery.ts`) skips proactive sends to that member, fail-open to the opt-in default only when the preference read itself fails.
+- **Privacy model (non-negotiable):** preferences and audit rows are club-scoped and never joined across clubs; no raw PII is ever persisted in memories, feedback, or the audit log (`sanitizePII` on every write path, verified on read).
+
 ## Stack
 
 Next.js 16.3.6 (App Router) · React 19 · TypeScript · Tailwind · Zod (shared client/server schemas) · React Hook Form · SWR · Supabase (Postgres + Auth + Storage) · Stripe · Daily (video calls) · Mux (video) · Upstash (Redis, rate limiting, QStash queues) · PostHog · Sentry · PWA (service worker, installable)

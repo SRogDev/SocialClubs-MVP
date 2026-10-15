@@ -11,6 +11,7 @@ import SubscriptionSection from '@/components/club/subscription-section'
 import CreateClubLink from '@/components/create-club-link'
 import SuperlikeModal from '@/components/post/superlike-modal'
 import EditProfileModal from '@/components/profile/edit-profile-modal'
+import AIPreferences from '@/components/ai/AIPreferences'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import GlassCard from '@/components/ui/glass-card'
@@ -34,6 +35,7 @@ interface ProfileData {
 
 interface Subscription {
     id: string
+    clubId?: string
     clubName: string
     clubImage: string
     channelName: string
@@ -172,6 +174,17 @@ export default function ProfileClient({ profile, subscriptions }: ProfileClientP
                         </select>
                     </div>
                 </SpotlightCard>
+
+                {/* AI preferences (Phases 73-76): one card per club the member belongs to */}
+                {subscriptions
+                    .filter((sub) => sub.clubId)
+                    .map((sub) => (
+                        <AIPreferences
+                            key={sub.id}
+                            clubId={sub.clubId as string}
+                            clubName={sub.clubName}
+                        />
+                    ))}
 
                 <div className="pt-4 space-y-3">
                     <Button
