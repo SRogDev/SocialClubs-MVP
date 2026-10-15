@@ -1,18 +1,21 @@
 "use client"
 
-import { MessageSquare, ImageIcon, Video, FileAudio, BarChart2, PuzzleIcon } from "lucide-react"
+import { MessageSquare, ImageIcon, Video, FileAudio, BarChart2, PuzzleIcon, Sparkles } from "lucide-react"
 import { useState } from "react"
 
+import CopilotPanel from "@/components/ai/CopilotPanel"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface ContentCreationBarProps {
   clubColor?: string
+  clubId?: string
 }
 
-export default function ContentCreationBar({ clubColor = "#f97316" }: ContentCreationBarProps) {
+export default function ContentCreationBar({ clubColor = "#f97316", clubId }: ContentCreationBarProps) {
   const [showContentModal, setShowContentModal] = useState(false)
   const [contentType, setContentType] = useState<string>("")
+  const [showCopilot, setShowCopilot] = useState(false)
 
   const handleContentClick = (type: string) => {
     setContentType(type)
@@ -76,6 +79,20 @@ export default function ContentCreationBar({ clubColor = "#f97316" }: ContentCre
           >
             <PuzzleIcon size={20} style={{ color: clubColor }} />
           </Button>
+
+          {/* Creator Copilot — AI drafts, never publishes */}
+          {clubId && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-10 w-10 p-0 hover:scale-110 transition-transform"
+              onClick={() => setShowCopilot(true)}
+              aria-label="Copiloto IA"
+              title="Copiloto IA — generar borradores"
+            >
+              <Sparkles size={20} style={{ color: clubColor }} />
+            </Button>
+          )}
         </div>
       </div>
 
@@ -101,6 +118,18 @@ export default function ContentCreationBar({ clubColor = "#f97316" }: ContentCre
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Creator Copilot panel */}
+      {clubId && (
+        <Dialog open={showCopilot} onOpenChange={setShowCopilot}>
+          <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Copiloto IA</DialogTitle>
+            </DialogHeader>
+            <CopilotPanel clubId={clubId} clubColor={clubColor} />
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   )
 }

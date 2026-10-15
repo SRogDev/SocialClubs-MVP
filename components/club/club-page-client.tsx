@@ -385,7 +385,7 @@ export function ClubPageClient({
                             transition={{ duration: 0.25 }}
                             className="fixed bottom-0 left-0 right-0 z-20 md:left-[220px]"
                         >
-                            <ContentCreationBar clubColor={clubColor} />
+                            <ContentCreationBar clubColor={clubColor} clubId={club.id} />
                             <ChatContentCreationBar clubId={club.id} userId={userId} />
                         </motion.div>
                     )}
