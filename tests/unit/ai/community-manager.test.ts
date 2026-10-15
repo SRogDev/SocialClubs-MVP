@@ -20,6 +20,7 @@ import {
 import type { CostDb, CostDeps } from '@/lib/ai/cost';
 import type { ClubAIConfigRow } from '@/lib/ai/policy';
 import type { AIClient } from '@/lib/ai/types';
+import type { AiMemory, MemoryDb } from '@/lib/ai/memory';
 import {
     answerFAQ,
     draftOnboarding,
@@ -319,5 +320,98 @@ describe('draftSignalResponse', () => {
         expect(res.status).toBe('rejected');
         expect(db.actions).toHaveLength(0);
         expect(stub.calls).toBe(0);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// agent memory context (Phases 63-66)
+// ---------------------------------------------------------------------------
+
+describe('agent memory context', () => {
+    function memoryRow(overrides: Partial<AiMemory>): AiMemory {
+        return {
+            id: 'mem-1',
+            club_id: 'club-1',
+            agent_id: 'community-manager',
+            key: 'correction-tone',
+            value: { preference: 'playful, not corporate', polarity: 'avoid' },
+            source: 'correction',
+            created_at: '2026-10-15T12:00:00.000Z',
+            updated_at: '2026-10-15T12:00:00.000Z',
+            ...overrides,
+        };
+    }
+
+    function stubMemoryDb(rows: AiMemory[]): MemoryDb {
+        return {
+            async upsertMemory() {
+                throw new Error('not needed');
+            },
+            async getMemory() {
+                return null;
+            },
+            async listMemories(clubId: string, agentId: string) {
+                return rows.filter(
+                    (r) => r.club_id === clubId && r.agent_id === agentId,
+                );
+            },
+            async deleteMemory() {
+                return false;
+            },
+            async insertFeedback() {
+                throw new Error('not needed');
+            },
+        };
+    }
+
+    test('draftOnboarding includes the memory section in the prompt context', async () => {
+        const db = memoryDb({});
+        const stub = stubClient({ body: '¡Hola! Bienvenido.' });
+
+        const res = await draftOnboarding(
+            { userId: 'user-9', clubId: 'club-1' },
+            {
+                db,
+                client: stub.client,
+                cost: costDeps(),
+                memory: { db: stubMemoryDb([memoryRow({})]) },
+            },
+        );
+
+        expect(res.status).toBe('draft');
+        const inner = stub.lastUserPayload()['payload'] as Record<string, unknown>;
+        expect(String(inner['memorySummary'])).toMatch(/correction-tone/);
+        expect(String(inner['memorySummary'])).toMatch(/playful, not corporate/);
+    });
+
+    test('a memory lookup failure degrades to the no-memories branch, never blocking the draft', async () => {
+        const db = memoryDb({});
+        const stub = stubClient({ body: '¡Hola! Bienvenido.' });
+        const failing: MemoryDb = {
+            async upsertMemory() {
+                throw new Error('nope');
+            },
+            async getMemory() {
+                throw new Error('nope');
+            },
+            async listMemories() {
+                throw new Error('nope');
+            },
+            async deleteMemory() {
+                throw new Error('nope');
+            },
+            async insertFeedback() {
+                throw new Error('nope');
+            },
+        };
+
+        const res = await draftOnboarding(
+            { userId: 'user-9', clubId: 'club-1' },
+            { db, client: stub.client, cost: costDeps(), memory: { db: failing } },
+        );
+
+        expect(res.status).toBe('draft');
+        const inner = stub.lastUserPayload()['payload'] as Record<string, unknown>;
+        expect(String(inner['memorySummary'])).toMatch(/No learned memories/);
     });
 });
