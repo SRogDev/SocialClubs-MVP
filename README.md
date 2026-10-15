@@ -33,7 +33,7 @@ SocialClubs keeps a privacy-first memory of member relationships (`lib/ai/relati
 - `getMemberProfile(clubId, userId)` aggregates signals into a profile: top interest tags, engagement trend (`up`/`flat`/`down`, last 7 days vs previous 7), milestones, last active.
 - `detectChurnRisk(clubId, userId)` — heuristic: no activity in 14 days + previously active → `{ atRisk: true }`. New members and members with no recorded activity are never flagged.
 - `GET /api/ai/member/[userId]/profile?clubId=…` returns the profile; the requester must hold a club role in that club.
-- `lib/ai/community-manager.ts` — `draftOnboarding()` and `draftSignalResponse()` build drafts via the shared AI runtime with the member's profile summary (interests first) in the prompt context; degrades to a generic warm draft when no signals exist.
+- `lib/ai/agents/community-manager.ts` — `draftOnboarding()` and `draftSignalResponse()` now include the member's club-scoped profile summary (interests first) in the prompt context; profile lookup is best-effort and never blocks a draft (degrades to a generic warm draft when no signals exist).
 
 **Privacy model (non-negotiable):** signals are club-scoped — every row carries `club_id`, they are never shared or joined across clubs, and there is no cross-club profiling. The module aggregates only what members explicitly did; it never infers personal attributes (no age/gender/location guessing). RLS on `member_signals` is service-role only; readers must enforce club membership with `requireClubRole` before returning a profile (the API route does).
 
