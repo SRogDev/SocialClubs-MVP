@@ -37,6 +37,15 @@ SocialClubs keeps a privacy-first memory of member relationships (`lib/ai/relati
 
 **Privacy model (non-negotiable):** signals are club-scoped — every row carries `club_id`, they are never shared or joined across clubs, and there is no cross-club profiling. The module aggregates only what members explicitly did; it never infers personal attributes (no age/gender/location guessing). RLS on `member_signals` is service-role only; readers must enforce club membership with `requireClubRole` before returning a profile (the API route does).
 
+**AI moderation — `lib/ai/moderation.ts`** (master plan Phases 29–33): layered content moderation for posts and comments.
+
+- **Layer 1 — deterministic (always on, zero cost):** configurable blocklist (`ModerationPolicy`, future source: `club_ai_config.policies.moderation.blocklist`), link-spam heuristic (URLs > `maxUrls`, default 3), ALL-CAPS ratio (`capsRatioThreshold` 0.7 over ≥20 letters). Returns `{ verdict: 'clean'|'suspicious'|'violation', layer: 'deterministic', reasons }`; blocklist hits are confident violations and skip Layer 2.
+- **Layer 2 — AI classifier (only for L1 `suspicious`, only when `AI_MODERATION` is on):** `invokeAgent` with the `moderation` agent definition (zod schema `{ verdict, categories, confidence }`), budget-checked and usage-logged like every other staff agent. It can clear or confirm the L1 suspicion.
+- **Action mapping:** `clean → none`, `suspicious → flagged_for_review`, `violation → hide_proposed`. **The AI never auto-hides or auto-deletes content** — a violation only creates a pending draft (a `moderation_events` row with `action_taken = 'hide_proposed'`) that the AI Inbox surfaces for a human decision. There is deliberately no "executed" action at L1.
+- **Fail-open to human review:** any classifier failure (flag off, budget exceeded, invalid output, provider down) degrades to `suspicious` + `flagged_for_review` — a likely violation is never silently allowed, and no action is taken on an uncertain verdict. Documented choice, not an accident.
+- Every classification is audited to `moderation_events` (`supabase/migrations/20261015000006_moderation.sql`, RLS service-role only, read via `GET /api/ai/moderation/events?clubId=…` — owner/admin/moderator roles).
+- Wired fire-and-forget into `services/postService.ts` (`createPost`, `addComment`): moderation failures can never break a user action.
+
 ## Stack
 
 Next.js 16.3.6 (App Router) · React 19 · TypeScript · Tailwind · Zod (shared client/server schemas) · React Hook Form · SWR · Supabase (Postgres + Auth + Storage) · Stripe · Daily (video calls) · Mux (video) · Upstash (Redis, rate limiting, QStash queues) · PostHog · Sentry · PWA (service worker, installable)
