@@ -22,6 +22,7 @@ import {
     type EmitInput,
     type SignalDb,
 } from './signals';
+import { notifyClubAiUpdate } from './realtime';
 
 export interface DispatchDeps {
     /** Injected storage (tests). Defaults to the service-role Supabase adapter. */
@@ -55,6 +56,11 @@ export async function dispatchSignal(input: EmitInput, deps?: DispatchDeps): Pro
         console.error('[ai-signals] emitSignal failed:', err);
         return;
     }
+
+    // Sentient UI (Phases 58-62): wake SmartPanel / ActivityPulse on the
+    // `club-ai:{clubId}` broadcast channel. Fire-and-forget, never throws —
+    // clients also poll, so a missed broadcast only delays live updates.
+    void notifyClubAiUpdate(input.clubId);
 
     const token = process.env.QSTASH_TOKEN;
     const baseUrl =

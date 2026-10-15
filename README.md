@@ -94,6 +94,22 @@ How it works:
 - Triggers: `member_joined` signals route to `runWorkflow('welcome')` in `POST /api/queues/ai-signals`; `POST /api/queues/ai-workflows` is the QStash worker for direct workflow jobs; `GET /api/cron/ai-digest` (Vercel Cron, Mondays 09:00, `vercel.json`) enqueues the weekly digest per club and scans members with `detectChurnRisk` → enqueues `reengagement` (one per member per week).
 - **Creator control center:** `/clubs/[id]/panel/ai-config` (Spanish-first) — proactivity level selector with plain-language explanations of each level, per-agent toggles, and tone. Writes `club_ai_config` (owner/admin only); L1 is the default for clubs that never opt in.
 
+## Sentient UI (AI staff)
+
+`lib/ai/ui-recommendations.ts` (master plan Phases 58–62) turns the club's structured signals into dashboard UI — not chat. `buildRecommendations()` is a pure, deterministic engine aggregating `ai_signals` + `member_signals` + `ai_drafts` + `events` into `UIRecommendation` objects (`{ id, clubId, userId?, kind: 'suggest_action'|'highlight'|'nudge'|'insight', title, body, action?, priority 1–5, expiresAt }`):
+
+- churn-risk member → nudge ("Escríbele a X, lleva N días sin actividad") — **staff-only**, so plain members never see who went quiet; bounded to 3;
+- pending drafts → highlight ("Tienes N borradores en la Bandeja IA");
+- recent `member_joined` → welcome `suggest_action`;
+- upcoming event → highlight;
+- quiet club (no activity in 7 days) → insight.
+
+**Every recommendation explains its reason ("porque X")**. `computePulse()` derives the club pulse (active/steady/quiet) from trailing-24h signal counts — no LLM. `getRecommendations()`/`getPulse()` are the async wrappers with an injected `RecommendationDb` (service-role Supabase adapter included; reads go through `requireClubRole` in the routes).
+
+- **API** — `GET /api/ai/recommendations?clubId=…` and `GET /api/ai/pulse?clubId=…`: logged-in + club role (member or above), rate-limited.
+- **UI (Spanish-first)** — `components/ai/SmartPanel.tsx`: top-3 recommendations with kind icons and priority colors, dismissible (dismissals are local-only, stored in `localStorage` — no table), mounted above the club feed alongside AskClub for members. `components/ai/ActivityPulse.tsx`: subtle green/yellow/red dot + label in the club header.
+- **Live updates** — `lib/ai/realtime.ts`: `dispatchSignal` calls `notifyClubAiUpdate(clubId)` after persisting a signal, broadcasting on the `club-ai:{clubId}` realtime channel (clients receive broadcast events, never raw rows — the `ai_signals` service-role-only RLS stays intact). Both widgets also poll every 60s as a fallback.
+
 ## Stack
 
 Next.js 16.3.6 (App Router) · React 19 · TypeScript · Tailwind · Zod (shared client/server schemas) · React Hook Form · SWR · Supabase (Postgres + Auth + Storage) · Stripe · Daily (video calls) · Mux (video) · Upstash (Redis, rate limiting, QStash queues) · PostHog · Sentry · PWA (service worker, installable)
