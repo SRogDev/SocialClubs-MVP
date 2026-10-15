@@ -110,6 +110,20 @@ How it works:
 - **UI (Spanish-first)** — `components/ai/SmartPanel.tsx`: top-3 recommendations with kind icons and priority colors, dismissible (dismissals are local-only, stored in `localStorage` — no table), mounted above the club feed alongside AskClub for members. `components/ai/ActivityPulse.tsx`: subtle green/yellow/red dot + label in the club header.
 - **Live updates** — `lib/ai/realtime.ts`: `dispatchSignal` calls `notifyClubAiUpdate(clubId)` after persisting a signal, broadcasting on the `club-ai:{clubId}` realtime channel (clients receive broadcast events, never raw rows — the `ai_signals` service-role-only RLS stays intact). Both widgets also poll every 60s as a fallback.
 
+## AI memory + correction loops (AI staff)
+
+`lib/ai/memory.ts` (master plan Phases 63–66): the AI staff learns from corrections instead of repeating them.
+
+- **Data model** (`supabase/migrations/20261015000009_ai_memory.sql`, RLS service-role only):
+  - `ai_memory` — one row per `(club_id, agent_id, key)`: `value` (JSONB, e.g. `{"preference": "playful, not corporate", "polarity": "avoid"}`), `source` (`correction` | `learned` | `config`), `created_at`/`updated_at`. Upserts replace the value, so repeated corrections converge on one row per category instead of piling up.
+  - `ai_feedback` — append-only log of creator feedback: `action_id` (the reviewed `ai_actions` row), `feedback_type` (`correction` | `praise` | `flag`), `content`, `created_by`.
+- **What is remembered:** preferences and patterns, never raw user PII. `sanitizePII()` redacts emails and phone numbers before anything is persisted — memories store things like "prefers short titles" or "avoid corporate tone", not names or contact details.
+- **How corrections work:** `recordFeedback({ actionId, clubId, agentId, type, content, userId })` logs the feedback row and distills it into a memory via a deterministic heuristic (zero LLM cost): `correction` → memory key `correction-<category>` (categories: tone, length, title, emoji, timing, topic, language, cta, general) with polarity `prefer`/`avoid`; `praise` → `praise-<category>` memory (source `learned`), reinforcing approved styles; `flag` → logged only, never turned into a memory automatically.
+- **Prompt context:** `getAgentMemories(clubId, agentId)` feeds a "memory" section into the prompts of `community-manager` (draftOnboarding, draftSignalResponse), `experience-director` (suggestEvent, event announcements), and `creator-copilot` (draftPost, improvePost). Memory lookup is best-effort — a failure degrades to the no-memories branch and never blocks a draft. FAQ answering is intentionally not wired: it stays strictly grounded in the club FAQ.
+- **AI Inbox wiring:** `approveAction`/`rejectAction` in `lib/ai/inbox.ts` call `recordFeedback` fire-and-forget when the decision carries feedback — reject + feedback → a `correction` memory (the agent won't repeat the mistake); approve + feedback → a `praise` memory. Feedback recording never blocks a review.
+- **Creator curation:** `GET /api/ai/memory?clubId=…&agentId=…` lists what an agent remembers for a club; `DELETE /api/ai/memory?id=…&clubId=…` removes a memory (scoped to the club — it only deletes when the memory belongs to that club). Both require owner/admin via `requireClubRole`. Creators can inspect and delete everything the AI remembers about their club.
+- **Privacy model (non-negotiable):** every memory is scoped to one club AND one agent — memories never leave their club and are never joined across clubs; no cross-club profiling. RLS on both tables is service-role only; all reads/writes go through service-role code that enforces club roles first.
+
 ## Stack
 
 Next.js 16.3.6 (App Router) · React 19 · TypeScript · Tailwind · Zod (shared client/server schemas) · React Hook Form · SWR · Supabase (Postgres + Auth + Storage) · Stripe · Daily (video calls) · Mux (video) · Upstash (Redis, rate limiting, QStash queues) · PostHog · Sentry · PWA (service worker, installable)
