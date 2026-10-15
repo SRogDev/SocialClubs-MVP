@@ -4,6 +4,7 @@
 
 import { cache } from 'react'
 
+import { requireClubRole, requirePostAccess } from '@/lib/authz'
 import { createClient } from '@/lib/supabase/server'
 import { createPostSchema, updatePostSchema, commentSchema, postInteractionSchema, type CreatePostInput, type UpdatePostInput, type CommentInput, type PostInteractionInput } from '@/schemas/postSchema'
 import type { Post, PostStats, PostComment, PostInteraction, Poll } from '@/types/post'
@@ -95,10 +96,13 @@ export const getPollByPostId = cache(async (postId: string): Promise<Poll | null
 
 /**
  * Create a new post
+ * Requires club membership (any role).
  */
 export async function createPost(input: CreatePostInput, userId: string): Promise<Post> {
     // Validate input
     const validated = createPostSchema.parse(input)
+
+    await requireClubRole(userId, validated.club_id, ['owner', 'admin', 'moderator', 'member'])
 
     const supabase = await createClient()
 
@@ -156,12 +160,27 @@ export async function createPost(input: CreatePostInput, userId: string): Promis
 
 /**
  * Update a post
+ * Requires the actor to be the post author or hold a staff club role
+ * (owner/admin/moderator).
  */
-export async function updatePost(id: string, input: UpdatePostInput): Promise<Post> {
+export async function updatePost(id: string, input: UpdatePostInput, actorId: string): Promise<Post> {
     // Validate input
     const validated = updatePostSchema.parse(input)
 
     const supabase = await createClient()
+
+    // Authorize: author (via content->>user_id) or staff club role
+    const { data: existing } = await supabase
+        .from('posts')
+        .select('club_id, content')
+        .eq('id', id)
+        .maybeSingle()
+
+    if (!existing) {
+        throw new Error('Post not found')
+    }
+
+    await requirePostAccess(actorId, existing.club_id, existing.content?.user_id ?? null)
 
     const { data, error } = await supabase
         .from('posts')
@@ -180,16 +199,25 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Po
 
 /**
  * Delete a post
+ * Requires the actor to be the post author or hold a staff club role
+ * (owner/admin/moderator).
  */
-export async function deletePost(id: string): Promise<void> {
+export async function deletePost(id: string, actorId: string): Promise<void> {
     const supabase = await createClient()
 
-    // Get post to check if it has video
+    // Get post to check authorization and if it has video
     const { data: post } = await supabase
         .from('posts')
-        .select('type, content')
+        .select('type, content, club_id')
         .eq('id', id)
         .single()
+
+    // Authorize: author (via content->>user_id) or staff club role
+    if (!post) {
+        throw new Error('Post not found')
+    }
+
+    await requirePostAccess(actorId, post.club_id, post.content?.user_id ?? null)
 
     // If video post, delete Mux asset
     if (post?.type === 'video' && post.content?.video?.mux_asset_id) {

@@ -49,7 +49,7 @@ export async function updateClubAction(
         }
 
         // Call service (Repository pattern)
-        const updatedClub = await updateClub(clubId, validated)
+        const updatedClub = await updateClub(clubId, validated, user.id)
 
         // Revalidate paths
         revalidatePath(`/clubs/${clubId}`)

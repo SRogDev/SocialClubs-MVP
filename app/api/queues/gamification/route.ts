@@ -14,6 +14,7 @@ import { Receiver } from '@upstash/qstash'
 import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server'
 
+import { AuthorizationError } from '@/lib/authz'
 import { invalidateLeaderboardCache } from '@/lib/leaderboard-cache'
 import type { GamificationJobPayload } from '@/lib/qstash'
 import { awardPoints } from '@/services/gamificationService'
@@ -74,13 +75,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Malformed payload' }, { status: 200 })
     }
 
-    // 4. Award points
+    // 4. Award points (internal worker secret proves the call is system-side)
     try {
         await awardPoints({
             userId: payload.userId,
             clubId: payload.clubId,
             actionType: payload.actionType,
             metadata: payload.metadata,
+            internalSecret: process.env.INTERNAL_WORKER_SECRET,
         })
 
         // 5. Invalidate leaderboard cache so next read is fresh
@@ -92,6 +94,12 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ ok: true })
     } catch (err) {
+        // A bad internal secret is a permanent misconfiguration, not a
+        // transient failure — 401 so QStash does NOT retry.
+        if (err instanceof AuthorizationError) {
+            console.error('[QStash Worker] awardPoints rejected:', err.message)
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
         // Transient error — return 500 so QStash retries
         console.error('[QStash Worker] awardPoints failed:', err)
         return NextResponse.json({ error: 'Processing failed' }, { status: 500 })
