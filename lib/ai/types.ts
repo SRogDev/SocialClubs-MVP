@@ -18,7 +18,8 @@ export type AIErrorCode =
     | 'AI_BUDGET_EXCEEDED'
     | 'AI_FLAG_DISABLED'
     | 'AI_OUTPUT_INVALID'
-    | 'AI_DB_UNAVAILABLE';
+    | 'AI_DB_UNAVAILABLE'
+    | 'AI_UNKNOWN_ACTION';
 
 /** Typed error: every AI runtime failure carries a machine-readable code. */
 export class AIAgentError extends Error {
