@@ -174,13 +174,18 @@ export interface CreateGamificationRewardInput {
 }
 
 /**
- * Input for awarding points
+ * Input for awarding points.
+ *
+ * `internalSecret` is REQUIRED at runtime: it must match
+ * INTERNAL_WORKER_SECRET. Points are a system-side effect — only
+ * internal workers (QStash) may award them, never end users.
  */
 export interface AwardPointsInput {
     userId: string;
     clubId: string;
     actionType: GamificationActionType;
     metadata?: Record<string, unknown>;
+    internalSecret?: string;
 }
 
 /**
