@@ -16,23 +16,23 @@ import { deleteClub, getClubById } from '@/services/clubService'
  */
 export async function GET(
     request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
+    { params }: { params: Promise<{ clubId: string }> }
 ) {
     try {
         // Apply rate limiting
         const rateLimitResult = await rateLimit(request, RATE_LIMITS.QUERY)
         if (rateLimitResult) return rateLimitResult
 
-        const { id } = await params
+        const { clubId } = await params
 
-        if (!id) {
+        if (!clubId) {
             return NextResponse.json(
                 { error: 'Bad request', message: 'Club ID is required' },
                 { status: 400 }
             )
         }
 
-        const club = await getClubById(id)
+        const club = await getClubById(clubId)
 
         if (!club) {
             return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -53,7 +53,7 @@ export async function GET(
 
 export async function DELETE(
     request: NextRequest,
-    context: RouteContext<'/api/clubs/[id]'>
+    { params }: { params: Promise<{ clubId: string }> }
 ) {
     try {
         // Apply rate limiting
@@ -72,9 +72,9 @@ export async function DELETE(
         }
 
         // Get club ID from params
-        const { id } = await context.params
+        const { clubId } = await params
 
-        if (!id) {
+        if (!clubId) {
             return NextResponse.json(
                 { error: 'Bad request', message: 'Club ID is required' },
                 { status: 400 }
@@ -82,7 +82,7 @@ export async function DELETE(
         }
 
         // Check if club exists and user is the creator
-        const club = await getClubById(id)
+        const club = await getClubById(clubId)
 
         if (!club) {
             return NextResponse.json(
@@ -103,14 +103,14 @@ export async function DELETE(
         }
 
         // Delete club using service
-        await deleteClub(id, user.id)
+        await deleteClub(clubId, user.id)
 
         // Create response with rate limit headers
         const response = NextResponse.json(
             {
                 success: true,
                 message: 'Club deleted successfully',
-                data: { id }
+                data: { id: clubId }
             },
             { status: 200 }
         )
