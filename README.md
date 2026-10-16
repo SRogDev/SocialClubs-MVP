@@ -24,6 +24,21 @@ If you have an audience, you have a business waiting to happen. SocialClubs give
 - **Monetization:** Stripe Connect + subscriptions are implemented; end-to-end real-money verification is the next milestone (see `docs/STRIPE_SETUP.md`).
 - **Live demo:** coming soon.
 
+## Demo (seeded walkthrough)
+
+For recruiter/investor walkthroughs there's a clearly-marked demo seed path —
+see **`docs/DEMO.md`** for the full script (landing → club → FAQ → AI Inbox →
+analytics, plus a screenshots checklist):
+
+```bash
+npm run seed:demo   # creates "Club Demo" (Spanish content, is_demo=true)
+npm run clean:demo  # removes ALL demo data
+```
+
+Demo data is marked (`clubs.is_demo`, `@demo.socialclubs` users) and never
+mixes with production; both scripts refuse to run under
+`NODE_ENV=production` unless `DEMO_ALLOW_PROD=1`.
+
 ## Relationship intelligence (AI staff)
 
 SocialClubs keeps a privacy-first memory of member relationships (`lib/ai/relationship.ts`, master plan Phases 25–28):
