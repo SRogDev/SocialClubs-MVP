@@ -17,7 +17,7 @@ import { getClubLeaderboard } from '@/services/gamificationService';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: Promise<{ id: string }> },
+    { params }: { params: Promise<{ clubId: string }> },
 ) {
     try {
         const rateLimitResult = await rateLimit(request, RATE_LIMITS.QUERY);
@@ -35,21 +35,21 @@ export async function GET(
             );
         }
 
-        const { id } = await params;
-        if (!id) {
+        const { clubId } = await params;
+        if (!clubId) {
             return NextResponse.json(
                 { error: 'Bad request', message: 'Club ID is required' },
                 { status: 400 },
             );
         }
 
-        await requireClubRole(user.id, id, ['owner', 'admin', 'moderator', 'member']);
+        await requireClubRole(user.id, clubId, ['owner', 'admin', 'moderator', 'member']);
 
         const { searchParams } = new URL(request.url);
         const rawLimit = Number.parseInt(searchParams.get('limit') ?? '10', 10);
         const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(rawLimit, 1), 25) : 10;
 
-        const entries = await getClubLeaderboard(id, limit);
+        const entries = await getClubLeaderboard(clubId, limit);
         return NextResponse.json({ data: entries });
     } catch (error) {
         if (error instanceof AuthorizationError) {
