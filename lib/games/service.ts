@@ -673,6 +673,9 @@ export function createGameService(deps: GameServiceDeps) {
         listLibrary: (clubId: string, status?: GameStatus) =>
             deps.db.listGames(clubId, status ? { status } : undefined),
         getGame: (gameId: string) => deps.db.getGame(gameId),
+        /** Session lookup so API routes can bind a bridge call to the
+         *  authenticated user before dispatching. */
+        getSession: (sessionId: string) => deps.db.getSession(sessionId),
         listUnlocks: (clubId: string, userId: string) =>
             deps.db.listActiveUnlocks(clubId, userId, now().toISOString()),
     };
