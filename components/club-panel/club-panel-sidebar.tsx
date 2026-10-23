@@ -1,4 +1,4 @@
-import { Layout, Users, Zap, Calendar, Joystick, BarChart2, Megaphone, HeadphonesIcon, Inbox, Settings2, Wallet, Activity, Gamepad2 } from "lucide-react"
+import { Layout, Users, Zap, Calendar, Joystick, BarChart2, Megaphone, HeadphonesIcon, Inbox, Settings2, Wallet, Activity, Gamepad2, Blocks } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import Link from "next/link"
 
@@ -30,6 +30,7 @@ export default function ClubPanelSidebar({ clubId, activeSection, clubName, pend
         { value: "ai-cost", label: "Costo IA", icon: Wallet },
         { value: "ai-analytics", label: "Analítica IA", icon: Activity },
         { value: "ai-games", label: "Minijuegos IA", icon: Gamepad2 },
+        { value: "ai-integrations", label: "Aplicaciones", icon: Blocks },
         { value: "agenda", label: "Agenda", icon: Calendar },
         { value: "gamificacion", label: "Gamificación", icon: Joystick },
         { value: "analiticas", label: "Analíticas", icon: BarChart2 },
