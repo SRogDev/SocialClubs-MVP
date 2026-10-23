@@ -31,6 +31,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 import { getAction, type ActionContext } from './actions';
+import { syncClubKnowledgeSafe } from './knowledge';
 import { recordFeedbackSafe, type MemoryDeps } from './memory';
 import { AIAgentError } from './types';
 import {
@@ -387,6 +388,10 @@ export async function rejectAction(
             },
             deps.memory,
         );
+        // Knowledge sync (Workstream A): a correction changes the club's
+        // knowledge source — converge the derived Supermemory index.
+        // Fire-and-forget; a no-op when no provider is configured.
+        void syncClubKnowledgeSafe(row.clubId);
     }
 
     return {

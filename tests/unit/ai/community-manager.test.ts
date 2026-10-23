@@ -22,6 +22,10 @@ import type { ClubAIConfigRow } from '@/lib/ai/policy';
 import type { AIClient } from '@/lib/ai/types';
 import type { AiMemory, MemoryDb } from '@/lib/ai/memory';
 import {
+    buildClubKnowledgeDocs,
+    InMemoryKnowledgeProvider,
+} from '@/lib/ai/knowledge';
+import {
     answerFAQ,
     draftOnboarding,
     draftSignalResponse,
@@ -222,6 +226,62 @@ describe('answerFAQ', () => {
 
         expect(res.answer).toBe('No lo sé');
         expect(res.grounded).toBe(false);
+    });
+
+    test('with the knowledge layer active, grounding narrows to the retrieved FAQ entries', async () => {
+        const db = memoryDb({ faq: FAQ });
+        const stub = stubClient({ answer: 'Cuesta $10 al mes.', grounded: true, confidence: 0.95 });
+        const provider = new InMemoryKnowledgeProvider();
+        await provider.ingest(
+            'club-1',
+            buildClubKnowledgeDocs('club-1', {
+                club: null,
+                faq: FAQ,
+                corrections: [],
+            }),
+        );
+
+        const res = await answerFAQ('¿Cuánto cuesta unirse al club?', 'club-1', {
+            db,
+            client: stub.client,
+            cost: costDeps(),
+            knowledge: { provider },
+        });
+
+        expect(res.grounded).toBe(true);
+        const payload = stub.lastUserPayload();
+        const inner = payload['payload'] as { faq: Array<{ q: string }> };
+        // Only the price entry is relevant — the events entry is not stuffed in.
+        expect(inner.faq).toHaveLength(1);
+        expect(inner.faq[0].q).toBe('¿Cuánto cuesta unirse?');
+    });
+
+    test('knowledge provider failure falls back to the full FAQ (never blocks the answer)', async () => {
+        const db = memoryDb({ faq: FAQ });
+        const stub = stubClient({ answer: 'x', grounded: true, confidence: 1 });
+        const failingProvider = {
+            id: 'memory' as const,
+            async ingest() {},
+            async remove() {},
+            async clear() {},
+            async listDocIds() {
+                return [];
+            },
+            async search(): Promise<never> {
+                throw new Error('provider down');
+            },
+        };
+
+        const res = await answerFAQ('¿Cuánto cuesta unirse?', 'club-1', {
+            db,
+            client: stub.client,
+            cost: costDeps(),
+            knowledge: { provider: failingProvider },
+        });
+
+        expect(res.answer).toBe('x');
+        const payload = stub.lastUserPayload();
+        expect(payload['payload']).toMatchObject({ faq: FAQ });
     });
 });
 
