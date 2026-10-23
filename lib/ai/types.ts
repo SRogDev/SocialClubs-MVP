@@ -20,6 +20,7 @@ export type AIErrorCode =
     | 'AI_INPUT_BLOCKED'
     | 'AI_OUTPUT_INVALID'
     | 'AI_DB_UNAVAILABLE'
+    | 'AI_KNOWLEDGE_UNAVAILABLE'
     | 'AI_UNKNOWN_ACTION';
 
 /** Typed error: every AI runtime failure carries a machine-readable code. */
