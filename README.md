@@ -79,6 +79,14 @@ SocialClubs' memory infrastructure is **Supermemory** (`lib/ai/knowledge.ts` + `
 - `answerFAQ` retrieves the relevant FAQ entries from the club namespace instead of stuffing the whole FAQ into the prompt; with no `SUPERMEMORY_API_KEY` (or on any provider failure) it falls back to the previous Supabase-only behavior.
 - Sync converges automatically after AI-config saves and AI-Inbox corrections; owners/admins can force a full rebuild with `POST /api/ai/knowledge/rebuild`. Leaving Supermemory = point `SUPERMEMORY_API_URL` at a self-hosted instance (or implement the `KnowledgeProvider` interface over pgvector) and rebuild — no caller changes.
 
+## Minigame runtime — prompt-created games connected to the club
+
+Creators invent minigames **by prompt**: the AI structures the idea into a GameBrief, generates free code from it, and the result is statically validated, previewed in a sandbox, and approved by the creator before publishing to the club game library (attachable to events/posts). Members play in clubs and inside events. Full design: `docs/MINIGAMES.md`.
+
+- **Sandboxed, always:** games run only in a sandboxed iframe with a strict CSP (no network at all); the only channel to the club is the typed, versioned `ClubGame` bridge (`SC_GAME_BRIDGE` v1) — member context, club points (server-capped, idempotent, granted through the existing gamification rules), leaderboards, per-game state, event context, temporary unlocks, experience outcomes.
+- **MINI constraints, enforced three times** (brief schema, static validator, server at runtime): one self-contained file ≤ 64 KiB, sessions ≤ 10 min, score/points caps, no storage/eval/dynamic code, asynchronous play only.
+- **Creators + the club AI (Experience Director) create; members only play.** Generation draws from the club AI budget; without an AIsa key a deterministic sample game keeps the flow demoable offline. Flag: `AI_MINIGAME_RUNTIME` (default off).
+
 ## AI safety evals
 
 `tests/eval/` (master plan Phases 67–68) proves the AI staff is safe — evals, not just unit tests. Run with `npm run eval:ai` (deterministic mock only: no cost, no network, no flakiness; exits non-zero on failure). Suites: `faq-grounding` (24 cases — answers come from the club FAQ, never invented), `moderation` (30 texts — clean passes, spam/hate caught, suspicious routed to the AI layer), `jailbreak` (21 cases — adversarial prompts blocked by `lib/ai/input-guards.ts`), `budget` (4 cases — budget checked before every model call), `knowledge-retrieval` (6 cases — Supermemory-path grounding: narrowed retrieval, cross-club namespace isolation, fallback, sync convergence). Full contract in `docs/AI-EVALS.md`. **Policy: every new AI feature must ship evals.**
