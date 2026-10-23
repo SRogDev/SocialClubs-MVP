@@ -23,6 +23,8 @@ import { PwaInstallBanner } from '@/components/club/PwaInstallBanner'
 import { AskClub } from '@/components/ai/AskClub'
 import ActivityPulse from '@/components/ai/ActivityPulse'
 import SmartPanel from '@/components/ai/SmartPanel'
+import { ClubGamesSection } from '@/components/games/ClubGamesSection'
+import type { GameSummary } from '@/components/games/types'
 import PostCard from '@/components/post/post-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -45,6 +47,8 @@ interface ClubPageClientProps {
     initialPosts?: any[]
     /** True when the URL contains ?joined=true — triggers PWA install banner */
     showPwaPrompt?: boolean
+    /** Published AI minigames for the club (empty when the flag is off) */
+    publishedGames?: GameSummary[]
 }
 
 export function ClubPageClient({
@@ -55,6 +59,7 @@ export function ClubPageClient({
     userId,
     initialPosts = [],
     showPwaPrompt = false,
+    publishedGames = [],
 }: ClubPageClientProps) {
     const storePosts = usePostStore((s) => s.posts)
     const posts = storePosts.length > 0 ? storePosts : initialPosts
@@ -273,6 +278,12 @@ export function ClubPageClient({
                         )}
                         {/* Sentient UI: structured recommendations (members only) */}
                         {isMember && <SmartPanel clubId={club.id} accent={clubColor} />}
+                        {/* Minijuegos IA publicados (solo miembros, flag activa) */}
+                        {isMember && publishedGames.length > 0 && (
+                            <div className="mx-auto w-full max-w-2xl px-4 pt-3">
+                                <ClubGamesSection games={publishedGames} />
+                            </div>
+                        )}
                         <Tabs value={effectiveActiveTab} onValueChange={setActiveTab}>
                             {(visibleChannels.length > 0
                                 ? visibleChannels

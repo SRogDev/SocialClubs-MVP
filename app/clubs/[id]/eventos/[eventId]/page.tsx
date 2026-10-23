@@ -2,10 +2,14 @@ import { ArrowLeft, CalendarDays, MapPin, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { gameSummary, type GameSummary } from '@/app/api/games/shared';
 import { PhaseBadge } from '@/components/events/PhaseBadge';
 import { RsvpButton } from '@/components/events/RsvpButton';
 import { formatEventRange } from '@/components/events/event-date';
+import { ClubGamesSection } from '@/components/games/ClubGamesSection';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AI_MINIGAME_RUNTIME, isEnabled } from '@/lib/ai/flags';
+import { defaultGameService } from '@/lib/games/service';
 import { createClient } from '@/lib/supabase/server';
 import { getEvent } from '@/services/eventService';
 import { eventPhase } from '@/types/event';
@@ -29,6 +33,17 @@ export default async function EventDetailPage({ params }: PageProps) {
 
     const phase = eventPhase(event);
     const full = event.capacity !== null && event.attendee_count >= event.capacity;
+
+    // Minijuegos publicados vinculados a este evento (best-effort).
+    let eventGames: GameSummary[] = [];
+    if (isEnabled(AI_MINIGAME_RUNTIME)) {
+        try {
+            const rows = await defaultGameService().listLibrary(id, 'published');
+            eventGames = rows.filter((g) => g.eventId === eventId).map(gameSummary);
+        } catch {
+            eventGames = [];
+        }
+    }
 
     return (
         <div className="container py-6 space-y-6 max-w-2xl mx-auto">
@@ -88,6 +103,10 @@ export default async function EventDetailPage({ params }: PageProps) {
                     )}
                 </CardContent>
             </Card>
+
+            {eventGames.length > 0 && (
+                <ClubGamesSection games={eventGames} eventId={eventId} />
+            )}
         </div>
     );
 }
