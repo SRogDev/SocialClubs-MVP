@@ -88,7 +88,9 @@ function briefAgentDef(): AgentDefinition {
         triggers: ['game_prompt'],
         policies: [
             'Write title, description, mechanics and scoringIntent in Spanish.',
-            `Declare ONLY capabilities from this whitelist: member.profile, points.award, leaderboard, game.state, event.context, unlocks, outcomes, content.read.`,
+            `Declare ONLY capabilities from this whitelist: member.profile, points.award, leaderboard, game.state, event.context, unlocks, outcomes, content.read, apps.invoke.`,
+            'Set profile to "widget" when the idea is a small glanceable utility for club surfaces (latest video, follower counts, a playlist…) instead of a playable game; widgets cannot award points or scores. Default profile is "game".',
+            'If the artifact should use the club\'s CONNECTED APPS (YouTube, TikTok, Instagram, X, Twitch, Spotify, Discord), declare the apps.invoke capability AND list each exact action in externalActions using registry names: ext.youtube.YOUTUBE_GET_CHANNEL_STATISTICS, ext.tiktok.TIKTOK_LIST_VIDEOS, ext.spotify.SPOTIFY_GET_PLAYLIST — only actions the artifact truly calls.',
             'If the game is born from club content (a post, recent posts, an event), set contentSource AND declare the content.read capability.',
             `Respect the MINI limits: maxScore ≤ ${MINIGAME_CONSTRAINTS.maxScore}, pointsPerSession ≤ ${MINIGAME_CONSTRAINTS.maxPointsPerSession}, sessionMinutes ≤ ${MINIGAME_CONSTRAINTS.maxSessionMinutes}.`,
             'Asynchronous play only: players is "single" (solo) or "async" (leaderboard competition over time). Never design live multiplayer.',
@@ -115,7 +117,8 @@ function codeAgentDef(): AgentDefinition {
         policies: [
             'The html must be a single self-contained file: inline <style> and <script> only. NO external resources (no CDN, no fonts, no images by URL — use CSS/emoji-free drawing, gradients, or data: URIs).',
             'NO network: never use fetch, XMLHttpRequest, WebSocket, EventSource, sendBeacon. NO storage: never use localStorage, sessionStorage, indexedDB, cookies. NO eval, Function, dynamic import, WebAssembly, window.open, or navigation.',
-            'Communicate with the club ONLY through the global ClubGame SDK (injected by the platform): ClubGame.member(), ClubGame.awardPoints(amount, reason, idempotencyKey), ClubGame.submitScore(score, idempotencyKey), ClubGame.leaderboard(scope), ClubGame.getState(key, scope), ClubGame.setState(key, value, opts), ClubGame.event(), ClubGame.unlock(grant, ttlMinutes), ClubGame.outcome(type, payload). NEVER call postMessage directly.',
+            'Communicate with the club ONLY through the global ClubGame SDK (injected by the platform): ClubGame.member(), ClubGame.awardPoints(amount, reason, idempotencyKey), ClubGame.submitScore(score, idempotencyKey), ClubGame.leaderboard(scope), ClubGame.getState(key, scope), ClubGame.setState(key, value, opts), ClubGame.event(), ClubGame.unlock(grant, ttlMinutes), ClubGame.outcome(type, payload), ClubGame.app(actionId, args) for connected apps. NEVER call postMessage directly.',
+            'Use ONLY the ClubGame methods whose capabilities the brief declares. For ClubGame.app, call ONLY the exact actionIds listed in the brief externalActions; a read returns {status:"executed", data}; a write may return {status:"pending_approval"} — show the member a friendly "pendiente de aprobación del creador" state instead of failing.',
             'Use ONLY the ClubGame methods whose capabilities the brief declares. If the brief does not declare a capability, do not call its method.',
             'Scores must never exceed the brief maxScore; points requested must never exceed the brief pointsPerSession.',
             'The game must be fully playable with mouse/touch (mobile-first), in Spanish, completable within the brief sessionMinutes, and must handle ClubGame promise rejections gracefully.',

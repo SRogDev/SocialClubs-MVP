@@ -34,6 +34,12 @@ export const GAME_CAPABILITIES = [
      * latest post); game code itself never reads content at runtime.
      */
     'content.read',
+    /**
+     * Invoke the club's connected external apps (Workstream C) through
+     * the guarded executor. Requires per-action declarations in the
+     * brief (externalActions) approved by the creator at publish.
+     */
+    'apps.invoke',
 ] as const;
 
 export type GameCapability = (typeof GAME_CAPABILITIES)[number];
@@ -73,4 +79,5 @@ export const BRIDGE_METHOD_CAPABILITIES: Record<string, GameCapability> = {
     event: 'event.context',
     unlock: 'unlocks',
     outcome: 'outcomes',
+    app: 'apps.invoke',
 };

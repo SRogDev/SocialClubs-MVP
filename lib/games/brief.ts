@@ -49,6 +49,22 @@ export const GameBriefSchema = z.object({
     sessionMinutes: z.number().int().min(1).max(MINIGAME_CONSTRAINTS.maxSessionMinutes),
     /** Declared bridge capabilities — whitelist only, shown to the creator. */
     capabilities: z.array(z.enum(GAME_CAPABILITIES)).max(GAME_CAPABILITIES.length),
+    /**
+     * Runtime profile (Workstream C1): one sandbox runtime, two
+     * profiles. 'game' = interactive play sessions; 'widget' = small
+     * glanceable utility/mini-app slots in club surfaces. Widget
+     * artifacts cannot award points or submit scores. Absent = 'game'
+     * (briefs written before profiles existed).
+     */
+    profile: z.enum(['game', 'widget']).optional(),
+    /**
+     * Connected-app actions this artifact may invoke through the
+     * bridge (Workstream C2), as Action Registry names
+     * ('ext.<toolkit>.<TOOL_SLUG>'). Requires the 'apps.invoke'
+     * capability; the creator approves this exact list at publish and
+     * undeclared actions are rejected at runtime.
+     */
+    externalActions: z.array(z.string().min(3).max(160)).max(10).optional(),
     /** Declared when the game is born from club content (generation-time read). */
     contentSource: GameContentSourceSchema.optional(),
     theme: z.string().trim().max(300).optional(),

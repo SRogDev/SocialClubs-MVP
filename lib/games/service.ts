@@ -35,13 +35,14 @@ import type { GameBrief } from './brief';
 import { BRIDGE_METHOD_CAPABILITIES, MINIGAME_CONSTRAINTS, type GameCapability } from './constraints';
 import type { BridgeMethod } from './bridge';
 import type { GameValidationReport } from './validate';
+import { parseExternalActionName } from '../integrations/registry';
 
 // ---------------------------------------------------------------------------
 // Rows & ports
 // ---------------------------------------------------------------------------
 
 export type GameStatus = 'draft' | 'published' | 'rejected' | 'archived';
-export type GameSessionKind = 'play' | 'preview';
+export type GameSessionKind = 'play' | 'preview' | 'widget';
 
 export interface GameRow {
     id: string;
@@ -195,6 +196,24 @@ export interface GameServiceDeps {
         gameId: string;
         type: string;
     }): Promise<void>;
+    /**
+     * Guarded external-action executor (Workstream C). When absent,
+     * bridge 'app' calls fail with APPS_NOT_CONFIGURED — the surface
+     * degrades honestly instead of pretending to be connected.
+     */
+    external?: {
+        execute(input: {
+            clubId: string;
+            toolkitSlug: string;
+            toolSlug: string;
+            arguments: Record<string, unknown>;
+            via: 'staff' | 'game' | 'widget' | 'creator';
+        }): Promise<
+            | { status: 'executed'; data: unknown }
+            | { status: 'pending_approval'; inboxItemId: string }
+            | { status: 'refused'; code: string; message: string }
+        >;
+    };
     now?: () => Date;
 }
 
@@ -329,6 +348,19 @@ export function createGameService(deps: GameServiceDeps) {
             const member = await deps.memberContext(input.userId, game.clubId);
             if (!member) throw new Error('Only club members can play this game');
         }
+        if (input.kind === 'widget') {
+            // Widget profile (C1): published widget artifacts only,
+            // rendered for club members in club surfaces. Sessions are
+            // per-render mounts: rate-limited, no play-session expiry.
+            if ((game.brief.profile ?? 'game') !== 'widget') {
+                throw new Error('Only widget-profile artifacts can start widget sessions');
+            }
+            if (game.status !== 'published') {
+                throw new Error('Only published widgets can be rendered');
+            }
+            const member = await deps.memberContext(input.userId, game.clubId);
+            if (!member) throw new Error('Only club members can view this widget');
+        }
         const session = await deps.db.insertSession({
             gameId: game.id,
             clubId: game.clubId,
@@ -369,9 +401,11 @@ export function createGameService(deps: GameServiceDeps) {
         };
 
         // Session expiry applies to every method (brief session limit).
+        // Widget sessions are exempt: they are per-render mounts, still
+        // bound + authenticated + rate-limited per session.
         const expiresAt =
             Date.parse(session.startedAt) + game.brief.sessionMinutes * 60_000;
-        if (now().getTime() > expiresAt) {
+        if (session.kind !== 'widget' && now().getTime() > expiresAt) {
             return finish(err('SESSION_EXPIRED', 'La sesión de juego terminó.'));
         }
         if (rateLimited(session.id)) {
@@ -386,6 +420,17 @@ export function createGameService(deps: GameServiceDeps) {
                     'CAPABILITY_NOT_DECLARED',
                     `El juego no declaró la capacidad "${capability}".`,
                 ),
+            );
+        }
+
+        // Profile rule (C1): widgets are glanceable utilities — they
+        // never award points or submit scores, whatever the session.
+        if (
+            (game.brief.profile ?? 'game') === 'widget' &&
+            (input.method === 'awardPoints' || input.method === 'submitScore')
+        ) {
+            return finish(
+                err('PROFILE_FORBIDDEN', 'Los widgets no entregan puntos ni puntuaciones.'),
             );
         }
 
@@ -596,6 +641,57 @@ export function createGameService(deps: GameServiceDeps) {
                     await recordOutcome(game, session, type, payload);
                 }
                 return finish({ ok: true, result: { recorded: true } });
+            }
+            case 'app': {
+                // Connected apps through the bridge (Workstream C2 —
+                // "la gracia"): the artifact may invoke ONLY the exact
+                // actions its brief declared and the creator approved.
+                const actionId = typeof params.actionId === 'string' ? params.actionId : '';
+                const declared = game.brief.externalActions ?? [];
+                if (!actionId || !declared.includes(actionId)) {
+                    return finish(
+                        err(
+                            'ACTION_NOT_DECLARED',
+                            'Esta acción de aplicación no fue declarada ni aprobada para este artefacto.',
+                        ),
+                    );
+                }
+                const parsed = parseExternalActionName(actionId);
+                if (!parsed) {
+                    return finish(err('INVALID_ACTION', 'Identificador de acción no válido.'));
+                }
+                if (!deps.external) {
+                    return finish(
+                        err(
+                            'APPS_NOT_CONFIGURED',
+                            'Las aplicaciones conectadas no están configuradas en esta instalación.',
+                        ),
+                    );
+                }
+                if (preview) {
+                    return finish({
+                        ok: true,
+                        result: { status: 'preview', note: 'Vista previa: no se llamó a la aplicación.' },
+                    });
+                }
+                const args =
+                    params.arguments && typeof params.arguments === 'object'
+                        ? (params.arguments as Record<string, unknown>)
+                        : {};
+                const result = await deps.external.execute({
+                    clubId: game.clubId,
+                    toolkitSlug: parsed.toolkitSlug,
+                    toolSlug: parsed.toolSlug,
+                    arguments: args,
+                    via: session.kind === 'widget' ? 'widget' : 'game',
+                });
+                if (result.status === 'refused') {
+                    return finish(err(result.code, result.message));
+                }
+                // 'executed' returns the app data; 'pending_approval'
+                // tells the artifact the write awaits the creator in
+                // the AI Inbox (games/widgets never block on a human).
+                return finish({ ok: true, result });
             }
         }
     }
@@ -1120,6 +1216,56 @@ export function supabaseGameDb(client: SupabaseClient = serviceClient()): GameDb
     /* eslint-enable @typescript-eslint/no-explicit-any */
 }
 
+/**
+ * Builds the production external executor for game/widget bridge calls
+ * when an integration provider is configured. Returns `{ external }`
+ * for GameServiceDeps, or undefined when unconfigured (bridge 'app'
+ * calls then answer APPS_NOT_CONFIGURED). Write approvals enqueue a
+ * pending `ai_actions` row — the row the AI Inbox renders.
+ */
+function buildProductionExternalExecutor():
+    | { external: NonNullable<GameServiceDeps['external']> }
+    | undefined {
+    // Lazy require-free probe: env check only; the heavy modules load
+    // dynamically inside execute() so importing this module stays cheap.
+    if (!process.env.COMPOSIO_API_KEY?.trim()) return undefined;
+    let executorPromise: Promise<NonNullable<GameServiceDeps['external']>> | null = null;
+    const load = async () => {
+        const { composioFromEnv } = await import('../integrations/composio');
+        const provider = composioFromEnv();
+        if (!provider) throw new Error('Integration provider unavailable');
+        const { supabaseConnectionStore } = await import('../integrations/connections');
+        const { createExternalExecutor } = await import('../integrations/executor');
+        const { externalActionName } = await import('../integrations/registry');
+        const executor = createExternalExecutor({
+            provider,
+            connections: supabaseConnectionStore(),
+            async requestApproval(input) {
+                const { supabaseVerifyDb } = await import('../ai/verify');
+                const row = await supabaseVerifyDb().insertAction({
+                    clubId: input.clubId,
+                    agentId: 'external-apps',
+                    action: externalActionName(input.toolkitSlug, input.toolSlug),
+                    inputs: { arguments: input.arguments, via: input.via },
+                    idempotencyKey: `ext-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+                    status: 'pending_approval',
+                });
+                return row.id;
+            },
+        });
+        return executor;
+    };
+    return {
+        external: {
+            async execute(input) {
+                executorPromise ??= load();
+                const executor = await executorPromise;
+                return executor.execute(input);
+            },
+        },
+    };
+}
+
 /** Production service wiring (gamification grant + membership + events). */
 export function defaultGameService(
     overrides: Partial<GameServiceDeps> = {},
@@ -1183,6 +1329,11 @@ export function defaultGameService(
                 payload: { source: 'game', outcome: input.type, gameId: input.gameId },
             });
         },
+        // Workstream C: connected apps through the bridge. Present only
+        // when a provider is configured (COMPOSIO_API_KEY); otherwise
+        // bridge 'app' calls answer APPS_NOT_CONFIGURED. Write approvals
+        // are enqueued as pending ai_actions rows — the AI Inbox.
+        ...(buildProductionExternalExecutor() ?? {}),
         ...overrides,
     };
     return createGameService(deps);

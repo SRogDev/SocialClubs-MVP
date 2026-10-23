@@ -37,6 +37,7 @@ export const BRIDGE_METHODS = [
     'event',
     'unlock',
     'outcome',
+    'app',
 ] as const;
 export type BridgeMethod = (typeof BRIDGE_METHODS)[number];
 
@@ -147,7 +148,8 @@ export function clubGameSdkSource(sessionId: string): string {
     setState: function (key, value, opts) { return call('setState', { key: key, value: value, scope: opts && opts.scope, ttlMinutes: opts && opts.ttlMinutes }); },
     event: function () { return call('event', {}); },
     unlock: function (grant, ttlMinutes) { return call('unlock', { grant: grant, ttlMinutes: ttlMinutes }); },
-    outcome: function (type, payload) { return call('outcome', { type: type, payload: payload }); }
+    outcome: function (type, payload) { return call('outcome', { type: type, payload: payload }); },
+    app: function (actionId, args) { return call('app', { actionId: actionId, arguments: args || {} }); }
   };
 })();`;
 }
