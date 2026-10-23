@@ -31,8 +31,8 @@
  */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-import type { GameBrief, GameCapability } from './brief';
-import { BRIDGE_METHOD_CAPABILITIES, MINIGAME_CONSTRAINTS } from './constraints';
+import type { GameBrief } from './brief';
+import { BRIDGE_METHOD_CAPABILITIES, MINIGAME_CONSTRAINTS, type GameCapability } from './constraints';
 import type { BridgeMethod } from './bridge';
 import type { GameValidationReport } from './validate';
 
@@ -1135,10 +1135,14 @@ export function defaultGameService(
                 userId: input.userId,
                 clubId: input.clubId,
                 actionType: 'ai_incentive',
-                amount: input.points,
-                reason: input.reason,
                 internalSecret,
-                metadata: { source: 'minigame', gameId: input.gameId, sessionId: input.sessionId },
+                metadata: {
+                    source: 'minigame',
+                    gameId: input.gameId,
+                    sessionId: input.sessionId,
+                    requestedPoints: input.points,
+                    reason: input.reason,
+                },
             });
         },
         async memberContext(userId, clubId) {
@@ -1172,8 +1176,9 @@ export function defaultGameService(
         },
         async recordOutcomeSignal(input) {
             const { recordSignalSafe } = await import('../ai/relationship');
-            await recordSignalSafe(input.clubId, {
-                memberId: input.memberId,
+            await recordSignalSafe({
+                clubId: input.clubId,
+                userId: input.memberId,
                 type: 'engaged',
                 payload: { source: 'game', outcome: input.type, gameId: input.gameId },
             });
