@@ -87,6 +87,15 @@ Creators invent minigames **by prompt**: the AI structures the idea into a GameB
 - **MINI constraints, enforced three times** (brief schema, static validator, server at runtime): one self-contained file ≤ 64 KiB, sessions ≤ 10 min, score/points caps, no storage/eval/dynamic code, asynchronous play only.
 - **Creators + the club AI (Experience Director) create; members only play.** Generation draws from the club AI budget; without an AIsa key a deterministic sample game keeps the flow demoable offline. Flag: `AI_MINIGAME_RUNTIME` (default off).
 
+## Connected apps — Composio / MCP integrations
+
+Creators OAuth-connect their own apps (platform-managed via **Composio**; nobody handles API keys) so the club's AI staff, prompt-created widgets and minigames can act on them — always through the guarded executor and the club bridge. Full design: `docs/INTEGRATIONS.md`.
+
+- **Any app is connectable** (provider port is MCP-shaped; Composio is the first provider); the launch surfacing is **social + entertainment only** (YouTube, TikTok, Instagram, X, Twitch, Spotify, Discord) — influencer clubs, not business tools.
+- **Per-club isolation:** executions resolve connections only through the club's own binding (`club_external_connections`); club A can never act through club B's connections. Every external tool registers in the Action Registry (`ext.<toolkit>.<TOOL>`) with risk/approval metadata.
+- **Reads execute once declared + approved; writes queue for AI Inbox approval** (or run inside creator-approved workflows); destructive actions never run autonomously. Games/widgets invoke apps via `ClubGame.app(actionId, args)` with per-action declarations approved at publish.
+- **Custom widgets** (prompt-created, like games) share the sandbox runtime under the `widget` profile: glanceable club-surface utilities that can use connected apps but never award points or scores. Without `COMPOSIO_API_KEY` the whole surface hides.
+
 ## AI safety evals
 
 `tests/eval/` (master plan Phases 67–68) proves the AI staff is safe — evals, not just unit tests. Run with `npm run eval:ai` (deterministic mock only: no cost, no network, no flakiness; exits non-zero on failure). Suites: `faq-grounding` (24 cases — answers come from the club FAQ, never invented), `moderation` (30 texts — clean passes, spam/hate caught, suspicious routed to the AI layer), `jailbreak` (21 cases — adversarial prompts blocked by `lib/ai/input-guards.ts`), `budget` (4 cases — budget checked before every model call), `knowledge-retrieval` (6 cases — Supermemory-path grounding: narrowed retrieval, cross-club namespace isolation, fallback, sync convergence). Full contract in `docs/AI-EVALS.md`. **Policy: every new AI feature must ship evals.**
