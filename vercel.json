@@ -19,24 +19,5 @@
             "path": "/api/cron/ai-briefing",
             "schedule": "0 12 * * *"
         }
-    ],
-    "env": [
-        "NEXT_PUBLIC_SUPABASE_URL",
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-        "SUPABASE_SERVICE_ROLE_KEY",
-        "NEXT_PUBLIC_POSTHOG_KEY",
-        "NEXT_PUBLIC_POSTHOG_HOST",
-        "NEXT_PUBLIC_CRISP_WEBSITE_ID",
-        "RESEND_API_KEY",
-        "DAILY_API_KEY",
-        "NEXT_PUBLIC_DAILY_DOMAIN",
-        "CRON_SECRET",
-        "STRIPE_SECRET_KEY",
-        "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
-        "UPSTASH_REDIS_REST_URL",
-        "UPSTASH_REDIS_REST_TOKEN",
-        "QSTASH_TOKEN",
-        "QSTASH_CURRENT_SIGNING_KEY",
-        "QSTASH_NEXT_SIGNING_KEY"
     ]
 }
