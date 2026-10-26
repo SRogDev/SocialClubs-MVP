@@ -11,6 +11,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 
 import { AI_STAFF_ENABLED, isEnabled } from '@/lib/ai/flags'
+import { syncClubKnowledgeSafe } from '@/lib/ai/knowledge'
 import { requireClubRole } from '@/lib/authz'
 import { createClient } from '@/lib/supabase/server'
 
@@ -126,6 +127,11 @@ export async function saveAIConfig(
         if (error) {
             throw new Error(`No se pudo guardar: ${error.message}`)
         }
+
+        // Knowledge sync (Workstream A): club_ai_config is a knowledge
+        // source (policies.faq) — converge the derived Supermemory index
+        // after every config save. Fire-and-forget; no-op without a key.
+        void syncClubKnowledgeSafe(clubId)
 
         revalidatePath(`/clubs/${clubId}/panel/ai-config`)
         return { success: true }

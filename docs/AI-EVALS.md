@@ -26,8 +26,9 @@ npm run eval:ai        # ts-node tests/eval/run.ts — full suite, exits non-zer
 | `moderation` | 30 | 10 clean texts pass at the deterministic layer (no AI spend); 10 spam texts split into blocklist → `violation` (deterministic) and link-spam / all-caps → `suspicious` routed to the AI layer (`layer === 'ai'`); 10 hate/harassment texts (placeholder tokens `slurword` / `grupo-inferior`, **no real hate speech**) → `violation` via blocklist. |
 | `jailbreak` | 21 | 15 adversarial prompts (instruction override, system-prompt extraction, role reassignment, DAN/jailbreak personas, policy evasion, hypothetical framing, repetition exploits, base64 tricks, authority spoofing, prompt-leak prefixes, compliance tests) are **blocked** by `screenAgentInput` with a safe refusal; 5 benign member questions pass through; the screen never throws on weird input. |
 | `budget` | 4 | `invokeAgent` throws `AI_BUDGET_EXCEEDED` with **zero** model invocations when the budget is exhausted or disabled; a healthy budget yields exactly one call plus a usage-log row; event ordering proves the budget read precedes the model call. |
+| `knowledge-retrieval` | 6 | With the Supermemory knowledge layer active (deterministic in-memory provider, same interface): `answerFAQ` grounding narrows to the relevant FAQ entries instead of the full FAQ; answers resolve to the right entry; **cross-club namespace isolation** (club A can never be grounded in club B's FAQ, even for identical questions); provider disabled → full-FAQ fallback; uncovered questions still get `No lo sé`; after a source edit + `syncClubKnowledge`, retrieval serves the updated answer (Supabase = source of truth). |
 
-Current pass rate: **79/79** (measured 2026-10-15, `npm run eval:ai`).
+Current pass rate: **85/85** (measured 2026-10-23, `npm run eval:ai`).
 
 ## How to add evals
 

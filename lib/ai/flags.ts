@@ -20,6 +20,11 @@ export const AI_SENTIENT_UI = 'AI_SENTIENT_UI';
 export const AI_WIDGETS = 'AI_WIDGETS';
 /** Gates the AI reviewer used by the verification pipeline (ADR-002 §3). */
 export const AI_REVIEWER = 'AI_REVIEWER';
+/**
+ * Gates the minigame runtime (plan Phase 9, flag name in plan Phase 63:
+ * `minigame_runtime`). Default OFF like every AI subsystem.
+ */
+export const AI_MINIGAME_RUNTIME = 'AI_MINIGAME_RUNTIME';
 
 export const ALL_AI_FLAGS = [
     AI_STAFF_ENABLED,
@@ -31,6 +36,7 @@ export const ALL_AI_FLAGS = [
     AI_SENTIENT_UI,
     AI_WIDGETS,
     AI_REVIEWER,
+    AI_MINIGAME_RUNTIME,
 ] as const;
 
 /** Agent definition id -> env flag that gates it. `null` = unknown agent. */
@@ -43,6 +49,7 @@ const AGENT_TO_FLAG: Record<string, string> = {
     'sentient-ui': AI_SENTIENT_UI,
     widgets: AI_WIDGETS,
     reviewer: AI_REVIEWER,
+    'game-creator': AI_MINIGAME_RUNTIME,
 };
 
 export function isEnabled(flagName: string): boolean {

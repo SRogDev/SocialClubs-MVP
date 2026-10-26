@@ -12,6 +12,7 @@ import { faqGroundingEvals } from './faq-grounding.eval';
 import { moderationEvals } from './moderation.eval';
 import { jailbreakEvals } from './jailbreak.eval';
 import { budgetEvals } from './budget.eval';
+import { knowledgeRetrievalEvals } from './knowledge-retrieval.eval';
 
 async function main(): Promise<void> {
     const report = await runEvals([
@@ -19,6 +20,7 @@ async function main(): Promise<void> {
         ...moderationEvals,
         ...jailbreakEvals,
         ...budgetEvals,
+        ...knowledgeRetrievalEvals,
     ]);
     printEvalReport(report);
     if (report.failed > 0) {

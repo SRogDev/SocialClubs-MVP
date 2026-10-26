@@ -28,9 +28,19 @@
  * memories for the club (../memory — corrections distilled from creator
  * feedback via recordFeedback) into a prompt "memory" section, so the agent
  * does not repeat corrected mistakes. Memory lookup is best-effort and
- * never blocks a draft. answerFAQ is intentionally NOT wired: FAQ answers
- * are strictly grounded in the club FAQ, and memories must not leak into
- * that grounding.
+ * never blocks a draft. Learned memories are intentionally NOT wired into
+ * answerFAQ: FAQ answers are strictly grounded in the club FAQ, and
+ * preference memories must not leak into that grounding.
+ *
+ * Knowledge retrieval (Workstream A): answerFAQ grounds in the club's FAQ,
+ * but instead of always stuffing every entry into the prompt it first asks
+ * the club knowledge layer (../knowledge — Supermemory, one namespace per
+ * club) for the entries relevant to the question and grounds in those.
+ * The retrieval is kind-filtered to FAQ docs only, so corrections/profile
+ * content can never become FAQ grounding. When the provider is disabled
+ * (no SUPERMEMORY_API_KEY), returns nothing, or fails, answerFAQ falls
+ * back to the full FAQ exactly as before — retrieval can only narrow the
+ * grounding set, never invent or widen it.
  *
  * Server-side only (imports verify.ts, which uses node:crypto): call it
  * from API routes and the signal worker, never from client components.
@@ -39,6 +49,11 @@ import { z } from 'zod';
 
 import { COMMUNITY_MANAGER } from '../agents';
 import type { CostDeps } from '../cost';
+import {
+    faqDocId,
+    searchClubKnowledge,
+    type KnowledgeDeps,
+} from '../knowledge';
 import {
     getAgentMemories,
     summarizeMemoriesForPrompt,
@@ -82,6 +97,14 @@ export interface CommunityManagerDeps {
      * 73-76) — never required, never blocking.
      */
     prefs?: PreferencesDeps;
+    /**
+     * Injected club knowledge layer (tests/evals). Defaults to env
+     * resolution (Supermemory when SUPERMEMORY_API_KEY is set, otherwise
+     * disabled). Used ONLY by answerFAQ to select the relevant FAQ
+     * entries — never required, never blocking (falls back to the full
+     * FAQ on any failure).
+     */
+    knowledge?: KnowledgeDeps;
 }
 
 function invokeDeps(deps: CommunityManagerDeps): InvokeDeps {
@@ -208,9 +231,46 @@ function faqAgentDef(): AgentDefinition {
 }
 
 /**
+ * Select the FAQ entries that ground an answer. With the knowledge layer
+ * active (Supermemory), retrieval over the club's own namespace picks the
+ * relevant entries (kind-filtered to FAQ docs); anything else — provider
+ * disabled, no hits, provider failure — falls back to the full FAQ, the
+ * pre-retrieval behavior. Retrieval only ever NARROWS the club's own FAQ;
+ * it cannot introduce content from anywhere else.
+ */
+async function selectFaqGrounding(
+    question: string,
+    clubId: string,
+    entries: FaqEntry[],
+    deps: CommunityManagerDeps,
+): Promise<FaqEntry[]> {
+    try {
+        const hits = await searchClubKnowledge(
+            clubId,
+            question,
+            { kinds: ['faq'], limit: 5 },
+            deps.knowledge,
+        );
+        if (!hits || hits.length === 0) return entries;
+        const byDocId = new Map(entries.map((e) => [faqDocId(e.q), e]));
+        const selected: FaqEntry[] = [];
+        for (const hit of hits) {
+            const entry = byDocId.get(hit.docId);
+            if (entry && !selected.includes(entry)) selected.push(entry);
+        }
+        return selected.length > 0 ? selected : entries;
+    } catch (err) {
+        console.warn('[community-manager] knowledge retrieval failed (non-fatal, full FAQ):', err);
+        return entries;
+    }
+}
+
+/**
  * Draft an FAQ answer grounded in `club_ai_config.policies.faq`.
  * Returns { answer: null, reason: 'no_faq_configured' } when the club has
- * no usable FAQ — without spending an LLM call.
+ * no usable FAQ — without spending an LLM call. Grounding entries are
+ * selected via the club knowledge layer when available (see
+ * selectFaqGrounding); otherwise the full FAQ is handed to the model.
  */
 export async function answerFAQ(
     question: string,
@@ -223,12 +283,14 @@ export async function answerFAQ(
         return { answer: null, grounded: false, confidence: 0, reason: 'no_faq_configured' };
     }
 
+    const grounding = await selectFaqGrounding(question, clubId, parsed.data, deps);
+
     const { output } = await invokeAgent<z.infer<typeof FaqAnswerSchema>>(
         faqAgentDef(),
         {
             type: 'faq_answer',
             clubId,
-            payload: { question, faq: parsed.data },
+            payload: { question, faq: grounding },
         },
         invokeDeps(deps),
     );
