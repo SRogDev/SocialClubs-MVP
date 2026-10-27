@@ -9,7 +9,7 @@
     "crons": [
         {
             "path": "/api/cron/check-appointments",
-            "schedule": "*/5 * * * *"
+            "schedule": "0 3 * * *"
         },
         {
             "path": "/api/cron/ai-digest",
