@@ -5,7 +5,6 @@
     "installCommand": "pnpm install",
     "devCommand": "pnpm dev",
     "outputDirectory": ".next",
-    "ignoreCommand": "echo 'Skipping build checks'",
     "crons": [
         {
             "path": "/api/cron/check-appointments",
