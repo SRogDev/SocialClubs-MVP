@@ -5,13 +5,14 @@ import { createClient } from '@/lib/supabase/server';
 import { getRoomById } from '@/services/videocallService';
 
 interface VideocallPageProps {
-    params: {
+    params: Promise<{
         'room-id': string;
-    };
+    }>;
 }
 
 export default async function VideocallPage({ params }: VideocallPageProps) {
-    const roomId = parseInt(params['room-id']);
+    const resolvedParams = await params;
+    const roomId = parseInt(resolvedParams['room-id']);
 
     if (isNaN(roomId)) {
         redirect('/');

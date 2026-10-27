@@ -1,18 +1,20 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { getUpcomingBookings } from '@/services/bookingService';
-import { createDailyRoom, expireOldRooms } from '@/services/videocallService';
+import { expireOldRooms } from '@/services/videocallService';
 
 /**
  * GET /api/cron/check-appointments
- * Cron job that runs every 5 minutes to:
- * 1. Find bookings that should start soon (within 5 min window)
- * 2. Create Daily.co rooms for those bookings
- * 3. Expire old rooms that have passed their expiration time
+ * Daily cleanup cron: expires videocall rooms whose expiration time has
+ * passed. Room creation is NOT done here anymore — rooms are created
+ * on demand when a participant joins (/videocall/join/<bookingId>).
+ *
+ * The old every-5-minutes schedule violated Vercel's Hobby cron limit
+ * (once per day) and blocked all deployments, so it was removed from
+ * vercel.json. This endpoint is now scheduled once a day.
  *
  * Called by Vercel Cron (configured in vercel.json)
- * Schedule: every 5 minutes (cron expression "star-slash-5 star star star star")
+ * Schedule: daily (cron expression "0 3 * * *")
  */
 export async function GET(request: NextRequest) {
     try {
@@ -30,49 +32,31 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        console.log('[CRON] Starting appointment check...');
-
-        // Get upcoming bookings (within 5 minute window)
-        const upcomingBookings = await getUpcomingBookings(5);
-
-        console.log(`[CRON] Found ${upcomingBookings.length} upcoming bookings`);
-
-        const results = {
-            roomsCreated: 0,
-            roomsFailed: 0,
-            roomsExpired: 0,
-            errors: [] as string[],
-        };
-
-        // Create rooms for upcoming bookings
-        for (const booking of upcomingBookings) {
-            try {
-                console.log(`[CRON] Creating room for booking ${booking.id}`);
-                await createDailyRoom(booking.id);
-                results.roomsCreated++;
-            } catch (error: any) {
-                console.error(`[CRON] Error creating room for booking ${booking.id}:`, error);
-                results.roomsFailed++;
-                results.errors.push(`Booking ${booking.id}: ${error.message}`);
-            }
-        }
+        console.log('[CRON] Starting videocall room cleanup...');
 
         // Expire old rooms
+        let roomsExpired = 0;
         try {
-            const expiredCount = await expireOldRooms();
-            results.roomsExpired = expiredCount;
-            console.log(`[CRON] Expired ${expiredCount} old rooms`);
+            roomsExpired = await expireOldRooms();
+            console.log(`[CRON] Expired ${roomsExpired} old rooms`);
         } catch (error: any) {
             console.error('[CRON] Error expiring old rooms:', error);
-            results.errors.push(`Expire rooms: ${error.message}`);
+            return NextResponse.json(
+                {
+                    error: 'Error expiring rooms',
+                    message: error.message,
+                    timestamp: new Date().toISOString(),
+                },
+                { status: 500 },
+            );
         }
 
-        console.log('[CRON] Appointment check complete:', results);
+        console.log('[CRON] Videocall room cleanup complete:', { roomsExpired });
 
         return NextResponse.json({
             success: true,
             timestamp: new Date().toISOString(),
-            results,
+            results: { roomsExpired },
         });
     } catch (error: any) {
         console.error('[CRON] Fatal error in check-appointments:', error);
@@ -82,7 +66,7 @@ export async function GET(request: NextRequest) {
                 message: error.message,
                 timestamp: new Date().toISOString(),
             },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }

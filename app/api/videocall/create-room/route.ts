@@ -8,9 +8,10 @@ import { createDailyRoom } from '@/services/videocallService';
 
 /**
  * POST /api/videocall/create-room
- * Create a Daily.co room for a booking
- * This is called by the cron job when it's time for the call
- * Can also be called manually by authorized users (creator or member)
+ * Create a Daily.co room for a booking (idempotent: returns the existing
+ * room when one was already created for the booking).
+ * Called on demand when a participant joins, by authorized users
+ * (creator or member). The old 5-minute cron no longer creates rooms.
  */
 export async function POST(request: NextRequest) {
     // Rate limiting
